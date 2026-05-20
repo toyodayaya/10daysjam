@@ -116,7 +116,7 @@ void RenderTexture::GenerateGraphicsPipeline()
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/GrayScale.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Vignette.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 

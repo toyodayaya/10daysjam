@@ -164,6 +164,7 @@
     <FxCompile Include="resources\shaders\FullScreen.VS.hlsl" />
     <FxCompile Include="resources\shaders\GrayScale.PS.hlsl" />
     <FxCompile Include="resources\shaders\SepiaScale.PS.hlsl" />
+    <FxCompile Include="resources\shaders\Vignette.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\io\Input.h">
