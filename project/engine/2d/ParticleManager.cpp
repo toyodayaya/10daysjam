@@ -45,6 +45,12 @@ void ParticleManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager, 
 
 	// 頂点データ作成
 	CreateVertexData();
+
+	// 効果範囲の設定
+	accelerationField.acceleration = Vector3(15.0f,0.0f,0.0f);
+	accelerationField.area.min = Vector3(-1.0f,-1.0f,-1.0f);
+	accelerationField.area.max = Vector3(1.0f,1.0f,1.0f);
+
 }
 
 void ParticleManager::CreateRootSignature()
