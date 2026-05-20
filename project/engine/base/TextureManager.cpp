@@ -88,9 +88,11 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	// 追加したテクスチャデータに書き込む
 	textureData.metaData = mipImages.GetMetadata();
 	textureData.resource = dxBasis_->CreateTextureResource(textureData.metaData);
-
+	// クライアント領域のサイズ
+	const int32_t kClientWidth = 1280;
+	const int32_t kClientHeight = 720;
 	const Vector4 kRenderTargetClearValue{ 0.1f,0.25f,0.5f,1.0f };
-	textureData.renderTextureResource = dxBasis_->CreateRenderTextureResource(textureData.metaData, kRenderTargetClearValue);
+	textureData.renderTextureResource = dxBasis_->CreateRenderTextureResource(textureData.metaData, kClientWidth, kClientHeight, kRenderTargetClearValue);
 
 	// テクスチャデータの要素数番号をSRVのインデックスとする
 	textureData.srvIndex = srvManager_->Allocate();

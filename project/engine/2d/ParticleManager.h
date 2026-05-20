@@ -69,6 +69,7 @@ private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;
 		uint32_t instanceCount;
 		ParticleForGPU* instancingData;
+		ParticleEmitter::Type type;
 	};
 
 	struct AccelerationField
@@ -116,6 +117,8 @@ private:
 
 	// モデルデータ
 	ModelData modelData;
+	ModelData modelDataRing;
+	ModelData modelDataCylinder;
 
 	// ルートシグネチャー
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
@@ -135,12 +138,19 @@ private:
 
 	// 頂点リソース
 	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource;
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceRing;
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceCylinder;
 
 	// バッファリソース内のデータを指すポインタ
 	VertexData* vertexData = nullptr;
+	VertexData* vertexDataRing = nullptr;
+	VertexData* vertexDataCylinder = nullptr;
+
 	// バッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewRing;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewCylinder;
+	
 	// パーティクルグループコンテナ
 	std::unordered_map<std::string, ParticleGroup> particleGroups;
 
@@ -165,6 +175,7 @@ private:
 	// ブレンドモード
 	BlendMode blendMode_ = kBlendModeAdd;
 
+	
 public:
 	// シングルトンインスタンスの取得
 	static ParticleManager* GetInstance();
@@ -192,13 +203,17 @@ public:
 		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
 	Particle MakeNewHitEffectParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
 		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
+	Particle MakeNewRingParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
+		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
+	Particle MakeNewCylinderParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
+		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
 
 	// パーティクルグループの生成
-	void CreateParticleGroup(const std::string name, const std::string textureFilePath);
+	void CreateParticleGroup(const std::string name, const std::string textureFilePath, ParticleEmitter::Type type);
 
 	// パーティクルの発生
 	void Emit(const std::string name, const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, uint32_t count,ParticleEmitter::Type type);
+		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, uint32_t count);
 
 	// 効果範囲の当たり判定
 	bool IsCollision(const AABB& aabb, const Vector3& point);

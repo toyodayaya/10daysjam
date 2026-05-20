@@ -89,7 +89,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metaData);
 
 	// RenderTexture生成関数
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTextureResource(const DirectX::TexMetadata& metaData, const Vector4& clearColor);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTextureResource(const DirectX::TexMetadata& metaData,const int32_t kClientWidth,const int32_t kClientHeight, const Vector4& clearColor);
 
 	// UploadTextureData関数
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource> texture,

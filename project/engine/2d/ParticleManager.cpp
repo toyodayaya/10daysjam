@@ -82,7 +82,7 @@ void ParticleManager::CreateRootSignature()
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
@@ -200,6 +200,7 @@ void ParticleManager::GenerateGraphicsPipeline()
 void ParticleManager::CreateVertexData()
 {
 	// パーティクルの初期化
+	// パーティクルの初期化
 	modelData.vertices.push_back({ .position = {1.0f,1.0f,0.0f,1.0f},.texcoord = {0.0f,0.0f},.normal = {0.0f,0.0f,1.0f} });
 	modelData.vertices.push_back({ .position = {-1.0f,1.0f,0.0f,1.0f},.texcoord = {1.0f,0.0f},.normal = {0.0f,0.0f,1.0f} });
 	modelData.vertices.push_back({ .position = {1.0f,-1.0f,0.0f,1.0f},.texcoord = {0.0f,1.0f},.normal = {0.0f,0.0f,1.0f} });
@@ -225,7 +226,101 @@ void ParticleManager::CreateVertexData()
 	// 頂点データにリソースをコピー
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 
+	// Ringの初期化
+	// 分割数
+	const uint32_t kRingDivide = 32;
+	uint32_t numRingIndices = kRingDivide * 6;
+	const float kOuterRadius = 1.0f;
+	const float kInnerRadius = 0.2f;
+	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / float(kRingDivide);
 
+	for (uint32_t index = 0; index < kRingDivide; ++index)
+	{
+		float sin = std::sin(index * radianPerDivide);
+		float cos = std::cos(index * radianPerDivide);
+		float sinNext = std::sin((index + 1) * radianPerDivide);
+		float cosNext = std::cos((index + 1) * radianPerDivide);
+		float u = float(index) / float(kRingDivide);
+		float uNext = float(index + 1) / float(kRingDivide);
+		VertexData p1 = { {cos * kInnerRadius, sin * kInnerRadius, 0.0f,1.0f}, {u, 1.0f} }; // 内
+		VertexData p2 = { {cos * kOuterRadius, sin * kOuterRadius, 0.0f,1.0f}, {u, 0.0f} }; // 外
+		VertexData p3 = { {cosNext * kInnerRadius, sinNext * kInnerRadius, 0.0f,1.0f}, {uNext, 1.0f} }; // 内(次)
+		VertexData p4 = { {cosNext * kOuterRadius, sinNext * kOuterRadius, 0.0f,1.0f}, {uNext, 0.0f} }; // 外(次)
+
+		// 三角形1: p1 (内現) -> p2 (外現) -> p4 (外次)
+		modelDataRing.vertices.push_back(p1);
+		modelDataRing.vertices.push_back(p2);
+		modelDataRing.vertices.push_back(p4);
+
+		// 三角形2: p1 (内現) -> p4 (外次) -> p3 (内次)
+		modelDataRing.vertices.push_back(p1);
+		modelDataRing.vertices.push_back(p4);
+		modelDataRing.vertices.push_back(p3);
+	}
+	modelDataRing.material.textureFilePath = "resources/gradationLine.png";
+
+
+	// 頂点リソースを作る
+	vertexResourceRing = dxBasis_->CreateBufferResources(sizeof(VertexData) * modelDataRing.vertices.size());
+
+	// 頂点バッファビューを作成する
+	// リソースの先頭のアドレスから使う
+	vertexBufferViewRing.BufferLocation = vertexResourceRing->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ
+	vertexBufferViewRing.SizeInBytes = UINT(sizeof(VertexData) * modelDataRing.vertices.size());
+	// 1頂点あたりのサイズ
+	vertexBufferViewRing.StrideInBytes = sizeof(VertexData);
+
+	// 頂点リソースにデータを書き込む
+	// 書き込むためのアドレスを取得
+	vertexResourceRing->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataRing));
+	// 頂点データにリソースをコピー
+	std::memcpy(vertexDataRing, modelDataRing.vertices.data(), sizeof(VertexData) * modelDataRing.vertices.size());
+
+	// Cylinderの頂点データ作成
+	const uint32_t kCylinderDivide = 32;
+	const float kTopRadius = 1.0f;
+	const float kBottomRadius = 1.0f;
+	const float kHeight = 3.0f;
+	const float radianPerDivideCylinder = 2.0f * std::numbers::pi_v<float> / float(kCylinderDivide);
+
+	for (uint32_t index = 0; index < kCylinderDivide; ++index)
+	{
+		float sin = std::sin(index * radianPerDivideCylinder);
+		float cos = std::cos(index * radianPerDivideCylinder);
+		float sinNext = std::sin((index + 1) * radianPerDivideCylinder);
+		float cosNext = std::cos((index + 1) * radianPerDivideCylinder);
+		float u = float(index) / float(kCylinderDivide);
+		float uNext = float(index + 1) / float(kCylinderDivide);
+		
+		modelDataCylinder.vertices.push_back({.position = {-sin * kTopRadius,kHeight,cos*kTopRadius,1.0f}, .texcoord = {u, 0.0f} ,.normal = {-sin, 0.0f, cos}});
+		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kTopRadius,kHeight,cosNext * kTopRadius,1.0f}, .texcoord = {uNext, 0.0f} ,.normal = {-sinNext, 0.0f, cosNext} });
+		modelDataCylinder.vertices.push_back({ .position = {-sin * kBottomRadius,0.0f,cos * kBottomRadius,1.0f}, .texcoord = {u, 1.0f} ,.normal = {-sin, 0.0f, cos} });
+		modelDataCylinder.vertices.push_back({ .position = {-sin * kBottomRadius,0.0f,cos * kBottomRadius,1.0f}, .texcoord = {u, 1.0f} ,.normal = {-sin, 1.0f, cos} });
+		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kTopRadius,kHeight,cosNext * kTopRadius,1.0f}, .texcoord = {uNext, 0.0f} ,.normal = {-sinNext, 1.0f, cosNext} });
+		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kBottomRadius,0.0f,cosNext * kBottomRadius,1.0f}, .texcoord = {uNext, 1.0f} ,.normal = {-sinNext, 1.0f, cosNext} });
+
+	}
+
+	modelDataCylinder.material.textureFilePath = "resources/gradationLine.png";
+
+
+	// 頂点リソースを作る
+	vertexResourceCylinder = dxBasis_->CreateBufferResources(sizeof(VertexData) * modelDataCylinder	.vertices.size());
+
+	// 頂点バッファビューを作成する
+	// リソースの先頭のアドレスから使う
+	vertexBufferViewCylinder.BufferLocation = vertexResourceCylinder->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点3つ分のサイズ
+	vertexBufferViewCylinder.SizeInBytes = UINT(sizeof(VertexData) * modelDataCylinder.vertices.size());
+	// 1頂点あたりのサイズ
+	vertexBufferViewCylinder.StrideInBytes = sizeof(VertexData);
+
+	// 頂点リソースにデータを書き込む
+	// 書き込むためのアドレスを取得
+	vertexResourceCylinder->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataCylinder));
+	// 頂点データにリソースをコピー
+	std::memcpy(vertexDataCylinder, modelDataCylinder.vertices.data(), sizeof(VertexData) * modelDataCylinder.vertices.size());
 }
 
 void ParticleManager::BlendModeSetting()
@@ -320,6 +415,30 @@ ParticleManager::Particle ParticleManager::MakeNewHitEffectParticle(const Vector
 	return particle;
 }
 
+ParticleManager::Particle ParticleManager::MakeNewRingParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate, const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
+{
+	particle.transform.scale = scale;
+	particle.transform.rotate = rotate;
+	particle.transform.translate = translate;
+	particle.velocity = velocity;
+	particle.color = color;
+	particle.lifeTime = lifeTime;
+	particle.currentTime = currentTime;
+	return particle;
+}
+
+ParticleManager::Particle ParticleManager::MakeNewCylinderParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate, const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
+{
+	particle.transform.scale = scale;
+	particle.transform.rotate = rotate;
+	particle.transform.translate = translate;
+	particle.velocity = velocity;
+	particle.color = color;
+	particle.lifeTime = lifeTime;
+	particle.currentTime = currentTime;
+	return particle;
+}
+
 
 bool ParticleManager::IsCollision(const AABB& aabb, const Vector3& point) {
 	if (aabb.min.x <= point.x && aabb.max.x >= point.x &&
@@ -331,7 +450,7 @@ bool ParticleManager::IsCollision(const AABB& aabb, const Vector3& point) {
 	return false;
 }
 
-void ParticleManager::CreateParticleGroup(const std::string name, const std::string textureFilePath)
+void ParticleManager::CreateParticleGroup(const std::string name, const std::string textureFilePath, ParticleEmitter::Type type)
 {
 	// 登録済みの名前かチェック
 	const bool alreadyExists =
@@ -361,6 +480,9 @@ void ParticleManager::CreateParticleGroup(const std::string name, const std::str
 		particleData.instancingData[index].Color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
+	// パーティクルグループのタイプを記録
+	particleData.type = type;
+
 	// インスタンシング用にSRVを確保してインデックスを記録
 	particleData.srvIndex = srvManager_->Allocate();
 
@@ -372,8 +494,8 @@ void ParticleManager::CreateParticleGroup(const std::string name, const std::str
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 	instancingSrvDesc.Buffer.NumElements = kMaxInstanceCount;
 	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);
-	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = srvManager_->GetCPUDescriptorHandle(3);
-	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = srvManager_->GetGPUDescriptorHandle(3);
+	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = srvManager_->GetCPUDescriptorHandle(particleData.srvIndex);
+	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = srvManager_->GetGPUDescriptorHandle(particleData.srvIndex);
 	srvManager_->CreateSRVforStructuredBuffer(particleData.srvIndex, particleData.instancingResource.Get(), instancingSrvDesc.Format, kMaxInstanceCount, sizeof(ParticleForGPU));
 }
 
@@ -383,6 +505,12 @@ void ParticleManager::Update()
 
 	ImGui::Begin("Billboard");
 	ImGui::Checkbox("Billboard", &isBillboard);
+	ImGui::End();
+
+
+	ImGui::Begin("Particle Manager");
+	ImGui::DragFloat3("Position", &particle.transform.translate.x, 0.1f);
+
 	ImGui::End();
 
 #endif
@@ -450,22 +578,17 @@ void ParticleManager::Update()
 
 			// インスタンシング用データ1個分を書き込み
 			if (group.instanceCount < kMaxInstanceCount) {
-				group.instancingData[group.instanceCount].World = worldMatrix;
-				group.instancingData[group.instanceCount].WVP = wvp;
-				group.instancingData[group.instanceCount].Color = it->color;
-				group.instancingData[group.instanceCount].Color.w = alpha;
+				ParticleForGPU& out = group.instancingData[group.instanceCount];
+				out.World = worldMatrix;
+				out.WVP = wvp;
+				out.Color = it->color;
+				out.Color.w = alpha;
 
 				group.instanceCount++;
 			}
 
-#ifdef USE_IMGUI
 
-			ImGui::Begin("Particle Manager");
-			ImGui::DragFloat3("Position", &it->transform.translate.x, 0.1f);
 
-			ImGui::End();
-
-#endif
 
 			++it;
 
@@ -483,10 +606,7 @@ void ParticleManager::Draw()
 	dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState.Get());
 	// 形状を設定
 	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// VBVを設定
-	dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-
-
+	
 	// グループごとに描画
 	for (auto& [name, group] : particleGroups)
 	{
@@ -500,13 +620,44 @@ void ParticleManager::Draw()
 		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(group.materialData.textureFilePath));
 		// SRVのDescriptorTableの先頭を設定
 		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(group.srvIndex));
-		// 描画
-		dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelData.vertices.size()), group.instanceCount, 0, 0);
+
+		switch (group.type)
+		{
+		case ParticleEmitter::Type::kNormal:
+			// VBVを設定
+			dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+			// 描画
+			dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelData.vertices.size()), group.instanceCount, 0, 0);
+			break;
+
+		case ParticleEmitter::Type::kHitEffect:
+			// VBVを設定
+			dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+			// 描画
+			dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelData.vertices.size()), group.instanceCount, 0, 0);
+			// IBVを設定
+			break;
+
+		case ParticleEmitter::Type::kRing:
+			// VBVを設定
+			dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewRing);
+			// 描画
+			dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelDataRing.vertices.size()), group.instanceCount, 0, 0);
+			break;
+
+		case ParticleEmitter::Type::kCylinder:
+			// VBVを設定
+			dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewCylinder);
+			// 描画
+			dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelDataCylinder.vertices.size()), group.instanceCount, 0, 0);
+			break;
+		}
+		
 	}
 }
 
 void ParticleManager::Emit(const std::string name, const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, uint32_t count,ParticleEmitter::Type type)
+	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, uint32_t count)
 {
 	// 登録済みかチェック
 	auto it = particleGroups.find(name);
@@ -519,7 +670,7 @@ void ParticleManager::Emit(const std::string name, const Vector3& translate, con
 			break; // 上限以上は積まない
 		}
 
-		switch (type)
+		switch (group.type)
 		{
 		case ParticleEmitter::Type::kNormal:
 			group.particles.push_back(MakeNewNormalParticle(translate, scale, rotate, velocity, color, lifeTime, currentTime));
@@ -530,6 +681,15 @@ void ParticleManager::Emit(const std::string name, const Vector3& translate, con
 			group.particles.push_back(MakeNewHitEffectParticle(translate, scale, rotate, velocity, color, lifeTime, currentTime));
 
 
+			break;
+		case ParticleEmitter::Type::kRing:
+			group.particles.push_back(MakeNewRingParticle(translate, scale, rotate, velocity, color, lifeTime, currentTime));
+
+
+			break;
+
+		case ParticleEmitter::Type::kCylinder:
+			group.particles.push_back(MakeNewCylinderParticle(translate, scale, rotate, velocity, color, lifeTime, currentTime));
 			break;
 		}
 

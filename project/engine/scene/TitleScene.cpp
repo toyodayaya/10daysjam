@@ -18,6 +18,7 @@ void TitleScene::Initialize()
 	// スプライトの初期化
 	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 	TextureManager::GetInstance()->LoadTexture("resources/circle2.png");
+	TextureManager::GetInstance()->LoadTexture("resources/gradationLine.png");
 
 	for (uint32_t i = 0; i < 5; ++i)
 	{
@@ -57,19 +58,32 @@ void TitleScene::Initialize()
 
 	
 	// パーティクルグループの作成
-	ParticleManager::GetInstance()->CreateParticleGroup("Effect", "resources/circle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("Effect", "resources/circle2.png", ParticleEmitter::Type::kNormal);
+	ParticleManager::GetInstance()->CreateParticleGroup("Ring", "resources/gradationLine.png", ParticleEmitter::Type::kRing);
+	ParticleManager::GetInstance()->CreateParticleGroup("Cylinder", "resources/gradationLine.png", ParticleEmitter::Type::kCylinder);
 
 	// パーティクルエミッターの宣言
 	Transform transform;
 	transform.translate = { 0.0f,0.0f,0.0f };
 	transform.rotate = { 0.0f,0.0f,0.0f};
-	transform.scale = { 0.05f,1.0f,1.0f};
+	transform.scale = { 1.0f,1.0f,1.0f};
 	Vector3 velocity = { 0.0f,0.0f,0.0f };
 	Vector4 color = { 1.0f,1.0f,1.0f,1.0f };
-	float lifeTime = 5.0f;
+	float lifeTime = 500.0f;
 	float currentTime = 0.0f;
-	emitter = std::make_unique <ParticleEmitter>("Effect", transform, velocity, color, lifeTime, currentTime, 1.0f, 8,ParticleEmitter::Type::kHitEffect);
+	emitter = std::make_unique <ParticleEmitter>("Ring", transform, velocity, color, lifeTime, currentTime, 1.0f, 8);
+	emitter->Emit();
 
+	Transform ringTransform;
+	ringTransform.translate = { 0.0f,0.0f,0.0f };
+	ringTransform.rotate = { 0.0f,0.0f,0.0f };
+	ringTransform.scale = { 1.0f,0.5f,1.0f };
+	Vector3 ringVelocity = { 0.0f,0.0f,0.0f };
+	Vector4 ringColor = { 1.0f,1.0f,1.0f,1.0f };
+	float ringLifeTime = 500.0f;
+	float ringCurrentTime = 0.0f;
+	emitterRing = std::make_unique <ParticleEmitter>("Cylinder", ringTransform, ringVelocity, ringColor, ringLifeTime, ringCurrentTime, 1.0f, 1);
+	emitterRing->Emit();
 }
 
 void TitleScene::Finalize()
@@ -103,7 +117,8 @@ void TitleScene::Update()
 	//skybox->Update();
 
 	// パーティクルの更新処理
-	emitter->Update();
+	//emitter->Update();
+	//emitterRing->Update();
 	ParticleManager::GetInstance()->Update();
 
 }

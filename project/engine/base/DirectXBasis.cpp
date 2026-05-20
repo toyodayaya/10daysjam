@@ -504,12 +504,13 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXBasis::CreateTextureResource(const
 	return resource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXBasis::CreateRenderTextureResource(const DirectX::TexMetadata& metaData, const Vector4& clearColor)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXBasis::CreateRenderTextureResource(const DirectX::TexMetadata& metaData, 
+	const int32_t kClientWidth, const int32_t kClientHeight, const Vector4& clearColor)
 {
 	// metaDataを基にResourcesの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Width = UINT(metaData.width); // Textureの幅
-	resourceDesc.Height = UINT(metaData.height); // Textureの高さ
+	resourceDesc.Width = kClientWidth;
+	resourceDesc.Height = kClientHeight;
 	resourceDesc.MipLevels = UINT16(metaData.mipLevels); // mipmapの数
 	resourceDesc.DepthOrArraySize = UINT16(metaData.arraySize); //奥行き
 	resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -593,13 +594,10 @@ void DirectXBasis::RenderTexturePreDraw(ID3D12Resource* resource)
 	// 指定した深度で画面全体をクリアする
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	D3D12_VIEWPORT rtViewport = { 0.0f, 0.0f, 512.0f, 512.0f, 0.0f, 1.0f };
-	D3D12_RECT rtScissor = { 0, 0, 512, 512 };
-
 	// viewportを設定
-	commandList->RSSetViewports(1, &rtViewport);
+	commandList->RSSetViewports(1, &viewport);
 	// Scissorを設定
-	commandList->RSSetScissorRects(1, &rtScissor);
+	commandList->RSSetScissorRects(1, &scissorRect);
 }
 
 
