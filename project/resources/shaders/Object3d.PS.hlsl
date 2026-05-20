@@ -69,15 +69,12 @@ PixelShaderOutput main(VertexShaderOutput input)
    
     float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
     float32_t3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
-    float32_t3 halfVector = normalize(-gDirectionalLight.direction + toEye);
    
     float32_t3 reflectPointLight = reflect(gPointLight.position, normalize(input.normal));
-    float32_t3 halfVectorPoint = normalize(pointLightDirection + toEye);
     
     float32_t3 reflectSpotLight = reflect(gSpotLight.position, normalize(input.normal));
-    float32_t3 halfVectorSpot = normalize(spotLightDirectionOnSurface + toEye);
     
-    float NdotH = dot(normalize(input.normal), halfVector);
+    float NdotH = dot(reflectLight, toEye);
     float specularPow = pow(saturate(NdotH), gMaterial.shininess);
     
     if(textureColor.a <= 0.5)
