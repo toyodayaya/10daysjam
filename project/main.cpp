@@ -4,11 +4,11 @@
 // Windowsアプリでのエントリーポイント
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 {
-	Framework* game = new Game();
+	std::unique_ptr<Framework> game = std::make_unique<Game>();
 
 	game->Run();
 
-	delete game;
+	game.reset();
 
 	return 0;
 }

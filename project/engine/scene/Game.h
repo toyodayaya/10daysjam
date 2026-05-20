@@ -25,5 +25,7 @@ public:
 private:
 	// ImGuiマネージャーのポインタ
 	std::unique_ptr <ImguiManager> imguiManager;
+	// シーンファクトリー
+	std::unique_ptr <SceneFactory> sceneFactory;
 };
 

@@ -97,12 +97,8 @@ private:
 	};
 
 private:
-	static ParticleManager* instance;
 
-	ParticleManager() = default;
-	~ParticleManager() = default;
-	ParticleManager(ParticleManager&) = delete;
-	ParticleManager& operator=(ParticleManager&) = delete;
+
 
 	// ポインタ
 	DirectXBasis* dxBasis_ = nullptr;
@@ -219,5 +215,11 @@ public:
 	bool IsCollision(const AABB& aabb, const Vector3& point);
 
 
+
+	ParticleManager() = default;
+	~ParticleManager() = default;
+	ParticleManager(ParticleManager&) = delete;
+	ParticleManager& operator=(ParticleManager&) = delete;
+	static std::unique_ptr<ParticleManager> instance;
 
 };

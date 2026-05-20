@@ -15,8 +15,8 @@ void Game::Initialize()
 	imguiManager->Initialize(winAPIManager.get(), dxBasis.get(), srvManager.get());
 
 	// シーンファクトリーの生成とセット
-	SceneFactory* sceneFactory = new SceneFactory;
-	SceneManager::GetInstance()->SetSceneFactory(sceneFactory);
+	sceneFactory = std::make_unique <SceneFactory>();
+	SceneManager::GetInstance()->SetSceneFactory(sceneFactory.get());
 	// シーンマネージャーに最初のシーンをセット
 	SceneManager::GetInstance()->ChangeScene("TitleScene");
 }
@@ -89,7 +89,7 @@ void Game::Finalize()
 	SceneManager::GetInstance()->Finalize();
 
 	// シーンファクトリーの終了処理
-	delete sceneFactory;
+	sceneFactory.reset();
 
 	// 汎用部の終了処理
 	Framework::Finalize();

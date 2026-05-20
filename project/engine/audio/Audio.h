@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <memory>
 
 class Audio final
 {
@@ -85,7 +86,7 @@ private:
 	std::set<IXAudio2SourceVoice*> activeVoices;
 
 	// シングルトンインスタンス
-	static Audio* instance;
+	static std::unique_ptr<Audio> instance;
 
 };
 

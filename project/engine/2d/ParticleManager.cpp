@@ -10,22 +10,21 @@
 using namespace Logger;
 using namespace MathManager;
 
-ParticleManager* ParticleManager::instance = nullptr;
+std::unique_ptr<ParticleManager> ParticleManager::instance = nullptr;
 
 ParticleManager* ParticleManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new ParticleManager;
+		instance = std::unique_ptr<ParticleManager>(new ParticleManager);
 	}
 
-	return instance;
+	return instance.get();
 }
 
 void ParticleManager::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }
 
 void ParticleManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager, Camera* camera)

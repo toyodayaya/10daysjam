@@ -16,16 +16,16 @@
 #include "Audio.h"
 #include "StringUtility.h"
 
-Audio* Audio::instance = nullptr;
+std::unique_ptr<Audio> Audio::instance = nullptr;
 
 Audio* Audio::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new Audio;
+		instance = std::unique_ptr<Audio>(new Audio);
 	}
 
-	return instance;
+	return instance.get();
 }
 
 void Audio::Initialize()
@@ -160,7 +160,5 @@ void Audio::Finalize()
 	HRESULT result = MFShutdown();
 	assert(SUCCEEDED(result));
 
-	delete instance;
-	instance = nullptr;
-
+	instance.reset();
 }

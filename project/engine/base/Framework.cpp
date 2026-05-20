@@ -20,7 +20,7 @@ void Framework::Initialize()
 	srvManager->Initialize(dxBasis.get());
 
 	// カメラの初期化
-	camera = new Camera();
+	camera = std::make_unique <Camera>();
 
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxBasis.get(), srvManager.get());
@@ -30,13 +30,13 @@ void Framework::Initialize()
 
 	// スプライト共通部の初期化
 	SpriteCommon::GetInstance()->Initialize(dxBasis.get());
-	SpriteCommon::GetInstance()->SetDefaultCamera(camera);
+	SpriteCommon::GetInstance()->SetDefaultCamera(camera.get());
 	// 3dオブジェクト共通部の初期化
 	Object3dCommon::GetInstance()->Initialize(dxBasis.get());
-	Object3dCommon::GetInstance()->SetDefaultCamera(camera);
+	Object3dCommon::GetInstance()->SetDefaultCamera(camera.get());
 	// Skybox共通部の初期化
 	SkyboxCommon::GetInstance()->Initialize(dxBasis.get());
-	SkyboxCommon::GetInstance()->SetDefaultCamera(camera);
+	SkyboxCommon::GetInstance()->SetDefaultCamera(camera.get());
 
 	// 3Dモデルマネージャーの初期化
 	ModelManager::GetInstance()->Initialize(dxBasis.get());
@@ -52,7 +52,7 @@ void Framework::Initialize()
 	assert(fenceEvent != nullptr);
 
 	// パーティクルマネージャーの初期化
-	ParticleManager::GetInstance()->Initialize(dxBasis.get(), srvManager.get(), camera);
+	ParticleManager::GetInstance()->Initialize(dxBasis.get(), srvManager.get(), camera.get());
 	
 }
 
@@ -107,7 +107,7 @@ void Framework::Finalize()
 	// テクスチャマネージャーの終了
 	TextureManager::GetInstance()->Finalize();
 	// カメラの終了
-	delete camera;
+	camera.reset();
 	
 	// WinAPIの終了処理
 	winAPIManager->Finalize();

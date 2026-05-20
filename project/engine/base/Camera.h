@@ -1,6 +1,7 @@
 #pragma once
 #include "MathManager.h"
 
+
 class Camera
 {
 public:

@@ -38,7 +38,6 @@
 #include "Audio.h"
 #include "RenderTexture.h"
 
-
 class Framework
 {
 public:
@@ -69,7 +68,7 @@ protected:
 	// SRVマネージャーのポインタ
 	std::unique_ptr <SrvManager> srvManager;
 	// カメラのポインタ
-	Camera* camera = nullptr;
+	std::unique_ptr <Camera> camera = nullptr;
 	
 	// Fenceのsignalを待つためのイベント
 	HANDLE fenceEvent = nullptr;
