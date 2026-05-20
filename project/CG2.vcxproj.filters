@@ -160,8 +160,10 @@
     <FxCompile Include="resources\shaders\Particle.hlsli" />
     <FxCompile Include="resources\shaders\Skybox.PS.hlsl" />
     <FxCompile Include="resources\shaders\Skybox.VS.hlsl" />
-    <FxCompile Include="resources\shaders\CopyImage.PS.hlsl" />
-    <FxCompile Include="resources\shaders\CopyImage.VS.hlsl" />
+    <FxCompile Include="resources\shaders\FullScreen.PS.hlsl" />
+    <FxCompile Include="resources\shaders\FullScreen.VS.hlsl" />
+    <FxCompile Include="resources\shaders\GrayScale.PS.hlsl" />
+    <FxCompile Include="resources\shaders\SepiaScale.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\io\Input.h">
@@ -523,6 +525,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </None>
     <None Include="resources\shaders\Skybox.hlsli" />
-    <None Include="resources\shaders\CopyImage.hlsli" />
+    <None Include="resources\shaders\FullScreen.hlsli" />
   </ItemGroup>
 </Project>

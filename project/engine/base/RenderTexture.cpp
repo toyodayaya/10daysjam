@@ -111,12 +111,12 @@ void RenderTexture::GenerateGraphicsPipeline()
 
 	// ShaderをCompileする
 	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob;
-	vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/CopyImage.VS.hlsl",
+	vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/FullScreen.VS.hlsl",
 		L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/CopyImage.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/GrayScale.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
