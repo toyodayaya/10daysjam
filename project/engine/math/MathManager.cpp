@@ -50,21 +50,35 @@ namespace MathManager
 	Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion)
 	{
 		Matrix4x4 ret;
-		ret.m[0][0] = static_cast<float>(pow(quaternion.w,2) + pow(quaternion.x,2) - pow(quaternion.y,2) - pow(quaternion.z,2));
-		ret.m[0][1] = 2.0f * ((quaternion.x * quaternion.y) + (quaternion.w * quaternion.z));
-		ret.m[0][2] = 2.0f * ((quaternion.x * quaternion.z) - (quaternion.w * quaternion.y));
+		float xx = quaternion.x * quaternion.x;
+		float yy = quaternion.y * quaternion.y;
+		float zz = quaternion.z * quaternion.z;
+		float xy = quaternion.x * quaternion.y;
+		float xz = quaternion.x * quaternion.z;
+		float yz = quaternion.y * quaternion.z;
+		float wx = quaternion.w * quaternion.x;
+		float wy = quaternion.w * quaternion.y;
+		float wz = quaternion.w * quaternion.z;
+
+		// 1行目
+		ret.m[0][0] = 1.0f - 2.0f * (yy + zz);
+		ret.m[0][1] = 2.0f * (xy + wz);
+		ret.m[0][2] = 2.0f * (xz - wy);
 		ret.m[0][3] = 0.0f;
 
-		ret.m[1][0] = 2.0f * ((quaternion.x * quaternion.y) - (quaternion.w * quaternion.z));
-		ret.m[1][1] = static_cast<float>(pow(quaternion.w, 2) - pow(quaternion.x, 2) + pow(quaternion.y, 2) - pow(quaternion.z, 2));
-		ret.m[1][2] = 2.0f * ((quaternion.y * quaternion.z) - (quaternion.w * quaternion.x));
+		// 2行目
+		ret.m[1][0] = 2.0f * (xy - wz);
+		ret.m[1][1] = 1.0f - 2.0f * (xx + zz);
+		ret.m[1][2] = 2.0f * (yz + wx);
 		ret.m[1][3] = 0.0f;
 
-		ret.m[2][0] = 2.0f * ((quaternion.x * quaternion.z) + (quaternion.w * quaternion.y));
-		ret.m[2][1] = 2.0f * ((quaternion.y * quaternion.z) - (quaternion.w * quaternion.x));
-		ret.m[2][2] = static_cast<float>(pow(quaternion.w, 2) - pow(quaternion.x, 2) - pow(quaternion.y, 2) + pow(quaternion.z, 2));
+		// 3行目
+		ret.m[2][0] = 2.0f * (xz + wy);
+		ret.m[2][1] = 2.0f * (yz - wx);
+		ret.m[2][2] = 1.0f - 2.0f * (xx + yy);
 		ret.m[2][3] = 0.0f;
 
+		// 4行目
 		ret.m[3][0] = 0.0f;
 		ret.m[3][1] = 0.0f;
 		ret.m[3][2] = 0.0f;

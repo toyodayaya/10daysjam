@@ -133,7 +133,6 @@ void Object3d::Update()
 	Vector3 translate = Animation::GetInstance()->CalculateValue(rootNodeAnimation.translate, animationTime);
 	Quaternion rotate = Animation::GetInstance()->CalculateValueQuaternion(rootNodeAnimation.rotate, animationTime);
 	Vector3 scale = Animation::GetInstance()->CalculateValue(rootNodeAnimation.scale, animationTime);
-	scale = Vector3{ 1.0f,1.0f,1.0f };
 	Matrix4x4 localMatrix = MakeAffineMatrix(scale, rotate, translate);
 
 
@@ -152,8 +151,8 @@ void Object3d::Update()
 
 	/*transformationData->WVP = Multiply(model->GetModelData().rootNode.localMatrix, worldViewProjectionMatrix);
 	transformationData->World = Multiply(model->GetModelData().rootNode.localMatrix, worldMatrix);*/
-	transformationData->WVP = Multiply(worldViewProjectionMatrix,localMatrix);
-	transformationData->World = Multiply(worldMatrix,localMatrix);
+	transformationData->WVP = Multiply(localMatrix,worldViewProjectionMatrix);
+	transformationData->World = Multiply(localMatrix, worldMatrix);
 	transformationData->WorldInverseTranspose = Transpose(Inverse(transformationData->World));
 	if (camera)
 	{
@@ -177,7 +176,7 @@ void Object3d::Update()
 	ImGui::Begin("model");
 	ImGui::Text("pos: %.2f, %.2f, %.2f", translate.x, translate.y, translate.z);
 	ImGui::Text("scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
-	ImGui::Text("rotate: %.2f, %.2f, %.2f", rotate.x, rotate.y, rotate.z);
+	ImGui::Text("rotate: %.2f, %.2f, %.2f,%.2f", rotate.x, rotate.y, rotate.z,rotate.w);
 	ImGui::End();
 
 #endif // USE_IMGUI

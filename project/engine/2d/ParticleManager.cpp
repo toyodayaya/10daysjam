@@ -514,12 +514,6 @@ void ParticleManager::Update()
 	ImGui::Checkbox("Billboard", &isBillboard);
 	ImGui::End();
 
-
-	ImGui::Begin("Particle Manager");
-	ImGui::DragFloat3("Position", &particle.transform.translate.x, 0.1f);
-
-	ImGui::End();
-
 #endif
 
 
@@ -593,6 +587,16 @@ void ParticleManager::Update()
 
 				group.instanceCount++;
 			}
+
+#ifdef USE_IMGUI
+
+			ImGui::Begin("Particle Manager");
+			ImGui::DragFloat3("Position", &it->transform.translate.x, 0.1f);
+
+			ImGui::End();
+
+#endif
+
 
 
 
