@@ -7,6 +7,8 @@
 #include "MathManager.h"
 #include "Model.h"
 #include "Camera.h"
+#include "Animation.h"
+#include "Model.h"
 
 class Object3dCommon;
 
@@ -75,15 +77,16 @@ public:
 
 	// setter
 	void SetModel(const std::string& filePath);
+	void SetAnimationModel(const std::string& directoryPath, const std::string& filename);
 	void SetScale(const Vector3& scale) { this->transform.scale = scale; }
-	void SetRotate(const Vector3& rotate) { this->transform.rotate = rotate; }
+	void SetRotate(const Quaternion& rotate) { this->transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { this->transform.translate = translate; }
 	void SetCamera(Camera* camera) { this->camera = camera; }
 	void SetEnvironmentMapTextureFilePath(const std::string& filePath) { environmentMapTextureFilePath = filePath; }
 
 	// getter
 	const Vector3& GetScale() const { return transform.scale; }
-	const Vector3& GetRotate() const { return transform.rotate; }
+	const Quaternion& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
 
 
@@ -118,5 +121,10 @@ private:
 
 	// 環境マップ用のテクスチャパス
 	std::string environmentMapTextureFilePath;
+
+	// アニメーションの再生時間
+	float animationTime = 0.0f;
+	// アニメーションデータ
+	Animation::Animations animation;
 };
 

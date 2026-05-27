@@ -47,6 +47,46 @@ namespace MathManager
 		return ret;
 	}
 
+	Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion)
+	{
+		Matrix4x4 ret;
+		float xx = quaternion.x * quaternion.x;
+		float yy = quaternion.y * quaternion.y;
+		float zz = quaternion.z * quaternion.z;
+		float xy = quaternion.x * quaternion.y;
+		float xz = quaternion.x * quaternion.z;
+		float yz = quaternion.y * quaternion.z;
+		float wx = quaternion.w * quaternion.x;
+		float wy = quaternion.w * quaternion.y;
+		float wz = quaternion.w * quaternion.z;
+
+		// 1行目
+		ret.m[0][0] = 1.0f - 2.0f * (yy + zz);
+		ret.m[0][1] = 2.0f * (xy + wz);
+		ret.m[0][2] = 2.0f * (xz - wy);
+		ret.m[0][3] = 0.0f;
+
+		// 2行目
+		ret.m[1][0] = 2.0f * (xy - wz);
+		ret.m[1][1] = 1.0f - 2.0f * (xx + zz);
+		ret.m[1][2] = 2.0f * (yz + wx);
+		ret.m[1][3] = 0.0f;
+
+		// 3行目
+		ret.m[2][0] = 2.0f * (xz + wy);
+		ret.m[2][1] = 2.0f * (yz - wx);
+		ret.m[2][2] = 1.0f - 2.0f * (xx + yy);
+		ret.m[2][3] = 0.0f;
+
+		// 4行目
+		ret.m[3][0] = 0.0f;
+		ret.m[3][1] = 0.0f;
+		ret.m[3][2] = 0.0f;
+		ret.m[3][3] = 1.0f;
+
+		return ret;
+	}
+
 
 	Matrix4x4 MakeScaleMatrix(const Vector3& scale)
 	{
@@ -94,12 +134,9 @@ namespace MathManager
 	}
 
 	// アフィン変換行列
-	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
+	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate)
 	{
-		Matrix4x4 rotateX = MakeRotateXMatrix(rotate.x);
-		Matrix4x4 rotateY = MakeRotateYMatrix(rotate.y);
-		Matrix4x4 rotateZ = MakeRotateZMatrix(rotate.z);
-		Matrix4x4 rotateXYZ = Multiply(rotateX, Multiply(rotateY, rotateZ));
+		Matrix4x4 rotateXYZ = MakeRotateMatrix(rotate);
 
 		Matrix4x4 ret;
 		ret.m[0][0] = scale.x * rotateXYZ.m[0][0]; ret.m[0][1] = scale.x * rotateXYZ.m[0][1]; ret.m[0][2] = scale.x * rotateXYZ.m[0][2]; ret.m[0][3] = 0.0f;
@@ -215,6 +252,44 @@ namespace MathManager
 	{
 		float ret;
 		ret = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+		return ret;
+	}
+
+	Vector3 Lerp(const Vector3& start, const Vector3& end, float t)
+	{
+		Vector3 ret;
+		ret.x = start.x + (end.x - start.x) * t;
+		ret.y = start.y + (end.y - start.y) * t;
+		ret.z = start.z + (end.z - start.z) * t;
+		return ret;
+	}
+
+	Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t)
+	{
+		float dot = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
+		Quaternion targetQ0 = q0;
+		if (dot < 0.0f)
+		{
+			targetQ0.x = -1.0f * targetQ0.x;
+			targetQ0.y = -1.0f * targetQ0.y;
+			targetQ0.z = -1.0f * targetQ0.z;
+			targetQ0.w = -1.0f * targetQ0.w;
+			dot = -dot;
+		}
+		float theta = std::acosf(dot);
+
+
+
+		float scale0 = std::sinf((1.0f - t) * theta) / std::sinf(theta);
+		float scale1 = std::sinf(t * theta) / std::sinf(theta);
+
+
+		Quaternion ret{};
+		ret.x = scale0 * targetQ0.x + scale1 * q1.x;
+		ret.y = scale0 * targetQ0.y + scale1 * q1.y;
+		ret.z = scale0 * targetQ0.z + scale1 * q1.z;
+		ret.w = scale0 * targetQ0.w + scale1 * q1.w;
+
 		return ret;
 	}
 

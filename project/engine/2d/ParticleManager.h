@@ -195,20 +195,20 @@ public:
 
 	// パーティクルの作成
 	// NormalParticle生成関数
-	Particle MakeNewNormalParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
+	Particle MakeNewNormalParticle(const Vector3& translate, const Vector3& scale, const Quaternion& rotate,
 		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
-	Particle MakeNewHitEffectParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
+	Particle MakeNewHitEffectParticle(const Vector3& translate, const Vector3& scale, const Quaternion& rotate,
 		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
-	Particle MakeNewRingParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
+	Particle MakeNewRingParticle(const Vector3& translate, const Vector3& scale, const Quaternion& rotate,
 		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
-	Particle MakeNewCylinderParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
+	Particle MakeNewCylinderParticle(const Vector3& translate, const Vector3& scale, const Quaternion& rotate,
 		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
 
 	// パーティクルグループの生成
 	void CreateParticleGroup(const std::string name, const std::string textureFilePath, ParticleEmitter::Type type);
 
 	// パーティクルの発生
-	void Emit(const std::string name, const Vector3& translate, const Vector3& scale, const Vector3& rotate,
+	void Emit(const std::string name, const Vector3& translate, const Vector3& scale, const Quaternion& rotate,
 		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, uint32_t count);
 
 	// 効果範囲の当たり判定
