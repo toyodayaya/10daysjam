@@ -8,7 +8,7 @@
 
 class Model
 {
-private:
+public:
 	struct VertexData
 	{
 		Vector4 position;

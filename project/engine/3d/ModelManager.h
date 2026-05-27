@@ -32,7 +32,7 @@ public:
 	void Initialize(DirectXBasis* dxBasis);
 
 	// モデルファイル読み込み
-	void LoadModel(const std::string& filePath);
+	void LoadModel(const std::string& directoryPath, const std::string& filePath);
 	// モデルデータ取得
 	Model* FindModel(const std::string& filePath);
 };

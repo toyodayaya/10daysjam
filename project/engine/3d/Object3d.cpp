@@ -17,7 +17,7 @@ void Object3d::Initialize(Object3dCommon* object3dManager)
 
 	// デフォルトカメラをセット
 	this->camera = object3dManager->GetDefaultCamera();
-	
+
 	// 座標変換行列データ作成
 	CreateTransformMatrixData3d();
 
@@ -34,8 +34,9 @@ void Object3d::Initialize(Object3dCommon* object3dManager)
 	CreateCameraResource();
 
 	// Transform変数を作る
-	cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
-	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
+	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
 
 }
 
@@ -116,12 +117,29 @@ void Object3d::SetModel(const std::string& filePath)
 	model = ModelManager::GetInstance()->FindModel(filePath);
 }
 
+void Object3d::SetAnimationModel(const std::string& directoryPath, const std::string& filename)
+{
+	// アニメーションデータを読み込む
+	animation = Animation::GetInstance()->LoadAnimationFile(directoryPath, filename);
+
+}
+
 void Object3d::Update()
 {
-	//transform.translate.y += 0.01f;
+	// アニメーションを再生
+	animationTime += 1.0f / 60.0f;
+	animationTime = std::fmod(animationTime, animation.duration);
+	Animation::NodeAnimation& rootNodeAnimation = animation.nodeAnimations[model->GetModelData().rootNode.name];
+	Vector3 translate = Animation::GetInstance()->CalculateValue(rootNodeAnimation.translate, animationTime);
+	Quaternion rotate = Animation::GetInstance()->CalculateValueQuaternion(rootNodeAnimation.rotate, animationTime);
+	Vector3 scale = Animation::GetInstance()->CalculateValue(rootNodeAnimation.scale, animationTime);
+	scale = Vector3{ 1.0f,1.0f,1.0f };
+	Matrix4x4 localMatrix = MakeAffineMatrix(scale, rotate, translate);
+
+
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix;
-	
+
 	if (camera)
 	{
 		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
@@ -132,27 +150,36 @@ void Object3d::Update()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	transformationData->WVP = Multiply(model->GetModelData().rootNode.localMatrix,worldViewProjectionMatrix);
-	transformationData->World = Multiply(model->GetModelData().rootNode.localMatrix,worldMatrix);
+	/*transformationData->WVP = Multiply(model->GetModelData().rootNode.localMatrix, worldViewProjectionMatrix);
+	transformationData->World = Multiply(model->GetModelData().rootNode.localMatrix, worldMatrix);*/
+	transformationData->WVP = Multiply(worldViewProjectionMatrix,localMatrix);
+	transformationData->World = Multiply(worldMatrix,localMatrix);
 	transformationData->WorldInverseTranspose = Transpose(Inverse(transformationData->World));
 	if (camera)
 	{
 		cameraData_->worldPosition = camera->GetTranslate();
 	}
-	
+
 #ifdef USE_IMGUI
 	ImGui::Begin("SpotLight");
 	ImGui::DragFloat3("pos", &spotLightData->position.x);
 	ImGui::SliderFloat("intensity", &spotLightData->intensity, 0.0f, 10.0f);
 	ImGui::SliderFloat("cosFalloffStart", &spotLightData->cosFalloffStart, 0.0f, 2.0f);
 	ImGui::SliderFloat("cosAngle", &spotLightData->cosAngle, -1.0f, 1.0f);
-	
+
 	if (spotLightData->cosFalloffStart < spotLightData->cosAngle)
 	{
 		spotLightData->cosAngle = spotLightData->cosFalloffStart;
 	}
 
 	ImGui::End();
+
+	ImGui::Begin("model");
+	ImGui::Text("pos: %.2f, %.2f, %.2f", translate.x, translate.y, translate.z);
+	ImGui::Text("scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
+	ImGui::Text("rotate: %.2f, %.2f, %.2f", rotate.x, rotate.y, rotate.z);
+	ImGui::End();
+
 #endif // USE_IMGUI
 
 
@@ -160,7 +187,7 @@ void Object3d::Update()
 
 void Object3d::Draw()
 {
-	
+
 	// wvp用のCBufferの場所を設定
 	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationResource->GetGPUVirtualAddress());
 	// 平行光源用のCBufferの場所を設定
