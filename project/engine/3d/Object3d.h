@@ -8,7 +8,8 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Animation.h"
-#include "Model.h"
+#include "DebugDraw.h"
+#include <memory>
 
 class Object3dCommon;
 
@@ -89,7 +90,6 @@ public:
 	const Quaternion& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
 
-
 private:
 	// ポインタ
 	Object3dCommon* object3dManager = nullptr;
@@ -116,8 +116,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;
 	CameraForGPU* cameraData_ = nullptr;
 
-	Transform cameraTransform;
-	Transform transform;
+	EulerTransform cameraTransform;
+	QuaternionTransform transform;
 
 	// 環境マップ用のテクスチャパス
 	std::string environmentMapTextureFilePath;
@@ -126,5 +126,15 @@ private:
 	float animationTime = 0.0f;
 	// アニメーションデータ
 	Animation::Animations animation;
+	// スケルトンデータ
+	Animation::Skeleton skeleton;
+
+#ifdef _DEBUG
+
+	// デバッグ描画
+	std::vector<std::unique_ptr<DebugDraw>> debugSpheres_;
+	std::vector<std::unique_ptr<DebugDraw>> debugLines_;
+#endif // _DEBUG
+
 };
 

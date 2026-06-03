@@ -22,7 +22,7 @@ private:
 
 	struct Emitter
 	{
-		Transform transform;
+		EulerTransform transform;
 		Vector3 velocity;
 		Vector4 color;
 		float lifeTime;
@@ -35,7 +35,7 @@ private:
 public:
 	static ParticleEmitter* instance;
 
-	ParticleEmitter(const std::string name, const Transform& transform,
+	ParticleEmitter(const std::string name, const EulerTransform& transform,
 		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, 
 		float frequency, uint32_t count);
 	~ParticleEmitter() = default;

@@ -19,6 +19,7 @@ void TitleScene::Initialize()
 	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 	TextureManager::GetInstance()->LoadTexture("resources/circle2.png");
 	TextureManager::GetInstance()->LoadTexture("resources/gradationLine.png");
+	TextureManager::GetInstance()->LoadTexture("resources/human/white.png");
 
 	for (uint32_t i = 0; i < 5; ++i)
 	{
@@ -28,11 +29,13 @@ void TitleScene::Initialize()
 	}
 
 	// objファイルからモデルを読み込む
-	ModelManager::GetInstance()->LoadModel("resources","plane.obj");
+	ModelManager::GetInstance()->LoadModel("resources", "plane.obj");
 	ModelManager::GetInstance()->LoadModel("resources", "axis.obj");
 	ModelManager::GetInstance()->LoadModel("resources", "fence.obj");
 	ModelManager::GetInstance()->LoadModel("resources", "terrain.obj");
 	ModelManager::GetInstance()->LoadModel("resources/AnimatedCube", "AnimatedCube.gltf");
+	ModelManager::GetInstance()->LoadModel("resources/simpleSkin", "simpleSkin.gltf");
+	ModelManager::GetInstance()->LoadModel("resources/human", "walk.gltf");
 
 	// テクスチャの読み込み
 	//TextureManager::GetInstance()->LoadTexture("resources/rostock_laage_airport_4k.dds");
@@ -42,9 +45,9 @@ void TitleScene::Initialize()
 	{
 		std::unique_ptr<Object3d> object3d = std::make_unique<Object3d>();
 		object3d->Initialize(Object3dCommon::GetInstance());
-		object3d->SetModel("AnimatedCube.gltf");
-		object3d->SetAnimationModel("./resources/AnimatedCube", "AnimatedCube.gltf");
-		object3d->SetEnvironmentMapTextureFilePath("resources/uvChecker.png");
+		object3d->SetModel("walk.gltf");
+		object3d->SetAnimationModel("./resources/human", "walk.gltf");
+		object3d->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 		Vector3 pos = object3d->GetTranslate();
 		pos.x += (1.0f * (i + 1));
 		object3d->SetTranslate(pos);
@@ -56,19 +59,19 @@ void TitleScene::Initialize()
 	skybox->Initialize(SkyboxCommon::GetInstance(), "resources/rostock_laage_airport_4k.dds");*/
 
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
+	//Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
 
-	
+
 	// パーティクルグループの作成
 	ParticleManager::GetInstance()->CreateParticleGroup("Effect", "resources/circle2.png", ParticleEmitter::Type::kNormal);
 	ParticleManager::GetInstance()->CreateParticleGroup("Ring", "resources/gradationLine.png", ParticleEmitter::Type::kRing);
 	ParticleManager::GetInstance()->CreateParticleGroup("Cylinder", "resources/gradationLine.png", ParticleEmitter::Type::kCylinder);
 
 	// パーティクルエミッターの宣言
-	Transform transform;
+	EulerTransform transform;
 	transform.translate = { 0.0f,0.0f,0.0f };
-	transform.rotate = { 0.0f,0.0f,0.0f};
-	transform.scale = { 1.0f,1.0f,1.0f};
+	transform.rotate = { 0.0f,0.0f,0.0f };
+	transform.scale = { 1.0f,1.0f,1.0f };
 	Vector3 velocity = { 0.0f,0.0f,0.0f };
 	Vector4 color = { 1.0f,1.0f,1.0f,1.0f };
 	float lifeTime = 500.0f;
@@ -76,7 +79,7 @@ void TitleScene::Initialize()
 	emitter = std::make_unique <ParticleEmitter>("Ring", transform, velocity, color, lifeTime, currentTime, 1.0f, 8);
 	emitter->Emit();
 
-	Transform ringTransform;
+	EulerTransform ringTransform;
 	ringTransform.translate = { 0.0f,0.0f,0.0f };
 	ringTransform.rotate = { 0.0f,0.0f,0.0f };
 	ringTransform.scale = { 1.0f,0.5f,1.0f };
@@ -128,12 +131,6 @@ void TitleScene::Update()
 void TitleScene::Draw()
 {
 
-	// 3dモデルの描画
-	for (const std::unique_ptr <Object3d>& object3d : object3ds)
-	{
-		object3d->Draw();
-	}
-
 
 	// Spriteの描画
 	for (const std::unique_ptr <Sprite>& sprite : sprites)
@@ -141,9 +138,15 @@ void TitleScene::Draw()
 		//sprite->Draw();
 	}
 
+	// 3dモデルの描画
+	for (const std::unique_ptr <Object3d>& object3d : object3ds)
+	{
+		object3d->Draw();
+	}
+
 	// Skyboxの描画
 	//skybox->Draw();
 
 	// パーティクルの描画
-	ParticleManager::GetInstance()->Draw();
+	//ParticleManager::GetInstance()->Draw();
 }

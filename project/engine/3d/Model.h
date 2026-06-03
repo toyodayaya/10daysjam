@@ -35,6 +35,7 @@ public:
 
 	struct Node
 	{
+		QuaternionTransform transform;
 		Matrix4x4 localMatrix;
 		std::string name;
 		std::vector<Node> children;
@@ -47,6 +48,8 @@ public:
 		Node rootNode;
 	};
 
+
+	
 public:
 	// 初期化
 	void Initialize(ModelCommon* modelManager, const std::string& directoryPath, const std::string& filePath);
@@ -66,14 +69,14 @@ public:
 	ModelData GetModelData() { return modelData; }
 
 private:
-
-
 	ModelCommon* modelManager = nullptr;
 	DirectXBasis* dxBasis_;
 	// objファイルのデータ
 	ModelData modelData;
 	// VertexResource
 	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource;
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceDebug;
+
 	// 頂点バッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	// 頂点データ

@@ -2,6 +2,7 @@
 #include <cmath>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <cassert>
 
 namespace MathManager
 {
@@ -134,7 +135,24 @@ namespace MathManager
 	}
 
 	// アフィン変換行列
-	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate)
+	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
+	{
+		Matrix4x4 rotateX = MakeRotateXMatrix(rotate.x);
+		Matrix4x4 rotateY = MakeRotateYMatrix(rotate.y);
+		Matrix4x4 rotateZ = MakeRotateZMatrix(rotate.z);
+		Matrix4x4 rotateXYZ = Multiply(rotateX, Multiply(rotateY, rotateZ));
+
+		Matrix4x4 ret;
+		ret.m[0][0] = scale.x * rotateXYZ.m[0][0]; ret.m[0][1] = scale.x * rotateXYZ.m[0][1]; ret.m[0][2] = scale.x * rotateXYZ.m[0][2]; ret.m[0][3] = 0.0f;
+		ret.m[1][0] = scale.y * rotateXYZ.m[1][0]; ret.m[1][1] = scale.y * rotateXYZ.m[1][1]; ret.m[1][2] = scale.y * rotateXYZ.m[1][2]; ret.m[1][3] = 0.0f;
+		ret.m[2][0] = scale.z * rotateXYZ.m[2][0]; ret.m[2][1] = scale.z * rotateXYZ.m[2][1]; ret.m[2][2] = scale.z * rotateXYZ.m[2][2]; ret.m[2][3] = 0.0f;
+		ret.m[3][0] = translate.x; ret.m[3][1] = translate.y; ret.m[3][2] = translate.z; ret.m[3][3] = 1.0f;
+
+		return ret;
+
+	}
+
+	Matrix4x4 MakeAffineMatrixQuat(const Vector3& scale, const Quaternion& rotate, const Vector3& translate)
 	{
 		Matrix4x4 rotateXYZ = MakeRotateMatrix(rotate);
 
@@ -145,7 +163,6 @@ namespace MathManager
 		ret.m[3][0] = translate.x; ret.m[3][1] = translate.y; ret.m[3][2] = translate.z; ret.m[3][3] = 1.0f;
 
 		return ret;
-
 	}
 
 	// 透視投影行列
@@ -248,11 +265,63 @@ namespace MathManager
 		return ret;
 	}
 
+	Vector3 Vector3Subtract(const Vector3& v1, const Vector3& v2)
+	{
+		Vector3 ret;
+		ret.x = v1.x - v2.x;
+		ret.y = v1.y - v2.y;
+		ret.z = v1.z - v2.z;
+		return ret;
+	}
+
+	Matrix4x4 Subtruct(const Matrix4x4& m1, const Matrix4x4& m2)
+	{
+		Matrix4x4 ret;
+		ret.m[0][0] = m1.m[0][0] - m2.m[0][0]; ret.m[0][1] = m1.m[0][1] - m2.m[0][1]; ret.m[0][2] = m1.m[0][2] - m2.m[0][2]; ret.m[0][3] = m1.m[0][3] - m2.m[0][3];
+		ret.m[1][0] = m1.m[1][0] - m2.m[1][0]; ret.m[1][1] = m1.m[1][1] - m2.m[1][1]; ret.m[1][2] = m1.m[1][2] - m2.m[1][2]; ret.m[1][3] = m1.m[1][3] - m2.m[1][3];
+		ret.m[2][0] = m1.m[2][0] - m2.m[2][0]; ret.m[2][1] = m1.m[2][1] - m2.m[2][1]; ret.m[2][2] = m1.m[2][2] - m2.m[2][2]; ret.m[2][3] = m1.m[2][3] - m2.m[2][3];
+		ret.m[3][0] = m1.m[3][0] - m2.m[3][0]; ret.m[3][1] = m1.m[3][1] - m2.m[3][1]; ret.m[3][2] = m1.m[3][2] - m2.m[3][2]; ret.m[3][3] = m1.m[3][3] - m2.m[3][3];
+		return ret;
+	}
+
 	float Length(const Vector3& v)
 	{
 		float ret;
 		ret = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 		return ret;
+	}
+
+	float LengthSquared(const Vector3& v)
+	{
+		return v.x * v.x + v.y * v.y + v.z * v.z;
+	}
+
+	float Dot(const Vector3& v1, const Vector3& v2)
+	{
+		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+	}
+
+	Vector3 Cross(const Vector3& v1, const Vector3& v2)
+	{
+		Vector3 ret;
+		ret.x = v1.y * v2.z - v1.z * v2.y;
+		ret.y = v1.z * v2.x - v1.x * v2.z;
+		ret.z = v1.x * v2.y - v1.y * v2.x;
+		return ret;
+	}
+
+	Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix)
+	{
+		Vector3 result;
+		result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + 1.0f * matrix.m[3][0];
+		result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + 1.0f * matrix.m[3][1];
+		result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + 1.0f * matrix.m[3][2];
+		float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + 1.0f * matrix.m[3][3];
+		assert(w != 0);
+		result.x /= w;
+		result.y /= w;
+		result.z /= w;
+		return result;
 	}
 
 	Vector3 Lerp(const Vector3& start, const Vector3& end, float t)
@@ -293,6 +362,54 @@ namespace MathManager
 		return ret;
 	}
 
+	Quaternion MakeQuaternionAxisAngle(const Vector3& axis, float radian)
+	{
+		Vector3 normAxis = Normalize(axis);
+		float sinHalf = std::sinf(radian / 2.0f);
+		float cosHalf = std::cosf(radian / 2.0f);
+
+		Quaternion ret;
+		ret.x = normAxis.x * sinHalf;
+		ret.y = normAxis.y * sinHalf;
+		ret.z = normAxis.z * sinHalf;
+		ret.w = cosHalf;
+		return ret;
+	}
+
+	Quaternion FromToRotation(const Vector3& from, const Vector3& to)
+	{
+		Vector3 f = Normalize(from);
+		Vector3 t = Normalize(to);
+
+		float dot = Dot(f, t);
+
+		// ほぼ同じ方向を向いている場合
+		if (dot > 0.9999f)
+		{
+			return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+		}
+
+		// 完全に真逆（180度）を向いている場合
+		if (dot < -0.9999f)
+		{
+			// Y軸に平行ならX軸を、それ以外ならY軸を基準に外積用の補助軸にする
+			Vector3 axis = std::abs(f.y) < 0.9f ? Vector3{ 0.0f, 1.0f, 0.0f } : Vector3{ 1.0f, 0.0f, 0.0f };
+			Vector3 rotateAxis = Normalize(Cross(f, axis));
+			return MakeQuaternionAxisAngle(rotateAxis, float(M_PI));
+		}
+
+		// 通常時の回転クォータニオンの算出
+		Vector3 cross = Cross(f, t);
+
+		Quaternion q;
+		q.x = cross.x;
+		q.y = cross.y;
+		q.z = cross.z;
+		q.w = dot + std::sqrtf(LengthSquared(f) * LengthSquared(t));
+
+		return QuaternionNormalize(q);
+	}
+
 	Vector3 Normalize(const Vector3& v)
 	{
 		Vector3 ret;
@@ -311,6 +428,19 @@ namespace MathManager
 			ret.z = 0;
 		}
 
+		return ret;
+	}
+
+	Quaternion QuaternionNormalize(const Quaternion& q)
+	{
+		float len = std::sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+		if (len == 0.0f) return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+		Quaternion ret;
+		ret.x = q.x / len;
+		ret.y = q.y / len;
+		ret.z = q.z / len;
+		ret.w = q.w / len;
 		return ret;
 	}
 

@@ -205,7 +205,6 @@ void ParticleManager::GenerateGraphicsPipeline()
 void ParticleManager::CreateVertexData()
 {
 	// パーティクルの初期化
-	// パーティクルの初期化
 	modelData.vertices.push_back({ .position = {1.0f,1.0f,0.0f,1.0f},.texcoord = {0.0f,0.0f},.normal = {0.0f,0.0f,1.0f} });
 	modelData.vertices.push_back({ .position = {-1.0f,1.0f,0.0f,1.0f},.texcoord = {1.0f,0.0f},.normal = {0.0f,0.0f,1.0f} });
 	modelData.vertices.push_back({ .position = {1.0f,-1.0f,0.0f,1.0f},.texcoord = {0.0f,1.0f},.normal = {0.0f,0.0f,1.0f} });
@@ -382,7 +381,7 @@ void ParticleManager::BlendModeSetting()
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 }
 
-ParticleManager::Particle ParticleManager::MakeNewNormalParticle(const Vector3& translate, const Vector3& scale, const Quaternion& rotate,
+ParticleManager::Particle ParticleManager::MakeNewNormalParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
 	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
 {
 	// ランダムエンジンの初期化
@@ -402,7 +401,8 @@ ParticleManager::Particle ParticleManager::MakeNewNormalParticle(const Vector3& 
 	return particle;
 }
 
-ParticleManager::Particle ParticleManager::MakeNewHitEffectParticle(const Vector3& translate, const Vector3& scale, const Quaternion& rotate, const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
+ParticleManager::Particle ParticleManager::MakeNewHitEffectParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
+	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
 {
 	// ランダムエンジンの初期化
 	std::random_device seedGenerator;
@@ -420,7 +420,7 @@ ParticleManager::Particle ParticleManager::MakeNewHitEffectParticle(const Vector
 	return particle;
 }
 
-ParticleManager::Particle ParticleManager::MakeNewRingParticle(const Vector3& translate, const Vector3& scale, const Quaternion& rotate,
+ParticleManager::Particle ParticleManager::MakeNewRingParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
 	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
 {
 	particle.transform.scale = scale;
@@ -433,7 +433,7 @@ ParticleManager::Particle ParticleManager::MakeNewRingParticle(const Vector3& tr
 	return particle;
 }
 
-ParticleManager::Particle ParticleManager::MakeNewCylinderParticle(const Vector3& translate, const Vector3& scale, const Quaternion& rotate, 
+ParticleManager::Particle ParticleManager::MakeNewCylinderParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
 	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
 {
 	particle.transform.scale = scale;
@@ -667,7 +667,7 @@ void ParticleManager::Draw()
 	}
 }
 
-void ParticleManager::Emit(const std::string name, const Vector3& translate, const Vector3& scale, const Quaternion& rotate,
+void ParticleManager::Emit(const std::string name, const Vector3& translate, const Vector3& scale, const Vector3& rotate,
 	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, uint32_t count)
 {
 	// 登録済みかチェック

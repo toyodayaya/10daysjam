@@ -49,7 +49,7 @@ void GamePlayScene::Initialize()
 	ParticleManager::GetInstance()->CreateParticleGroup("Particle", "resources/circle.png", ParticleEmitter::Type::kNormal);
 
 	// パーティクルエミッターの宣言
-	Transform transform;
+	EulerTransform transform;
 	transform.translate = { 1.0f,1.0f,1.0f };
 	transform.rotate = { 0.0f,0.0f,0.0f };
 	transform.scale = { 1.0f,1.0f,1.0f };

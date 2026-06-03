@@ -2,6 +2,9 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <cassert>
+#include <vector>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace MathManager;
 
@@ -128,3 +131,75 @@ Quaternion Animation::CalculateValueQuaternion(const AnimationCurve<Quaternion>&
 	// ここまで来たら最後の値を返す
 	return (*keyframes.keyframes.rbegin()).value;
 }
+
+
+Animation::Skeleton Animation::CreateSkeleton(const Model::Node& rootNode)
+{
+	Skeleton skeleton;
+	skeleton.root = CreateJoint(rootNode, {}, skeleton.joints);
+
+	// jointを更新
+	Update(skeleton);
+
+	// 名前とindexのマッピングを行う
+	for (const Joint& joint : skeleton.joints)
+	{
+		skeleton.jointMap.emplace(joint.name, joint.index);
+	}
+
+	return skeleton;
+}
+
+int32_t Animation::CreateJoint(const Model::Node& node, const std::optional<int32_t> parent, std::vector<Joint>& joints)
+{
+	Joint joint;
+	joint.name = node.name;
+	joint.localMatrix = node.localMatrix;
+	joint.skeletonSpaceMatrix = MakeIdentity4x4();
+	joint.transform = node.transform;
+	joint.index = int32_t(joints.size());
+	joint.parent = parent;
+	joints.push_back(joint);
+
+	for (const Model::Node& child : node.children)
+	{
+		int32_t childIndex = CreateJoint(child, joint.index, joints);
+		joints[joint.index].children.push_back(childIndex);
+	}
+
+	return joint.index;
+}
+
+void Animation::Update(Skeleton& skeleton)
+{
+	// すべてのjointを更新する
+	for (Joint& joint : skeleton.joints)
+	{
+		joint.localMatrix = MakeAffineMatrixQuat(joint.transform.scale, joint.transform.rotate, joint.transform.translate);
+		// 親がいれば親の行列をかける
+		if (joint.parent)
+		{
+			joint.skeletonSpaceMatrix = Multiply(joint.localMatrix, skeleton.joints[*joint.parent].skeletonSpaceMatrix);
+		}
+		else
+		{
+			joint.skeletonSpaceMatrix = joint.localMatrix;
+		}
+	}
+}
+
+void Animation::ApplyAnimation(Skeleton& skeleton, const Animations& animation, float animationTime)
+{
+	for (Joint& joint : skeleton.joints)
+	{
+		// 対象のjointのアニメーションがあれば適用する
+		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end())
+		{
+			const NodeAnimation& rootNodeAnimation = (*it).second;
+			joint.transform.translate = CalculateValue(rootNodeAnimation.translate, animationTime);
+			joint.transform.rotate = CalculateValueQuaternion(rootNodeAnimation.rotate, animationTime);
+			joint.transform.scale = CalculateValue(rootNodeAnimation.scale, animationTime);
+		}
+	}
+}
+

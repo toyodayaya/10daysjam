@@ -37,6 +37,7 @@
 #include "ParticleManager.h"
 #include "Audio.h"
 #include "RenderTexture.h"
+#include "DebugDrawCommon.h"
 
 class Framework
 {

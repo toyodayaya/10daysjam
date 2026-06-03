@@ -164,7 +164,7 @@ void Sprite::Update()
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 
 	// Transform変数を作る
-	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	EulerTransform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	
 
 	// ゲームの処理

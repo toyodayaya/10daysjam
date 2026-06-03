@@ -135,7 +135,7 @@ void Skybox::CreateCameraResource()
 void Skybox::Update()
 {
 	// 座標を設定
-	Transform transform{ {500.0f, 500.0f, 500.0f}, {0.0f, 0.0f, 0.0f}, camera->GetTranslate() };
+	EulerTransform transform{ {500.0f, 500.0f, 500.0f}, {0.0f, 0.0f, 0.0f}, camera->GetTranslate() };
 
 	// ワールド行列を作成
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);

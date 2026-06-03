@@ -147,6 +147,12 @@
     <ClCompile Include="engine\animation\Animation.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="engine\debugDraw\DebugDraw.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\debugDraw\DebugDrawCommon.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\Object3d.PS.hlsl">
@@ -171,6 +177,8 @@
     <FxCompile Include="resources\shaders\BoxFilter.PS.hlsl" />
     <FxCompile Include="resources\shaders\BoxFilter5x5.PS.hlsl" />
     <FxCompile Include="resources\shaders\GaussianFilter.PS.hlsl" />
+    <FxCompile Include="resources\shaders\DebugDraw.PS.hlsl" />
+    <FxCompile Include="resources\shaders\DebugDraw.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\io\Input.h">
@@ -506,6 +514,12 @@
     <ClInclude Include="engine\animation\Animation.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="engine\debugDraw\DebugDrawCommon.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\debugDraw\DebugDraw.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="externals\assimp\include\assimp\.editorconfig" />
@@ -536,5 +550,6 @@
     </None>
     <None Include="resources\shaders\Skybox.hlsli" />
     <None Include="resources\shaders\FullScreen.hlsli" />
+    <None Include="resources\shaders\DebugDraw.hlsli" />
   </ItemGroup>
 </Project>
