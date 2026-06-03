@@ -83,26 +83,29 @@ Model::ModelData Model::LoadModelFile(const std::string& directoryPath, const st
 		aiMesh* mesh = scene->mMeshes[meshIndex];
 		assert(mesh->HasNormals());
 		assert(mesh->HasTextureCoords(0));
-		// faceを解析する
+		modelData.vertices.resize(mesh->mNumVertices);
+		// 頂点を解析する
+		for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex)
+		{
+			aiVector3D& position = mesh->mVertices[vertexIndex];
+			aiVector3D& normal = mesh->mNormals[vertexIndex];
+			aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+			// 左手系に変換
+			modelData.vertices[vertexIndex].position = { -position.x,position.y,position.z,1.0f };
+			modelData.vertices[vertexIndex].normal = { -normal.x,normal.y,normal.z };
+			modelData.vertices[vertexIndex].texcoord = { texcoord.x,texcoord.y };
+		}
+
+		// indexを解析する
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex)
 		{
 			aiFace& face = mesh->mFaces[faceIndex];
-			assert(face.mNumIndices == 3); // 三角形であることを確認
-			// 頂点を解析する
+			assert(face.mNumIndices == 3);
+
 			for (uint32_t element = 0; element < face.mNumIndices; ++element)
 			{
 				uint32_t vertexIndex = face.mIndices[element];
-				aiVector3D& position = mesh->mVertices[vertexIndex];
-				aiVector3D& normal = mesh->mNormals[vertexIndex];
-				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
-				VertexData vertexData;
-				vertexData.position = Vector4(position.x, position.y, position.z, 1.0f);
-				vertexData.normal = Vector3(normal.x, normal.y, normal.z);
-				vertexData.texcoord = Vector2(texcoord.x, texcoord.y);
-				vertexData.position.x *= -1.0f; // 左手座標系に変換
-				texcoord.y = 1.0f - texcoord.y;
-				vertexData.normal.x *= -1.0f; // 左手座標系に変換
-				modelData.vertices.push_back(vertexData);
+				modelData.indices.push_back(vertexIndex);
 			}
 		}
 	}
@@ -156,22 +159,28 @@ void Model::CreateVertexData3d()
 	// VertexResourceを生成する
 	// 頂点リソースを作る
 	vertexResource = dxBasis_->CreateBufferResources(sizeof(VertexData) * modelData.vertices.size());
+	indexResource = dxBasis_->CreateBufferResources(sizeof(uint32_t) * modelData.indices.size());
 
 	// 頂点バッファビューを作成する
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
 	// 使用するリソースのサイズは頂点3つ分のサイズ
 	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
+	indexBufferView.SizeInBytes = UINT(sizeof(uint32_t) * modelData.indices.size());
 	// 1頂点あたりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
 	// 頂点リソースにデータを書き込む
 	// 書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
 	// 頂点データにリソースをコピー
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
-
+	std::memcpy(indexData, modelData.indices.data(), sizeof(uint32_t) * modelData.indices.size());
 
 }
 
@@ -201,10 +210,12 @@ void Model::Draw()
 {
 	// VBVを設定
 	dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	// IBVを設定
+	dxBasis_->GetCommandList()->IASetIndexBuffer(&indexBufferView);
 	// マテリアルCBufferの場所を設定
 	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// SRVのDescriptorTableの先頭を設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(modelData.material.textureFilePath));
 	// 描画
-	dxBasis_->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+	dxBasis_->GetCommandList()->DrawIndexedInstanced(UINT(modelData.indices.size()), 1, 0, 0, 0);
 }
