@@ -161,8 +161,6 @@ void Model::CreateVertexData3d()
 	vertexResource = dxBasis_->CreateBufferResources(sizeof(VertexData) * modelData.vertices.size());
 	indexResource = dxBasis_->CreateBufferResources(sizeof(uint32_t) * modelData.indices.size());
 
-	// 頂点バッファビューを作成する
-
 	// リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();

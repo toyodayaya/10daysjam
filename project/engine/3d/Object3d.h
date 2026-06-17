@@ -8,7 +8,6 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Animation.h"
-#include "DebugDraw.h"
 #include <memory>
 
 class Object3dCommon;
@@ -78,7 +77,6 @@ public:
 
 	// setter
 	void SetModel(const std::string& filePath);
-	void SetAnimationModel(const std::string& directoryPath, const std::string& filename);
 	void SetScale(const Vector3& scale) { this->transform.scale = scale; }
 	void SetRotate(const Quaternion& rotate) { this->transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { this->transform.translate = translate; }
@@ -121,20 +119,6 @@ private:
 
 	// 環境マップ用のテクスチャパス
 	std::string environmentMapTextureFilePath;
-
-	// アニメーションの再生時間
-	float animationTime = 0.0f;
-	// アニメーションデータ
-	Animation::Animations animation;
-	// スケルトンデータ
-	Animation::Skeleton skeleton;
-
-#ifdef _DEBUG
-
-	// デバッグ描画
-	std::vector<std::unique_ptr<DebugDraw>> debugSpheres_;
-	std::vector<std::unique_ptr<DebugDraw>> debugLines_;
-#endif // _DEBUG
 
 };
 

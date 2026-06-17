@@ -5,7 +5,6 @@
 #include "ImGuiManager.h"
 #include <numbers>
 #include "TextureManager.h"
-#include "DebugDrawCommon.h"
 
 using namespace MathManager;
 
@@ -119,60 +118,9 @@ void Object3d::SetModel(const std::string& filePath)
 	model = ModelManager::GetInstance()->FindModel(filePath);
 }
 
-void Object3d::SetAnimationModel(const std::string& directoryPath, const std::string& filename)
-{
-	// アニメーションデータを読み込む
-	animation = Animation::GetInstance()->LoadAnimationFile(directoryPath, filename);
-
-	// スケルトンデータを作成
-	skeleton = Animation::GetInstance()->CreateSkeleton(model->GetModelData().rootNode);
-
-#ifdef _DEBUG
-
-	// デバッグ描画の初期化
-	for (uint32_t i = 0; i < skeleton.joints.size(); ++i)
-	{
-		std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
-		debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png",DebugDraw::DrawState::kSphere);
-		debugDraw->SetScale(Vector3{ 0.01f,0.01f,0.01f });
-		debugDraw->SetTranslate(skeleton.joints[i].transform.translate);
-		debugSpheres_.push_back(std::move(debugDraw));
-	}
-
-	for (uint32_t i = 0; i < skeleton.joints.size(); ++i)
-	{
-		if (!skeleton.joints[i].parent)
-		{
-			continue; // 親がいないルートノードはスキップ
-		}
-
-		std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
-		debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kLine);
-		debugDraw->SetScale(Vector3{ 0.1f,0.1f,0.1f });
-		debugDraw->SetTranslate(Vector3{ 0.0f, 0.0f, 0.0f });
-		debugLines_.push_back(std::move(debugDraw));
-	}
-
-#endif // _DEBUG
-
-}
 
 void Object3d::Update()
 {
-	// アニメーションを再生
-	animationTime += 1.0f / 60.0f;
-	animationTime = std::fmod(animationTime, animation.duration);
-
-	/*Animation::NodeAnimation& rootNodeAnimation = animation.nodeAnimations[model->GetModelData().rootNode.name];
-	Vector3 translate = Animation::GetInstance()->CalculateValue(rootNodeAnimation.translate, animationTime);
-	Quaternion rotate = Animation::GetInstance()->CalculateValueQuaternion(rootNodeAnimation.rotate, animationTime);
-	Vector3 scale = Animation::GetInstance()->CalculateValue(rootNodeAnimation.scale, animationTime);
-	Matrix4x4 localMatrix = MakeAffineMatrixQuat(scale, rotate, translate);*/
-
-	Animation::GetInstance()->ApplyAnimation(skeleton, animation, animationTime);
-	Animation::GetInstance()->Update(skeleton);
-
-	
 	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 
@@ -198,57 +146,6 @@ void Object3d::Update()
 	{
 		cameraData_->worldPosition = camera->GetTranslate();
 	}
-
-#ifdef _DEBUG
-
-
-
-	// デバッグ描画の更新処理
-	for (size_t i = 0; i < skeleton.joints.size(); ++i)
-	{
-		Matrix4x4 jointWorldMatrix = Multiply(skeleton.joints[i].skeletonSpaceMatrix, worldMatrix);
-		Vector3 jointWorldPos = { jointWorldMatrix.m[3][0], jointWorldMatrix.m[3][1], jointWorldMatrix.m[3][2] };
-		debugSpheres_[i]->SetTranslate(jointWorldPos);
-		debugSpheres_[i]->Update();
-	}
-
-	size_t lineIndex = 0;
-	for (size_t i = 0; i < skeleton.joints.size(); ++i)
-	{
-		if (!skeleton.joints[i].parent) { continue; }
-		if (lineIndex >= debugLines_.size()) { break; }
-
-		// 親と子の各ワールド行列・座標を計算
-		Matrix4x4 childMat = Multiply(skeleton.joints[i].skeletonSpaceMatrix, worldMatrix);
-		Vector3 childPos = { childMat.m[3][0], childMat.m[3][1], childMat.m[3][2] };
-
-		uint32_t parentIdx = *skeleton.joints[i].parent;
-		Matrix4x4 parentMat = Multiply(skeleton.joints[parentIdx].skeletonSpaceMatrix, worldMatrix);
-		Vector3 parentPos = { parentMat.m[3][0], parentMat.m[3][1], parentMat.m[3][2] };
-
-		Vector3 midPos = Vector3Add(parentPos, childPos);
-		midPos.x /= 2.0f; midPos.y /= 2.0f; midPos.z /= 2.0f;
-		debugLines_[lineIndex]->SetTranslate(midPos);
-
-		Vector3 direction = Vector3Subtract(childPos, parentPos); // 親から子へのベクトル
-		float distance = Length(direction);                      // 2点間の距離
-
-		float lineThickness = 0.05f; // 線の太さ
-		debugLines_[lineIndex]->SetScale(Vector3{ lineThickness, distance * 0.5f, lineThickness });
-
-		if (distance > 0.0001f)
-		{
-			Vector3 baseDir = { 0.0f, 1.0f, 0.0f }; // 板ポリの初期方向
-			Quaternion rot = FromToRotation(baseDir, direction);
-
-			// DebugDrawに用意したSetRotateを呼ぶ
-			debugLines_[lineIndex]->SetRotate(rot);
-		}
-
-		debugLines_[lineIndex]->UpdateLine();
-		lineIndex++;
-	}
-#endif // _DEBUG
 
 #ifdef USE_IMGUI
 	ImGui::Begin("SpotLight");
@@ -291,19 +188,5 @@ void Object3d::Draw()
 	{
 		model->Draw();
 	}
-
-#ifdef _DEBUG
-
-	// デバッグ描画
-	for (const std::unique_ptr<DebugDraw>& debugDraw : debugSpheres_)
-	{
-		debugDraw->Draw();
-	}
-
-	for (const std::unique_ptr<DebugDraw>& debugDraw : debugLines_)
-	{
-		debugDraw->DrawLine();
-	}
-#endif // _DEBUG
 
 }

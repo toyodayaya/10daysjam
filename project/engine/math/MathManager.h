@@ -1,4 +1,5 @@
 #pragma once
+#include <assimp/scene.h>
 
 // 構造体の宣言
 struct Vector2

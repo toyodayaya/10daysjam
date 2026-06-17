@@ -46,6 +46,8 @@ public:
 	void DrawSettingCommon();
 	// ブレンドモード設定
 	void BlendModeSetting();
+	// 座標変換行列データ作成
+	void CreateTransformMatrixData3d();
 	// getter
 	DirectXBasis* GetDxBasis() const { return dxBasis_; }
 	Camera* GetDefaultCamera() const { return defaultCamera_; }

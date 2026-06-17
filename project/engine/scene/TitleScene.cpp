@@ -33,10 +33,7 @@ void TitleScene::Initialize()
 	ModelManager::GetInstance()->LoadModel("resources", "axis.obj");
 	ModelManager::GetInstance()->LoadModel("resources", "fence.obj");
 	ModelManager::GetInstance()->LoadModel("resources", "terrain.obj");
-	ModelManager::GetInstance()->LoadModel("resources/AnimatedCube", "AnimatedCube.gltf");
-	ModelManager::GetInstance()->LoadModel("resources/simpleSkin", "simpleSkin.gltf");
-	ModelManager::GetInstance()->LoadModel("resources/human", "walk.gltf");
-
+	
 	// テクスチャの読み込み
 	//TextureManager::GetInstance()->LoadTexture("resources/rostock_laage_airport_4k.dds");
 
@@ -45,14 +42,18 @@ void TitleScene::Initialize()
 	{
 		std::unique_ptr<Object3d> object3d = std::make_unique<Object3d>();
 		object3d->Initialize(Object3dCommon::GetInstance());
-		object3d->SetModel("walk.gltf");
-		object3d->SetAnimationModel("./resources/human", "walk.gltf");
+		object3d->SetModel("terrain.obj");
 		object3d->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 		Vector3 pos = object3d->GetTranslate();
 		pos.x += (1.0f * (i + 1));
 		object3d->SetTranslate(pos);
 		object3ds.push_back(std::move(object3d));
 	}
+
+	// アニメーションモデルの初期化
+	animation = std::make_unique<Animation>();
+	animation->Initialize(AnimationCommon::GetInstance(),"./resources/human", "walk.gltf");
+	animation->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 
 	// Skyboxの初期化
 	/*skybox = std::make_unique<Skybox>();
@@ -118,13 +119,16 @@ void TitleScene::Update()
 		sprite->Update();
 	}
 
+	// アニメーションモデルの更新処理
+	animation->Update();
+
 	// Skyboxの更新処理
 	//skybox->Update();
 
 	// パーティクルの更新処理
 	//emitter->Update();
 	//emitterRing->Update();
-	ParticleManager::GetInstance()->Update();
+	//ParticleManager::GetInstance()->Update();
 
 }
 
@@ -141,8 +145,11 @@ void TitleScene::Draw()
 	// 3dモデルの描画
 	for (const std::unique_ptr <Object3d>& object3d : object3ds)
 	{
-		object3d->Draw();
+		//object3d->Draw();
 	}
+
+	// アニメーションモデルの描画
+	animation->Draw();
 
 	// Skyboxの描画
 	//skybox->Draw();

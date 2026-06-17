@@ -6,6 +6,7 @@
 #include "ModelCommon.h"
 #include "DirectXBasis.h"
 class Model;
+class Animation;
 
 class ModelManager
 {
@@ -19,6 +20,7 @@ private:
 
 	// モデルデータ
 	std::map<std::string, std::unique_ptr<Model>> models;
+	std::map<std::string, std::unique_ptr<Animation>> animations;
 
 	// モデル共通部のポインタ
 	std::unique_ptr <ModelCommon> modelCommon;

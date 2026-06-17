@@ -1,0 +1,68 @@
+#pragma once
+#include "DirectXBasis.h"
+#include "SrvManager.h"
+#include "ModelCommon.h"
+#include "Camera.h"
+#include <wrl.h>
+
+class AnimationCommon
+{
+public:
+	// コンストラクタ
+	AnimationCommon() = default;
+	// デストラクタ
+	~AnimationCommon() = default;
+	// コピーコンストラクタとコピー代入演算子を削除
+	AnimationCommon(const AnimationCommon&) = delete;
+	AnimationCommon& operator=(const AnimationCommon&) = delete;
+	// インスタンス
+	static std::unique_ptr<AnimationCommon> instance;
+
+private:
+	// ポインタ
+	DirectXBasis* dxBasis_ = nullptr;
+	SrvManager* srvManager_ = nullptr;
+	ModelCommon* modelManager = nullptr;
+	Camera* camera = nullptr;
+	// デフォルトカメラ
+	Camera* defaultCamera_ = nullptr;
+
+
+	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
+	// グラフィックスパイプラインステート
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState;
+	// BlendStateの設定
+	D3D12_BLEND_DESC blendDesc{};
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
+	// DepthStencilStateの設定
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
+	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob;
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
+	std::array<D3D12_INPUT_ELEMENT_DESC, 5> inputElementDescs{};
+	// RasterizerStateの設定
+	D3D12_RASTERIZER_DESC rasterizerDesc{};
+
+public:
+	// 初期化
+	void Initialize(DirectXBasis* directXBasis, SrvManager* srvManager);
+	// ルートシグネチャーの作成
+	void CreateRootSignature();
+	// グラフィックスパイプラインの生成
+	void GenerateGraphicsPipeline();
+	// 共通描画設定
+	void DrawSettingCommon();
+
+	// getter
+	DirectXBasis* GetDxBasis() const { return dxBasis_; }
+	SrvManager* GetSrvManager() const { return srvManager_; }
+	Camera* GetDefaultCamera() const { return defaultCamera_; }
+	// setter
+	void SetDefaultCamera(Camera* camera) { this->defaultCamera_ = camera; }
+
+	// インスタンス
+	static AnimationCommon* GetInstance();
+	// 終了
+	void Finalize();
+};
+

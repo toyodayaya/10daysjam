@@ -88,7 +88,6 @@ namespace MathManager
 		return ret;
 	}
 
-
 	Matrix4x4 MakeScaleMatrix(const Vector3& scale)
 	{
 		Matrix4x4 m;
@@ -228,7 +227,7 @@ namespace MathManager
 			+ m.m[0][3] * m.m[1][2] * m.m[2][1] * m.m[3][0] + m.m[0][2] * m.m[1][1] * m.m[2][3] * m.m[3][0] + m.m[0][1] * m.m[1][3] * m.m[2][2] * m.m[3][0];
 
 		// 0除算防止
-		if (std::abs(a) < 1e-6f) return MakeIdentity4x4();
+		if (std::abs(a) < 1e-30f) return MakeIdentity4x4();
 
 		float invA = 1.0f / a;
 
@@ -345,13 +344,30 @@ namespace MathManager
 			targetQ0.w = -1.0f * targetQ0.w;
 			dot = -dot;
 		}
+
+			if (dot > 0.9995f)
+		{
+			// 0除算を避けるため、通常の線形補間（Lerp）を行う
+			Quaternion ret{};
+			ret.x = (1.0f - t) * targetQ0.x + t * q1.x;
+			ret.y = (1.0f - t) * targetQ0.y + t * q1.y;
+			ret.z = (1.0f - t) * targetQ0.z + t * q1.z;
+			ret.w = (1.0f - t) * targetQ0.w + t * q1.w;
+
+			// 念のため正規化（長さを1にする）して返す
+			float length = std::sqrtf(ret.x * ret.x + ret.y * ret.y + ret.z * ret.z + ret.w * ret.w);
+			if (length > 0.0f)
+			{
+				ret.x /= length; ret.y /= length; ret.z /= length; ret.w /= length;
+			}
+			return ret;
+		}
+
+		// --- ここから下は dot <= 0.9995f の時だけ実行されるため、安全が保証されます ---
 		float theta = std::acosf(dot);
-
-
 
 		float scale0 = std::sinf((1.0f - t) * theta) / std::sinf(theta);
 		float scale1 = std::sinf(t * theta) / std::sinf(theta);
-
 
 		Quaternion ret{};
 		ret.x = scale0 * targetQ0.x + scale1 * q1.x;

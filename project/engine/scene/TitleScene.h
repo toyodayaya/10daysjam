@@ -4,6 +4,7 @@
 #include "Sprite.h"
 #include "Skybox.h"
 #include "Object3d.h"
+#include "Animation.h"
 #include <numbers>
 #include "BaseScene.h"
 #include "Input.h"
@@ -11,7 +12,7 @@
 #include <memory>
 #include "ParticleEmitter.h"
 #include <random>
-
+#include "Animation.h"
 
 class TitleScene : public BaseScene
 {
@@ -36,6 +37,8 @@ private:
 
 	// 3dオブジェクト
 	std::vector<std::unique_ptr<Object3d>> object3ds;
+	// アニメーションオブジェクト
+	std::unique_ptr<Animation> animation;
 
 	// skybox
 	std::unique_ptr<Skybox> skybox;

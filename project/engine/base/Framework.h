@@ -38,6 +38,7 @@
 #include "Audio.h"
 #include "RenderTexture.h"
 #include "DebugDrawCommon.h"
+#include "AnimationCommon.h"
 
 class Framework
 {

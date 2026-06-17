@@ -1,5 +1,6 @@
 #include "ModelManager.h"
 #include "Model.h"
+#include "Animation.h"
 
 ModelManager* ModelManager::instance = nullptr;
 
