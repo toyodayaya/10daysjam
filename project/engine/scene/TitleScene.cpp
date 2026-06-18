@@ -123,7 +123,7 @@ void TitleScene::Update()
 	// Enterキーを押したら
 	if (Input::GetInstance()->TriggerKey(DIK_RETURN))
 	{
-		SceneManager::GetInstance()->ChangeScene("GamePlayScene");
+		//SceneManager::GetInstance()->ChangeScene("GamePlayScene");
 	}
 
 	// 3Dモデルの更新処理
