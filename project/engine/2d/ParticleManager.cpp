@@ -46,7 +46,7 @@ void ParticleManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager, 
 	CreateVertexData();
 
 	// 効果範囲の設定
-	accelerationField.acceleration = Vector3(15.0f,0.0f,0.0f);
+	accelerationField.acceleration = Vector3(0.0f,0.0f,0.0f);
 	accelerationField.area.min = Vector3(-1.0f,-1.0f,-1.0f);
 	accelerationField.area.max = Vector3(1.0f,1.0f,1.0f);
 
@@ -297,12 +297,12 @@ void ParticleManager::CreateVertexData()
 		float u = float(index) / float(kCylinderDivide);
 		float uNext = float(index + 1) / float(kCylinderDivide);
 		
-		modelDataCylinder.vertices.push_back({.position = {-sin * kTopRadius,kHeight,cos*kTopRadius,1.0f}, .texcoord = {u, 0.0f} ,.normal = {-sin, 0.0f, cos}});
-		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kTopRadius,kHeight,cosNext * kTopRadius,1.0f}, .texcoord = {uNext, 0.0f} ,.normal = {-sinNext, 0.0f, cosNext} });
-		modelDataCylinder.vertices.push_back({ .position = {-sin * kBottomRadius,0.0f,cos * kBottomRadius,1.0f}, .texcoord = {u, 1.0f} ,.normal = {-sin, 0.0f, cos} });
-		modelDataCylinder.vertices.push_back({ .position = {-sin * kBottomRadius,0.0f,cos * kBottomRadius,1.0f}, .texcoord = {u, 1.0f} ,.normal = {-sin, 1.0f, cos} });
-		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kTopRadius,kHeight,cosNext * kTopRadius,1.0f}, .texcoord = {uNext, 0.0f} ,.normal = {-sinNext, 1.0f, cosNext} });
-		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kBottomRadius,0.0f,cosNext * kBottomRadius,1.0f}, .texcoord = {uNext, 1.0f} ,.normal = {-sinNext, 1.0f, cosNext} });
+		modelDataCylinder.vertices.push_back({.position = {-sin * kTopRadius,kHeight,cos*kTopRadius,1.0f}, .texcoord = {u, 1.0f} ,.normal = {-sin, 0.0f, cos}});
+		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kTopRadius,kHeight,cosNext * kTopRadius,1.0f}, .texcoord = {uNext, 1.0f} ,.normal = {-sinNext, 0.0f, cosNext} });
+		modelDataCylinder.vertices.push_back({ .position = {-sin * kBottomRadius,0.0f,cos * kBottomRadius,1.0f}, .texcoord = {u, 0.0f} ,.normal = {-sin, 0.0f, cos} });
+		modelDataCylinder.vertices.push_back({ .position = {-sin * kBottomRadius,0.0f,cos * kBottomRadius,1.0f}, .texcoord = {u, 0.0f} ,.normal = {-sin, 1.0f, cos} });
+		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kTopRadius,kHeight,cosNext * kTopRadius,1.0f}, .texcoord = {uNext, 1.0f} ,.normal = {-sinNext, 1.0f, cosNext} });
+		modelDataCylinder.vertices.push_back({ .position = {-sinNext * kBottomRadius,0.0f,cosNext * kBottomRadius,1.0f}, .texcoord = {uNext, 0.0f} ,.normal = {-sinNext, 1.0f, cosNext} });
 
 	}
 
@@ -556,9 +556,10 @@ void ParticleManager::Update()
 				it->velocity = Vector3Add(it->velocity, accelDelta);
 			}
 
-			it->transform.translate.y += it->velocity.y * kDeltaTime;
+			it->transform.translate = Vector3Add(it->transform.translate, FloatMultiply(it->velocity, kDeltaTime));
 			it->currentTime += kDeltaTime;
 			float alpha = 1.0f - (it->currentTime / it->lifeTime);
+			it->color.w = alpha;
 
 			Matrix4x4 scaleMatrix = MakeScaleMatrix(it->transform.scale);
 			Matrix4x4 translateMatrix = MakeTranslateMatrix(it->transform.translate);
@@ -579,11 +580,10 @@ void ParticleManager::Update()
 
 			// インスタンシング用データ1個分を書き込み
 			if (group.instanceCount < kMaxInstanceCount) {
-				ParticleForGPU& out = group.instancingData[group.instanceCount];
-				out.World = worldMatrix;
-				out.WVP = wvp;
-				out.Color = it->color;
-				out.Color.w = alpha;
+				group.instancingData[group.instanceCount].World = worldMatrix;
+				group.instancingData[group.instanceCount].WVP = wvp;
+				group.instancingData[group.instanceCount].Color = it->color;
+				group.instancingData[group.instanceCount].Color.w = alpha;
 
 				group.instanceCount++;
 			}
@@ -592,7 +592,7 @@ void ParticleManager::Update()
 
 			ImGui::Begin("Particle Manager");
 			ImGui::DragFloat3("Position", &it->transform.translate.x, 0.1f);
-
+			
 			ImGui::End();
 
 #endif
@@ -646,7 +646,6 @@ void ParticleManager::Draw()
 			dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 			// 描画
 			dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelData.vertices.size()), group.instanceCount, 0, 0);
-			// IBVを設定
 			break;
 
 		case ParticleEmitter::Type::kRing:

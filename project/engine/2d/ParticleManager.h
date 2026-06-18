@@ -167,7 +167,7 @@ private:
 	std::mt19937 randomEngine;
 
 	// ビルボードのフラグ
-	bool isBillboard = true;
+	bool isBillboard = false;
 	// ブレンドモード
 	BlendMode blendMode_ = kBlendModeAdd;
 

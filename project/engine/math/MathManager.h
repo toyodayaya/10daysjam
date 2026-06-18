@@ -94,6 +94,10 @@ namespace MathManager
 	// 5.転置行列
 	Matrix4x4 Transpose(const Matrix4x4& m);
 
+	// Vector3の掛け算
+	Vector3 Vector3Multiply(const Vector3& v1, const Vector3& v2);
+	Vector3 FloatMultiply(const Vector3& v1, const float v2);
+	
 	// Vector3の足し算
 	Vector3 Vector3Add(const Vector3& v1, const Vector3& v2);
 

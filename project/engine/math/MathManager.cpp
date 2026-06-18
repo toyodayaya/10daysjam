@@ -255,6 +255,24 @@ namespace MathManager
 		return ret;
 	}
 
+	Vector3 Vector3Multiply(const Vector3& v1, const Vector3& v2)
+	{
+		Vector3 ret;
+		ret.x = v1.x * v2.x;
+		ret.y = v1.y * v2.y;
+		ret.z = v1.z * v2.z;
+		return ret;
+	}
+
+	Vector3 FloatMultiply(const Vector3& v1, const float v2)
+	{
+		Vector3 ret;
+		ret.x = v1.x * v2;
+		ret.y = v1.y * v2;
+		ret.z = v1.z * v2;
+		return ret;
+	}
+
 	Vector3 Vector3Add(const Vector3& v1, const Vector3& v2)
 	{
 		Vector3 ret;

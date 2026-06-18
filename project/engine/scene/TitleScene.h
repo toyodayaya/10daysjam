@@ -45,6 +45,8 @@ private:
 
 	// パーティクルエミッターのポインタ
 	std::unique_ptr <ParticleEmitter> emitter;
+	std::unique_ptr <ParticleEmitter> emitterHit;
 	std::unique_ptr <ParticleEmitter> emitterRing;
+	std::unique_ptr <ParticleEmitter> emitterCylinder;
 
 };
