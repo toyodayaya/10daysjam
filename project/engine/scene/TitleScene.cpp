@@ -146,11 +146,11 @@ void TitleScene::Update()
 	//skybox->Update();
 
 	// パーティクルの更新処理
-	emitter->Update();
+	/*emitter->Update();
 	emitterHit->Update();
 	emitterRing->Update();
 	emitterCylinder->Update();
-	ParticleManager::GetInstance()->Update();
+	ParticleManager::GetInstance()->Update();*/
 
 }
 
@@ -167,7 +167,7 @@ void TitleScene::Draw()
 	// 3dモデルの描画
 	for (const std::unique_ptr <Object3d>& object3d : object3ds)
 	{
-		//object3d->Draw();
+		object3d->Draw();
 	}
 
 	// アニメーションモデルの描画

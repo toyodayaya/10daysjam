@@ -8,7 +8,7 @@ void Game::Initialize()
 	Framework::Initialize();
 
 	camera->SetRotate(Vector3{ 0.0f,0.0f,0.0f});
-	camera->SetTranslate({ 0.0f,0.0f,-5.0f });
+	camera->SetTranslate({ 0.0f,3.0f,-20.0f });
 
 	// Imguiマネージャーの初期化
 	imguiManager = std::make_unique <ImguiManager>();
@@ -47,10 +47,10 @@ void Game::Update()
 void Game::Draw()
 {
 	// 描画したいテクスチャのデータを取得
-	ID3D12Resource* textureData = TextureManager::GetInstance()->GetTextureData("resources/sprite/uvChecker.png");
+	ID3D12Resource* renderTextureData = TextureManager::GetInstance()->GetRenderTextureData("resources/sprite/uvChecker.png");
 
 	// 描画前処理
-	dxBasis->RenderTexturePreDraw(textureData);
+	dxBasis->RenderTexturePreDraw(renderTextureData);
 	srvManager->PreDraw();
 	
 	// 3dモデルの描画準備
@@ -63,11 +63,12 @@ void Game::Draw()
 	SceneManager::GetInstance()->Draw();
 	
 	// SwapChainの描画前処理
-	dxBasis->PreDraw(textureData);
+	dxBasis->PreDraw(renderTextureData);
 
 	// RenderTextureの描画準備
 	auto handle = TextureManager::GetInstance()->GetRenderSRVHandleGPU("resources/sprite/uvChecker.png");
-	RenderTexture::GetInstance()->DrawSettingCommon(handle);
+	auto depthHandle = TextureManager::GetInstance()->GetDepthSRVHandle("resources/sprite/uvChecker.png");
+	RenderTexture::GetInstance()->DrawSettingCommon(handle,depthHandle);
 
 	
 #ifdef USE_IMGUI

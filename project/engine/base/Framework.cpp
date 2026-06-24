@@ -26,6 +26,7 @@ void Framework::Initialize()
 	TextureManager::GetInstance()->Initialize(dxBasis.get(), srvManager.get());
 
 	// RenderTextureの初期化
+	RenderTexture::GetInstance()->SetDefaultCamera(camera.get());
 	RenderTexture::GetInstance()->Initialize(dxBasis.get(),srvManager.get());
 
 	// スプライト共通部の初期化

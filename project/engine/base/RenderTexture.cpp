@@ -1,5 +1,8 @@
 #include "RenderTexture.h"
 #include "Logger.h"
+#include "MathManager.h"
+
+using namespace MathManager;
 
 RenderTexture* RenderTexture::instance = nullptr;
 
@@ -21,6 +24,8 @@ void RenderTexture::Initialize(DirectXBasis* directXBasis,SrvManager* srvManager
 
 	// グラフィックスパイプラインの生成
 	GenerateGraphicsPipeline();
+
+	CreateProjectionInverse();
 }
 
 void RenderTexture::CreateRootSignature()
@@ -36,6 +41,12 @@ void RenderTexture::CreateRootSignature()
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+	D3D12_DESCRIPTOR_RANGE rangeDepth[1] = {};
+	rangeDepth[0].BaseShaderRegister = 1; // t1
+	rangeDepth[0].NumDescriptors = 1;     // 1枚だけ
+	rangeDepth[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	rangeDepth[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
 	// RootParameterを作成
 	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
@@ -48,15 +59,16 @@ void RenderTexture::CreateRootSignature()
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[3].Descriptor.ShaderRegister = 1;
+	rootParameters[3].DescriptorTable.pDescriptorRanges = rangeDepth;
+	rootParameters[3].DescriptorTable.NumDescriptorRanges = _countof(rangeDepth);
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
 
 
 	// Samplerの設定
-	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+	D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -65,6 +77,14 @@ void RenderTexture::CreateRootSignature()
 	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
 	staticSamplers[0].ShaderRegister = 0;
 	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+	staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+	staticSamplers[1].ShaderRegister = 1;
+	staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	descriptionRootSignature.pStaticSamplers = staticSamplers;
 	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
@@ -116,14 +136,14 @@ void RenderTexture::GenerateGraphicsPipeline()
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/GaussianFilter.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/DepthBasedOutline.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
 	// Depthの機能を有効化する
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = false;
-	
+
 	// PSOを生成する
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
 	graphicPipelineStateDesc.BlendState = blendDesc;
@@ -159,20 +179,38 @@ void RenderTexture::GenerateGraphicsPipeline()
 	assert(SUCCEEDED(hr));
 }
 
-void RenderTexture::DrawSettingCommon(D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU)
+
+void RenderTexture::CreateProjectionInverse()
 {
+	// WVP用のリソースを作る
+	projecttionInverseResource = dxBasis_->CreateBufferResources(sizeof(Material));
+	// データを書き込む
+	// 書き込むためのアドレスを取得
+	projecttionInverseResource->Map(0, nullptr, reinterpret_cast<void**>(&projectionInverseData));
+	// 単位行列を書き込んでおく
+	projectionInverseData->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
+}
+
+
+
+void RenderTexture::DrawSettingCommon(D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU, D3D12_GPU_DESCRIPTOR_HANDLE depthSrvHandleGPU)
+{
+	projectionInverseData->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
+
 	// RootSignatureを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 	// PSOを設定
 	dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState.Get());
 	// 形状を設定
 	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// projectionInverse用のCBufferの場所を設定
+	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, projecttionInverseResource->GetGPUVirtualAddress());
 	// SRVを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvHandleGPU);
+	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, depthSrvHandleGPU);
 	// 描画
 	dxBasis_->GetCommandList()->DrawInstanced(3, 1, 0, 0);
 }
-
 
 void RenderTexture::Finalize()
 {

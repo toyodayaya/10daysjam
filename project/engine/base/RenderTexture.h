@@ -17,6 +17,11 @@ private:
 	static RenderTexture* instance;
 
 public:
+	struct Material
+	{
+		Matrix4x4 projectionInverse;
+	};
+
 	// 初期化
 	void Initialize(DirectXBasis* directXBasis, SrvManager* srvManager);
 	// ルートシグネチャーの作成
@@ -24,7 +29,9 @@ public:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeline();
 	// 共通描画設定
-	void DrawSettingCommon(D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU);
+	void DrawSettingCommon(D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU, D3D12_GPU_DESCRIPTOR_HANDLE depthSrvHandleGPU);
+	// projectionInverseの作成
+	void CreateProjectionInverse();
 	// getter
 	DirectXBasis* GetDxBasis() const { return dxBasis_; }
 	Camera* GetDefaultCamera() const { return defaultCamera_; }
@@ -48,5 +55,10 @@ private:
 	D3D12_BLEND_DESC blendDesc{};
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;
+
+	// WVP用のリソースを作る
+	Microsoft::WRL::ComPtr <ID3D12Resource> projecttionInverseResource;
+	// データを書き込む
+	Material* projectionInverseData = nullptr;
 };
 

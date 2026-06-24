@@ -618,6 +618,11 @@ void DirectXBasis::PreDraw(ID3D12Resource* resource)
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	commandList->ResourceBarrier(1, &barrier);
 
+	barrier.Transition.pResource = depthStencilResource.Get();
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	commandList->ResourceBarrier(1, &barrier);
+
 	// 描画先のRTVとDSVを設定する
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
@@ -635,8 +640,15 @@ void DirectXBasis::PostDraw()
 {
 	// これから書き込むバックバッファのインデックスを取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	
+	barrier.Transition.pResource = depthStencilResource.Get();
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	commandList->ResourceBarrier(1, &barrier);
 
 	// 画面に映す状態に遷移
+	barrier.Transition.pResource =
+		swapChainResources[backBufferIndex].Get();
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	// TransitionBarrierを張る

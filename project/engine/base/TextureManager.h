@@ -31,6 +31,9 @@ private:
 		uint32_t renderSrvIndex;
 		D3D12_CPU_DESCRIPTOR_HANDLE renderSrvHandleCPU;
 		D3D12_GPU_DESCRIPTOR_HANDLE renderSrvHandleGPU;
+		uint32_t depthSrvIndex;
+		D3D12_CPU_DESCRIPTOR_HANDLE depthSrvHandleCPU;
+		D3D12_GPU_DESCRIPTOR_HANDLE depthSrvHandleGPU;
 	};
 
 	// テクスチャデータ
@@ -62,16 +65,20 @@ public:
 
 	// テクスチャ番号からGPUハンドルを取得する
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU(const std::string& filePath);
-	D3D12_GPU_DESCRIPTOR_HANDLE GetRenderSRVHandleGPU(const std::string& filePath) {
+	D3D12_GPU_DESCRIPTOR_HANDLE GetRenderSRVHandleGPU(const std::string& filePath) 
+	{
 		return textureDatas[filePath].renderSrvHandleGPU;
+	}
+	D3D12_GPU_DESCRIPTOR_HANDLE GetDepthSRVHandle(const std::string& filePath)
+	{
+		return textureDatas[filePath].depthSrvHandleGPU;
 	}
 
 	// メタデータを取得
 	const DirectX::TexMetadata& GetMetaData(const std::string& filePath);
 
 	// テクスチャデータを取得
-	ID3D12Resource* GetTextureData(const std::string& filePath) { return textureDatas[filePath].renderTextureResource.Get(); }
-
+	ID3D12Resource* GetRenderTextureData(const std::string& filePath) { return textureDatas[filePath].renderTextureResource.Get(); }
 
 };
 

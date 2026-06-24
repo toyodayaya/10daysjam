@@ -141,6 +141,19 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	// SRVの生成
 	dxBasis_->GetDevice()->CreateShaderResourceView(textureData.renderTextureResource.Get(), &renderTextureSrvDesc,textureData.renderSrvHandleCPU);
 
+	// Depth用のの設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC depthTextureSrvDesc{};
+	depthTextureSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	depthTextureSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	depthTextureSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	depthTextureSrvDesc.Texture2D.MipLevels = 1;
+	// テクスチャデータの要素数番号をSRVのインデックスとする
+	textureData.depthSrvIndex = srvManager_->Allocate();
+	textureData.depthSrvHandleCPU = srvManager_->GetCPUDescriptorHandle(textureData.depthSrvIndex);
+	textureData.depthSrvHandleGPU = srvManager_->GetGPUDescriptorHandle(textureData.depthSrvIndex);
+	// SRVの生成
+	dxBasis_->GetDevice()->CreateShaderResourceView(dxBasis_->GetDepthResource(), &depthTextureSrvDesc, textureData.depthSrvHandleCPU);
+
 }
 
 void TextureManager::ReleaseIntermediateResources()
