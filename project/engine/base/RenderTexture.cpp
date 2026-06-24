@@ -136,7 +136,7 @@ void RenderTexture::GenerateGraphicsPipeline()
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/DepthBasedOutline.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/RadialBlur.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
