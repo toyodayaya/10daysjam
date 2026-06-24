@@ -183,6 +183,7 @@
     <FxCompile Include="resources\shaders\DebugDraw.PS.hlsl" />
     <FxCompile Include="resources\shaders\DebugDraw.VS.hlsl" />
     <FxCompile Include="resources\shaders\SkinningObject3d.VS.hlsl" />
+    <FxCompile Include="resources\shaders\LuminanceBasedOutline.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\io\Input.h">

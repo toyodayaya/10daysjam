@@ -47,7 +47,7 @@ void Game::Update()
 void Game::Draw()
 {
 	// 描画したいテクスチャのデータを取得
-	ID3D12Resource* textureData = TextureManager::GetInstance()->GetTextureData("resources/uvChecker.png");
+	ID3D12Resource* textureData = TextureManager::GetInstance()->GetTextureData("resources/sprite/uvChecker.png");
 
 	// 描画前処理
 	dxBasis->RenderTexturePreDraw(textureData);
@@ -66,7 +66,7 @@ void Game::Draw()
 	dxBasis->PreDraw(textureData);
 
 	// RenderTextureの描画準備
-	auto handle = TextureManager::GetInstance()->GetRenderSRVHandleGPU("resources/uvChecker.png");
+	auto handle = TextureManager::GetInstance()->GetRenderSRVHandleGPU("resources/sprite/uvChecker.png");
 	RenderTexture::GetInstance()->DrawSettingCommon(handle);
 
 	

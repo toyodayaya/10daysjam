@@ -13,26 +13,26 @@
 void TitleScene::Initialize()
 {
 	// 音声読み込み
-	soundData1 = Audio::GetInstance()->SoundLoadFile("resources/Alarm01.wav");
+	soundData1 = Audio::GetInstance()->SoundLoadFile("resources/sound/Alarm01.wav");
 
 	// スプライトの初期化
-	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
-	TextureManager::GetInstance()->LoadTexture("resources/circle2.png");
-	TextureManager::GetInstance()->LoadTexture("resources/gradationLine.png");
+	TextureManager::GetInstance()->LoadTexture("resources/sprite/uvChecker.png");
+	TextureManager::GetInstance()->LoadTexture("resources/sprite/circle2.png");
+	TextureManager::GetInstance()->LoadTexture("resources/sprite/gradationLine.png");
 	TextureManager::GetInstance()->LoadTexture("resources/human/white.png");
 
 	for (uint32_t i = 0; i < 5; ++i)
 	{
 		/*std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();
-		sprite->Initialize(SpriteCommon::GetInstance(), "resources/uvChecker.png");
+		sprite->Initialize(SpriteCommon::GetInstance(), "resources/sprite/uvChecker.png");
 		sprites.push_back(std::move(sprite));*/
 	}
 
 	// objファイルからモデルを読み込む
-	ModelManager::GetInstance()->LoadModel("resources", "plane.obj");
-	ModelManager::GetInstance()->LoadModel("resources", "axis.obj");
-	ModelManager::GetInstance()->LoadModel("resources", "fence.obj");
-	ModelManager::GetInstance()->LoadModel("resources", "terrain.obj");
+	ModelManager::GetInstance()->LoadModel("resources/model", "plane.obj");
+	ModelManager::GetInstance()->LoadModel("resources/model", "axis.obj");
+	ModelManager::GetInstance()->LoadModel("resources/model", "fence.obj");
+	ModelManager::GetInstance()->LoadModel("resources/model", "terrain.obj");
 	
 	// テクスチャの読み込み
 	//TextureManager::GetInstance()->LoadTexture("resources/rostock_laage_airport_4k.dds");
@@ -57,17 +57,17 @@ void TitleScene::Initialize()
 
 	// Skyboxの初期化
 	/*skybox = std::make_unique<Skybox>();
-	skybox->Initialize(SkyboxCommon::GetInstance(), "resources/rostock_laage_airport_4k.dds");*/
+	skybox->Initialize(SkyboxCommon::GetInstance(), "resources/model/rostock_laage_airport_4k.dds");*/
 
 	// 音声再生
 	//Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
 
 
 	// パーティクルグループの作成
-	ParticleManager::GetInstance()->CreateParticleGroup("Effect", "resources/circle2.png", ParticleEmitter::Type::kNormal);
-	ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", "resources/circle2.png", ParticleEmitter::Type::kHitEffect);
-	ParticleManager::GetInstance()->CreateParticleGroup("Ring", "resources/gradationLine.png", ParticleEmitter::Type::kRing);
-	ParticleManager::GetInstance()->CreateParticleGroup("Cylinder", "resources/gradationLine.png", ParticleEmitter::Type::kCylinder);
+	ParticleManager::GetInstance()->CreateParticleGroup("Effect", "resources/sprite/circle2.png", ParticleEmitter::Type::kNormal);
+	ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", "resources/sprite/circle2.png", ParticleEmitter::Type::kHitEffect);
+	ParticleManager::GetInstance()->CreateParticleGroup("Ring", "resources/sprite/gradationLine.png", ParticleEmitter::Type::kRing);
+	ParticleManager::GetInstance()->CreateParticleGroup("Cylinder", "resources/sprite/gradationLine.png", ParticleEmitter::Type::kCylinder);
 
 	// パーティクルエミッターの宣言
 	EulerTransform transform;
