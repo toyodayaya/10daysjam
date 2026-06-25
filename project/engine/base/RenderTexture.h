@@ -29,12 +29,13 @@ public:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeline();
 	// 共通描画設定
-	void DrawSettingCommon(D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU, D3D12_GPU_DESCRIPTOR_HANDLE depthSrvHandleGPU);
+	void DrawSettingCommon();
 	// projectionInverseの作成
 	void CreateProjectionInverse();
 	// getter
 	DirectXBasis* GetDxBasis() const { return dxBasis_; }
 	Camera* GetDefaultCamera() const { return defaultCamera_; }
+	Microsoft::WRL::ComPtr <ID3D12Resource> GetTexture() const { return texture_; }
 	// setter
 	void SetDefaultCamera(Camera* camera) { this->defaultCamera_ = camera; }
 
@@ -48,17 +49,23 @@ private:
 	DirectXBasis* dxBasis_ = nullptr;
 	SrvManager* srvManager_ = nullptr;
 	// ルートシグネチャー
-	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
+	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature_;
 	// グラフィックスパイプラインステート
-	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState_;
 	// BlendStateの設定
-	D3D12_BLEND_DESC blendDesc{};
+	D3D12_BLEND_DESC blendDesc_{};
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;
 
 	// WVP用のリソースを作る
-	Microsoft::WRL::ComPtr <ID3D12Resource> projecttionInverseResource;
+	Microsoft::WRL::ComPtr <ID3D12Resource> projecttionInverseResource_;
 	// データを書き込む
-	Material* projectionInverseData = nullptr;
+	Material* projectionInverseData_ = nullptr;
+
+	// テクスチャ
+	Microsoft::WRL::ComPtr <ID3D12Resource> texture_;
+	// GPUハンドル
+	D3D12_GPU_DESCRIPTOR_HANDLE handle_;
+	D3D12_GPU_DESCRIPTOR_HANDLE depthHandle_;
 };
 

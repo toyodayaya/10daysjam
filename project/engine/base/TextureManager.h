@@ -27,10 +27,16 @@ private:
 		D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU;
 		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
 		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource;
-		Microsoft::WRL::ComPtr<ID3D12Resource> renderTextureResource;
-		uint32_t renderSrvIndex;
-		D3D12_CPU_DESCRIPTOR_HANDLE renderSrvHandleCPU;
-		D3D12_GPU_DESCRIPTOR_HANDLE renderSrvHandleGPU;
+	};
+
+	struct RenderTextureData
+	{
+		DirectX::TexMetadata metaData;
+		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+		uint32_t srvIndex;
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource;
+		D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU;
+		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
 		uint32_t depthSrvIndex;
 		D3D12_CPU_DESCRIPTOR_HANDLE depthSrvHandleCPU;
 		D3D12_GPU_DESCRIPTOR_HANDLE depthSrvHandleGPU;
@@ -38,6 +44,7 @@ private:
 
 	// テクスチャデータ
 	std::unordered_map<std::string, TextureData> textureDatas;
+	std::unordered_map<std::string, RenderTextureData> renderTextureDatas;
 
 	// ポインタ
 	DirectXBasis* dxBasis_ = nullptr;
@@ -57,6 +64,9 @@ public:
 	// LoadTexture関数
 	void LoadTexture(const std::string& filePath);
 
+	// LoadRenderTexture関数
+	void LoadRenderTexture(const std::string& filePath);
+
 	// 中間リソースを開放
 	void ReleaseIntermediateResources();
 
@@ -67,18 +77,18 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU(const std::string& filePath);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetRenderSRVHandleGPU(const std::string& filePath) 
 	{
-		return textureDatas[filePath].renderSrvHandleGPU;
+		return renderTextureDatas[filePath].srvHandleGPU;
 	}
 	D3D12_GPU_DESCRIPTOR_HANDLE GetDepthSRVHandle(const std::string& filePath)
 	{
-		return textureDatas[filePath].depthSrvHandleGPU;
+		return renderTextureDatas[filePath].depthSrvHandleGPU;
 	}
 
 	// メタデータを取得
 	const DirectX::TexMetadata& GetMetaData(const std::string& filePath);
 
 	// テクスチャデータを取得
-	ID3D12Resource* GetRenderTextureData(const std::string& filePath) { return textureDatas[filePath].renderTextureResource.Get(); }
+	ID3D12Resource* GetRenderTextureData(const std::string& filePath) { return renderTextureDatas[filePath].resource.Get(); }
 
 };
 

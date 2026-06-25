@@ -563,14 +563,14 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXBasis::UploadTextureData(const Mic
 	return intermediateResource;
 }
 
-void DirectXBasis::RenderTexturePreDraw(ID3D12Resource* resource)
+void DirectXBasis::RenderTexturePreDraw(const Microsoft::WRL::ComPtr<ID3D12Resource> resource)
 {
 	if (resource)
 	{
 		rtvHandles[2] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, 2);
 		D3D12_RENDER_TARGET_VIEW_DESC currentRtvDesc = rtvDesc; // 既存の設定をコピー
 		currentRtvDesc.Format = resource->GetDesc().Format;
-		device->CreateRenderTargetView(resource, &currentRtvDesc, rtvHandles[2]);
+		device->CreateRenderTargetView(resource.Get(), &currentRtvDesc, rtvHandles[2]);
 	}
 
 	// 今回のバリアはTransition
@@ -578,7 +578,7 @@ void DirectXBasis::RenderTexturePreDraw(ID3D12Resource* resource)
 	// Noneにしておく
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	// バリアを張る対象のリソース(現在のバックバッファに対して行う)
-	barrier.Transition.pResource = resource;
+	barrier.Transition.pResource = resource.Get();
 	// 遷移前(現在)のResourceState
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	// 遷移後のResourceState
@@ -601,13 +601,13 @@ void DirectXBasis::RenderTexturePreDraw(ID3D12Resource* resource)
 }
 
 
-void DirectXBasis::PreDraw(ID3D12Resource* resource)
+void DirectXBasis::PreDraw(const Microsoft::WRL::ComPtr<ID3D12Resource> resource)
 {
 	// これから書き込むバックバッファのインデックスを取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
 	// RenderTargetからPlxelShaderResourceへ
-	barrier.Transition.pResource = resource;
+	barrier.Transition.pResource = resource.Get();
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	commandList->ResourceBarrier(1, &barrier);

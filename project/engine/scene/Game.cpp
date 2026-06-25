@@ -46,11 +46,9 @@ void Game::Update()
 
 void Game::Draw()
 {
-	// 描画したいテクスチャのデータを取得
-	ID3D12Resource* renderTextureData = TextureManager::GetInstance()->GetRenderTextureData("resources/sprite/uvChecker.png");
-
+	
 	// 描画前処理
-	dxBasis->RenderTexturePreDraw(renderTextureData);
+	dxBasis->RenderTexturePreDraw(RenderTexture::GetInstance()->GetTexture());
 	srvManager->PreDraw();
 	
 	// 3dモデルの描画準備
@@ -63,12 +61,9 @@ void Game::Draw()
 	SceneManager::GetInstance()->Draw();
 	
 	// SwapChainの描画前処理
-	dxBasis->PreDraw(renderTextureData);
+	dxBasis->PreDraw(RenderTexture::GetInstance()->GetTexture());
 
-	// RenderTextureの描画準備
-	auto handle = TextureManager::GetInstance()->GetRenderSRVHandleGPU("resources/sprite/uvChecker.png");
-	auto depthHandle = TextureManager::GetInstance()->GetDepthSRVHandle("resources/sprite/uvChecker.png");
-	RenderTexture::GetInstance()->DrawSettingCommon(handle,depthHandle);
+	RenderTexture::GetInstance()->DrawSettingCommon();
 
 	
 #ifdef USE_IMGUI

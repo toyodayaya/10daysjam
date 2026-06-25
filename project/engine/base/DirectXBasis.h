@@ -96,10 +96,10 @@ public:
 		const DirectX::ScratchImage& mipImages);
 
 	// RenderTexture描画前処理
-	void RenderTexturePreDraw(ID3D12Resource* resource);
+	void RenderTexturePreDraw(const Microsoft::WRL::ComPtr<ID3D12Resource> resource);
 	
 	// 描画前処理
-	void PreDraw(ID3D12Resource* resource);
+	void PreDraw(const Microsoft::WRL::ComPtr<ID3D12Resource> resource);
 
 	// 描画後処理
 	void PostDraw();

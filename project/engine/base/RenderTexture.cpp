@@ -1,6 +1,7 @@
 #include "RenderTexture.h"
 #include "Logger.h"
 #include "MathManager.h"
+#include "TextureManager.h"
 
 using namespace MathManager;
 
@@ -25,7 +26,15 @@ void RenderTexture::Initialize(DirectXBasis* directXBasis,SrvManager* srvManager
 	// グラフィックスパイプラインの生成
 	GenerateGraphicsPipeline();
 
+	// アウトライン用の逆行列を作成
 	CreateProjectionInverse();
+
+	// 描画用テクスチャを読み込む
+	TextureManager::GetInstance()->LoadRenderTexture("resources/sprite/uvChecker.png");
+	texture_ = TextureManager::GetInstance()->GetRenderTextureData("resources/sprite/uvChecker.png");
+	// RenderTextureの描画準備
+	handle_ = TextureManager::GetInstance()->GetRenderSRVHandleGPU("resources/sprite/uvChecker.png");
+	depthHandle_ = TextureManager::GetInstance()->GetDepthSRVHandle("resources/sprite/uvChecker.png");
 }
 
 void RenderTexture::CreateRootSignature()
@@ -101,7 +110,7 @@ void RenderTexture::CreateRootSignature()
 	// バイナリを元に生成
 	hr = dxBasis_->GetDevice()->CreateRootSignature(0,
 		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
-		IID_PPV_ARGS(&rootSignature));
+		IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 }
 
@@ -116,11 +125,11 @@ void RenderTexture::GenerateGraphicsPipeline()
 	inputLayoutDesc.NumElements = 0;
 
 	// 全ての色要素を書き込む
-	blendDesc.RenderTarget[0].RenderTargetWriteMask =
+	blendDesc_.RenderTarget[0].RenderTargetWriteMask =
 		D3D12_COLOR_WRITE_ENABLE_ALL;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
 	// 三角形の中を塗りつぶす
 	// RasterizerStateの設定
@@ -146,8 +155,8 @@ void RenderTexture::GenerateGraphicsPipeline()
 
 	// PSOを生成する
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
-	graphicPipelineStateDesc.BlendState = blendDesc;
-	graphicPipelineStateDesc.pRootSignature = rootSignature.Get();
+	graphicPipelineStateDesc.BlendState = blendDesc_;
+	graphicPipelineStateDesc.pRootSignature = rootSignature_.Get();
 	graphicPipelineStateDesc.InputLayout = inputLayoutDesc;
 	graphicPipelineStateDesc.VS =
 	{
@@ -175,7 +184,7 @@ void RenderTexture::GenerateGraphicsPipeline()
 
 	// 生成
 	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&graphicPipelineStateDesc,
-		IID_PPV_ARGS(&graphicPipelineState));
+		IID_PPV_ARGS(&graphicPipelineState_));
 	assert(SUCCEEDED(hr));
 }
 
@@ -183,31 +192,31 @@ void RenderTexture::GenerateGraphicsPipeline()
 void RenderTexture::CreateProjectionInverse()
 {
 	// WVP用のリソースを作る
-	projecttionInverseResource = dxBasis_->CreateBufferResources(sizeof(Material));
+	projecttionInverseResource_ = dxBasis_->CreateBufferResources(sizeof(Material));
 	// データを書き込む
 	// 書き込むためのアドレスを取得
-	projecttionInverseResource->Map(0, nullptr, reinterpret_cast<void**>(&projectionInverseData));
+	projecttionInverseResource_->Map(0, nullptr, reinterpret_cast<void**>(&projectionInverseData_));
 	// 単位行列を書き込んでおく
-	projectionInverseData->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
+	projectionInverseData_->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
 }
 
 
 
-void RenderTexture::DrawSettingCommon(D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU, D3D12_GPU_DESCRIPTOR_HANDLE depthSrvHandleGPU)
+void RenderTexture::DrawSettingCommon()
 {
-	projectionInverseData->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
+	projectionInverseData_->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
 
 	// RootSignatureを設定
-	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature_.Get());
 	// PSOを設定
-	dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState.Get());
+	dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState_.Get());
 	// 形状を設定
 	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// projectionInverse用のCBufferの場所を設定
-	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, projecttionInverseResource->GetGPUVirtualAddress());
+	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, projecttionInverseResource_->GetGPUVirtualAddress());
 	// SRVを設定
-	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvHandleGPU);
-	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, depthSrvHandleGPU);
+	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, handle_);
+	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, depthHandle_);
 	// 描画
 	dxBasis_->GetCommandList()->DrawInstanced(3, 1, 0, 0);
 }

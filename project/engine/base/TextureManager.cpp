@@ -88,12 +88,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	// 追加したテクスチャデータに書き込む
 	textureData.metaData = mipImages.GetMetadata();
 	textureData.resource = dxBasis_->CreateTextureResource(textureData.metaData);
-	// クライアント領域のサイズ
-	const int32_t kClientWidth = 1280;
-	const int32_t kClientHeight = 720;
-	const Vector4 kRenderTargetClearValue{ 0.1f,0.25f,0.5f,1.0f };
-	textureData.renderTextureResource = dxBasis_->CreateRenderTextureResource(textureData.metaData, kClientWidth, kClientHeight, kRenderTargetClearValue);
-
+	
 	// テクスチャデータの要素数番号をSRVのインデックスとする
 	textureData.srvIndex = srvManager_->Allocate();
 	textureData.srvHandleCPU = srvManager_->GetCPUDescriptorHandle(textureData.srvIndex);
@@ -125,11 +120,67 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	// テクスチャデータを転送する
 	// 転送用に生成した中間リソースをテクスチャデータ構造体に格納
 	textureData.intermediateResource = dxBasis_->UploadTextureData(textureData.resource.Get(), mipImages);
+}
+
+void TextureManager::LoadRenderTexture(const std::string& filePath)
+{
+	// 読み込み済みテクスチャを検索
+	if (textureDatas.contains(filePath))
+	{
+		return;
+	}
+
+	// テクスチャ枚数上限チェック
+	assert(srvManager_->CanAllocate());
+
+	// テクスチャファイルを読み込んでプログラムで扱えるようにする
+	DirectX::ScratchImage image{};
+	std::wstring filePathW = ConvertString(filePath);
+
+	// DDSかどうか判定
+	HRESULT hr;
+	if (filePathW.ends_with(L".dds"))
+	{
+		// DDSを読み込む
+		hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
+	}
+	else
+	{
+		hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	}
+
+	assert(SUCCEEDED(hr));
+
+	// ミニマップの作成
+	DirectX::ScratchImage mipImages{};
+
+	// 圧縮フォーマットかどうか判定
+	if (DirectX::IsCompressed(image.GetMetadata().format))
+	{
+		// 圧縮フォーマットならそのまま使う
+		mipImages = std::move(image);
+	}
+	else
+	{
+		hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+		assert(SUCCEEDED(hr));
+	}
+
+	// 追加したテクスチャデータの参照を取得する
+	RenderTextureData& textureData = renderTextureDatas[filePath];
+
+	// 追加したテクスチャデータに書き込む
+	textureData.metaData = mipImages.GetMetadata();
+	// クライアント領域のサイズ
+	const int32_t kClientWidth = 1280;
+	const int32_t kClientHeight = 720;
+	const Vector4 kRenderTargetClearValue{ 0.1f,0.25f,0.5f,1.0f };
+	textureData.resource = dxBasis_->CreateRenderTextureResource(textureData.metaData, kClientWidth, kClientHeight, kRenderTargetClearValue);
 
 	// テクスチャデータの要素数番号をSRVのインデックスとする
-	textureData.renderSrvIndex = srvManager_->Allocate();
-	textureData.renderSrvHandleCPU = srvManager_->GetCPUDescriptorHandle(textureData.renderSrvIndex);
-	textureData.renderSrvHandleGPU = srvManager_->GetGPUDescriptorHandle(textureData.renderSrvIndex);
+	textureData.srvIndex = srvManager_->Allocate();
+	textureData.srvHandleCPU = srvManager_->GetCPUDescriptorHandle(textureData.srvIndex);
+	textureData.srvHandleGPU = srvManager_->GetGPUDescriptorHandle(textureData.srvIndex);
 
 	// RenderTexture用の設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC renderTextureSrvDesc{};
@@ -139,7 +190,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	renderTextureSrvDesc.Texture2D.MipLevels = 1;
 
 	// SRVの生成
-	dxBasis_->GetDevice()->CreateShaderResourceView(textureData.renderTextureResource.Get(), &renderTextureSrvDesc,textureData.renderSrvHandleCPU);
+	dxBasis_->GetDevice()->CreateShaderResourceView(textureData.resource.Get(), &renderTextureSrvDesc, textureData.srvHandleCPU);
 
 	// Depth用のの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC depthTextureSrvDesc{};
