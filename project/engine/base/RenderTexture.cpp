@@ -29,6 +29,9 @@ void RenderTexture::Initialize(DirectXBasis* directXBasis,SrvManager* srvManager
 	// アウトライン用の逆行列を作成
 	CreateProjectionInverse();
 
+	// 経過時間を作成
+	CreateMaterialTime();
+
 	// 描画用テクスチャを読み込む
 	filePath_ = "resources/sprite/uvChecker.png";
 	dissolveFilePath_ = "resources/sprite/noise0.png";
@@ -149,7 +152,7 @@ void RenderTexture::GenerateGraphicsPipeline()
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Dissolve.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Random.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
@@ -204,11 +207,21 @@ void RenderTexture::CreateProjectionInverse()
 	projectionInverseData_->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
 }
 
-
+void RenderTexture::CreateMaterialTime()
+{
+	// 経過時間用のリソースを作る
+	materialTimeResource_ = dxBasis_->CreateBufferResources(sizeof(MaterialTime));
+	// データを書き込む
+	// 書き込むためのアドレスを取得
+	materialTimeResource_->Map(0, nullptr, reinterpret_cast<void**>(&timeData_));
+	//	時間を加算
+	timeData_->time += kDeltaTime;
+}
 
 void RenderTexture::DrawSettingCommon()
 {
 	projectionInverseData_->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
+	timeData_->time += kDeltaTime;
 
 	// RootSignatureを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature_.Get());
@@ -216,8 +229,8 @@ void RenderTexture::DrawSettingCommon()
 	dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState_.Get());
 	// 形状を設定
 	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// projectionInverse用のCBufferの場所を設定
-	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, projecttionInverseResource_->GetGPUVirtualAddress());
+	// CBufferの場所を設定
+	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialTimeResource_->GetGPUVirtualAddress());
 	// SRVを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, handle_);
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, dissolveHandle_);

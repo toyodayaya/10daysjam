@@ -22,6 +22,11 @@ public:
 		Matrix4x4 projectionInverse;
 	};
 
+	struct MaterialTime
+	{
+		float time;
+	};
+
 	// 初期化
 	void Initialize(DirectXBasis* directXBasis, SrvManager* srvManager);
 	// ルートシグネチャーの作成
@@ -32,6 +37,8 @@ public:
 	void DrawSettingCommon();
 	// projectionInverseの作成
 	void CreateProjectionInverse();
+	// 経過時間の作成
+	void CreateMaterialTime();
 	// getter
 	DirectXBasis* GetDxBasis() const { return dxBasis_; }
 	Camera* GetDefaultCamera() const { return defaultCamera_; }
@@ -71,5 +78,10 @@ private:
 	// ファイルパス
 	std::string filePath_;
 	std::string dissolveFilePath_;
+
+	// 経過時間
+	Microsoft::WRL::ComPtr <ID3D12Resource> materialTimeResource_;
+	MaterialTime* timeData_ = nullptr;
+	const float kDeltaTime = 1.0f / 60.0f;
 };
 
