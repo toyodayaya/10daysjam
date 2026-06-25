@@ -30,11 +30,15 @@ void RenderTexture::Initialize(DirectXBasis* directXBasis,SrvManager* srvManager
 	CreateProjectionInverse();
 
 	// 描画用テクスチャを読み込む
-	TextureManager::GetInstance()->LoadRenderTexture("resources/sprite/uvChecker.png");
-	texture_ = TextureManager::GetInstance()->GetRenderTextureData("resources/sprite/uvChecker.png");
+	filePath_ = "resources/sprite/uvChecker.png";
+	dissolveFilePath_ = "resources/sprite/noise0.png";
+	TextureManager::GetInstance()->LoadRenderTexture(filePath_);
+	TextureManager::GetInstance()->LoadTexture(dissolveFilePath_);
+	texture_ = TextureManager::GetInstance()->GetRenderTextureData(filePath_);
 	// RenderTextureの描画準備
-	handle_ = TextureManager::GetInstance()->GetRenderSRVHandleGPU("resources/sprite/uvChecker.png");
-	depthHandle_ = TextureManager::GetInstance()->GetDepthSRVHandle("resources/sprite/uvChecker.png");
+	handle_ = TextureManager::GetInstance()->GetRenderSRVHandleGPU(filePath_);
+	depthHandle_ = TextureManager::GetInstance()->GetDepthSRVHandle(filePath_);
+	dissolveHandle_ = TextureManager::GetInstance()->GetSRVHandleGPU(dissolveFilePath_);
 }
 
 void RenderTexture::CreateRootSignature()
@@ -145,7 +149,7 @@ void RenderTexture::GenerateGraphicsPipeline()
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/RadialBlur.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Dissolve.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
@@ -216,7 +220,7 @@ void RenderTexture::DrawSettingCommon()
 	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, projecttionInverseResource_->GetGPUVirtualAddress());
 	// SRVを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, handle_);
-	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, depthHandle_);
+	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, dissolveHandle_);
 	// 描画
 	dxBasis_->GetCommandList()->DrawInstanced(3, 1, 0, 0);
 }

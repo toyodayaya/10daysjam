@@ -67,5 +67,9 @@ private:
 	// GPUハンドル
 	D3D12_GPU_DESCRIPTOR_HANDLE handle_;
 	D3D12_GPU_DESCRIPTOR_HANDLE depthHandle_;
+	D3D12_GPU_DESCRIPTOR_HANDLE dissolveHandle_;
+	// ファイルパス
+	std::string filePath_;
+	std::string dissolveFilePath_;
 };
 
