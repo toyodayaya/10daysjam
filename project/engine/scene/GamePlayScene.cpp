@@ -27,9 +27,9 @@ void GamePlayScene::Initialize()
 	}
 
 	// objファイルからモデルを読み込む
-	ModelManager::GetInstance()->LoadModel("resources", "plane.obj");
-	ModelManager::GetInstance()->LoadModel("resources", "axis.obj");
-	ModelManager::GetInstance()->LoadModel("resources", "fence.obj");
+	ModelManager::GetInstance()->LoadModel("resources/model", "plane.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/model", "axis.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/model", "fence.obj", Model::AnimationType::kNone);
 
 	//// 3Dオブジェクトの初期化
 	//for (uint32_t i = 0; i < 1; ++i)

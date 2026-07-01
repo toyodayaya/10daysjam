@@ -8,7 +8,7 @@ void Game::Initialize()
 	Framework::Initialize();
 
 	camera->SetRotate(Vector3{ 0.0f,0.0f,0.0f});
-	camera->SetTranslate({ 0.0f,3.0f,-20.0f });
+	camera->SetTranslate({ 0.0f,1.0f,-8.0f });
 
 	// Imguiマネージャーの初期化
 	imguiManager = std::make_unique <ImguiManager>();

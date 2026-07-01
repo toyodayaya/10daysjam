@@ -6,7 +6,6 @@
 #include "Camera.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "Model.h"
 #include "SrvManager.h"
 
 class DebugDrawCommon;
@@ -99,7 +98,6 @@ private:
 	// ポインタ
 	DebugDrawCommon* debugDraw_;
 	DirectXBasis* dxBasis_;
-	Model* model = nullptr;
 	Camera* camera = nullptr;
 
 	// WVP用のリソースを作る

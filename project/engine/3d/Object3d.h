@@ -7,7 +7,6 @@
 #include "MathManager.h"
 #include "Model.h"
 #include "Camera.h"
-#include "Animation.h"
 #include <memory>
 
 class Object3dCommon;

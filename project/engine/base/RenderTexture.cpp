@@ -152,7 +152,7 @@ void RenderTexture::GenerateGraphicsPipeline()
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Random.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/FullScreen.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 

@@ -95,6 +95,9 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource> texture,
 		const DirectX::ScratchImage& mipImages);
 
+	// outputVertexを作る関数
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateOutputVertexBuffer(size_t sizeInBytes);
+
 	// RenderTexture描画前処理
 	void RenderTexturePreDraw(const Microsoft::WRL::ComPtr<ID3D12Resource> resource);
 	

@@ -47,7 +47,7 @@ void Framework::Initialize()
 	DebugDrawCommon::GetInstance()->SetDefaultCamera(camera.get());
 
 	// 3Dモデルマネージャーの初期化
-	ModelManager::GetInstance()->Initialize(dxBasis.get());
+	ModelManager::GetInstance()->Initialize(dxBasis.get(),srvManager.get());
 
 	// Audioの初期化
 	Audio::GetInstance()->Initialize();

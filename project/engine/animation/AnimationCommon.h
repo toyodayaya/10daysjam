@@ -27,10 +27,13 @@ private:
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;
 
-
+	// ルートシグネチャー
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
+	Microsoft::WRL::ComPtr <ID3D12RootSignature> computeRootSignature;
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState;
+	// ComputePipelineState
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> computePipelineState;
 	// BlendStateの設定
 	D3D12_BLEND_DESC blendDesc{};
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
@@ -39,6 +42,7 @@ private:
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob;
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
+	Microsoft::WRL::ComPtr <IDxcBlob> computeShaderBlob;
 	std::array<D3D12_INPUT_ELEMENT_DESC, 5> inputElementDescs{};
 	// RasterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -50,8 +54,13 @@ public:
 	void CreateRootSignature();
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeline();
+	// ComputeShader用のパイプラインステートの生成
+	void GenerateCSPipelineState();
+	// ComputeShader用のルートシグネチャーの作成
+	void CreateCSRootSignature();
 	// 共通描画設定
 	void DrawSettingCommon();
+	void DrawSettingCompute();
 
 	// getter
 	DirectXBasis* GetDxBasis() const { return dxBasis_; }

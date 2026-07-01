@@ -1,6 +1,5 @@
 #include "ModelManager.h"
 #include "Model.h"
-#include "Animation.h"
 
 ModelManager* ModelManager::instance = nullptr;
 
@@ -20,14 +19,14 @@ void ModelManager::Finalize()
 	instance = nullptr;
 }
 
-void ModelManager::Initialize(DirectXBasis* dxBasis)
+void ModelManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager)
 {
 	// モデル共通部の初期化
 	modelCommon = std::make_unique <ModelCommon>();
-	modelCommon->Initialize(dxBasis);
+	modelCommon->Initialize(dxBasis,srvManager);
 }
 
-void ModelManager::LoadModel(const std::string& directoryPath, const std::string& filePath)
+void ModelManager::LoadModel(const std::string& directoryPath, const std::string& filePath,Model::AnimationType type)
 {
 	// 読み込み済みモデルを検索
 	if (models.contains(filePath))
@@ -37,7 +36,7 @@ void ModelManager::LoadModel(const std::string& directoryPath, const std::string
 
 	// モデルの生成とファイル読み込み、初期化
 	std::unique_ptr<Model> model = std::make_unique<Model>();
-	model->Initialize(modelCommon.get(), directoryPath, filePath);
+	model->Initialize(modelCommon.get(), directoryPath, filePath,type);
 
 	// モデルをmapコンテナに格納する
 	models.insert(std::make_pair(filePath, std::move(model)));

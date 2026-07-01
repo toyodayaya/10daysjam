@@ -144,9 +144,6 @@
     <ClCompile Include="engine\base\RenderTexture.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engine\animation\Animation.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="engine\debugDraw\DebugDraw.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -182,12 +179,12 @@
     <FxCompile Include="resources\shaders\GaussianFilter.PS.hlsl" />
     <FxCompile Include="resources\shaders\DebugDraw.PS.hlsl" />
     <FxCompile Include="resources\shaders\DebugDraw.VS.hlsl" />
-    <FxCompile Include="resources\shaders\SkinningObject3d.VS.hlsl" />
     <FxCompile Include="resources\shaders\LuminanceBasedOutline.PS.hlsl" />
     <FxCompile Include="resources\shaders\DepthBasedOutline.PS.hlsl" />
     <FxCompile Include="resources\shaders\RadialBlur.PS.hlsl" />
     <FxCompile Include="resources\shaders\Dissolve.PS.hlsl" />
     <FxCompile Include="resources\shaders\Random.PS.hlsl" />
+    <FxCompile Include="resources\shaders\Skinning.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\io\Input.h">
@@ -518,9 +515,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="engine\base\RenderTexture.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\animation\Animation.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="engine\debugDraw\DebugDrawCommon.h">

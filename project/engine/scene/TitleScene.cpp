@@ -29,10 +29,11 @@ void TitleScene::Initialize()
 	}
 
 	// objファイルからモデルを読み込む
-	ModelManager::GetInstance()->LoadModel("resources/model", "plane.obj");
-	ModelManager::GetInstance()->LoadModel("resources/model", "axis.obj");
-	ModelManager::GetInstance()->LoadModel("resources/model", "fence.obj");
-	ModelManager::GetInstance()->LoadModel("resources/model", "terrain.obj");
+	ModelManager::GetInstance()->LoadModel("resources/model", "plane.obj",Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/model", "axis.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/model", "fence.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/model", "terrain.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/human", "walk.gltf", Model::AnimationType::kMove);
 	
 	// テクスチャの読み込み
 	//TextureManager::GetInstance()->LoadTexture("resources/rostock_laage_airport_4k.dds");
@@ -42,7 +43,7 @@ void TitleScene::Initialize()
 	{
 		std::unique_ptr<Object3d> object3d = std::make_unique<Object3d>();
 		object3d->Initialize(Object3dCommon::GetInstance());
-		object3d->SetModel("terrain.obj");
+		object3d->SetModel("walk.gltf");
 		object3d->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 		Vector3 pos = object3d->GetTranslate();
 		pos.x += (1.0f * (i + 1));

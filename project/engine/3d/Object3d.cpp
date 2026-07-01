@@ -124,6 +124,9 @@ void Object3d::Update()
 	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 
+	// モデルを更新
+	model->Update(worldMatrix);
+
 	if (camera)
 	{
 		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
@@ -134,10 +137,7 @@ void Object3d::Update()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	/*transformationData->WVP = Multiply(model->GetModelData().rootNode.localMatrix, worldViewProjectionMatrix);
-	transformationData->World = Multiply(model->GetModelData().rootNode.localMatrix, worldMatrix);
-	transformationData->WVP = Multiply(localMatrix,worldViewProjectionMatrix);
-	transformationData->World = Multiply(localMatrix, worldMatrix);*/
+	
 	transformationData->WVP = worldViewProjectionMatrix;
 	transformationData->World = worldMatrix;
 
@@ -146,7 +146,7 @@ void Object3d::Update()
 	{
 		cameraData_->worldPosition = camera->GetTranslate();
 	}
-
+	
 #ifdef USE_IMGUI
 	ImGui::Begin("SpotLight");
 	ImGui::DragFloat3("pos", &spotLightData->position.x);
