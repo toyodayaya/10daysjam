@@ -79,7 +79,7 @@ void TitleScene::Initialize()
 	Vector4 color = { 1.0f,1.0f,1.0f,0.5f };
 	float lifeTime = 3.0f;
 	float currentTime = 0.0f;
-	emitter = std::make_unique <ParticleEmitter>("Effect", transform, velocity, color, lifeTime, currentTime, 5.6f, 8);
+	emitter = std::make_unique <ParticleEmitter>("Effect", transform, velocity, color, lifeTime, currentTime, 5.6f, 1);
 
 
 	EulerTransform hitTransform;
@@ -147,8 +147,8 @@ void TitleScene::Update()
 	//skybox->Update();
 
 	// パーティクルの更新処理
-	/*emitter->Update();
-	emitterHit->Update();
+	emitter->Update();
+	/*emitterHit->Update();
 	emitterRing->Update();
 	emitterCylinder->Update();
 	ParticleManager::GetInstance()->Update();*/
@@ -168,7 +168,7 @@ void TitleScene::Draw()
 	// 3dモデルの描画
 	for (const std::unique_ptr <Object3d>& object3d : object3ds)
 	{
-		object3d->Draw();
+		//object3d->Draw();
 	}
 
 	// アニメーションモデルの描画

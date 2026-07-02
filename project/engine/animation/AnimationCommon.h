@@ -28,10 +28,7 @@ private:
 	Camera* defaultCamera_ = nullptr;
 
 	// ルートシグネチャー
-	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> computeRootSignature;
-	// グラフィックスパイプラインステート
-	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState;
 	// ComputePipelineState
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> computePipelineState;
 	// BlendStateの設定
@@ -50,16 +47,11 @@ private:
 public:
 	// 初期化
 	void Initialize(DirectXBasis* directXBasis, SrvManager* srvManager);
-	// ルートシグネチャーの作成
-	void CreateRootSignature();
-	// グラフィックスパイプラインの生成
-	void GenerateGraphicsPipeline();
 	// ComputeShader用のパイプラインステートの生成
 	void GenerateCSPipelineState();
 	// ComputeShader用のルートシグネチャーの作成
 	void CreateCSRootSignature();
 	// 共通描画設定
-	void DrawSettingCommon();
 	void DrawSettingCompute();
 
 	// getter

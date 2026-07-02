@@ -70,12 +70,34 @@ private:
 		uint32_t instanceCount;
 		ParticleForGPU* instancingData;
 		ParticleEmitter::Type type;
+		Microsoft::WRL::ComPtr <ID3D12Resource> particlesResource;
+		uint32_t uavIndex;
+		D3D12_VERTEX_BUFFER_VIEW particlesBufferView;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> uavHandle;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> srvHandle;
+		uint32_t vertexIndex;
 	};
 
 	struct AccelerationField
 	{
 		Vector3 acceleration;
 		AABB area;
+	};
+
+	struct ParticleCS
+	{
+		Vector3 translate;
+		Vector3 scale;
+		float lifeTime;
+		Vector3 velocity;
+		float currentTime;
+		Vector4 color;
+	};
+
+	struct PerView
+	{
+		Matrix4x4 viewProjection;
+		Matrix4x4 billboardMatrix;
 	};
 
 	enum BlendMode
@@ -119,6 +141,9 @@ private:
 	// ルートシグネチャー
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+	Microsoft::WRL::ComPtr <ID3D12RootSignature> computeRootSignature;
+	// ComputePipelineState
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> computePipelineState;
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
@@ -128,6 +153,7 @@ private:
 	// shader
 	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob;
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
+	Microsoft::WRL::ComPtr <IDxcBlob> computeShaderBlob;
 	// DepthStencilStateの設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 
@@ -171,7 +197,9 @@ private:
 	// ブレンドモード
 	BlendMode blendMode_ = kBlendModeAdd;
 
-	
+	// perView
+	Microsoft::WRL::ComPtr<ID3D12Resource> perViewResource;
+
 public:
 	// シングルトンインスタンスの取得
 	static ParticleManager* GetInstance();
@@ -192,6 +220,14 @@ public:
 	void CreateVertexData();
 	// ブレンドモード設定
 	void BlendModeSetting();
+	// ComputeShader用のパイプラインステートの生成
+	void GenerateCSPipelineState();
+	// ComputeShader用のルートシグネチャーの作成
+	void CreateCSRootSignature();
+	// 共通描画設定
+	void DrawSettingCompute();
+	// UAVの生成
+	void CreateUav();
 
 	// パーティクルの作成
 	// NormalParticle生成関数

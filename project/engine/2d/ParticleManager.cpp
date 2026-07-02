@@ -42,6 +42,9 @@ void ParticleManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager, 
 	// グラフィックスパイプラインの生成
 	GenerateGraphicsPipeline();
 
+	// CSパイプラインの生成
+	GenerateCSPipelineState();
+
 	// 頂点データ作成
 	CreateVertexData();
 
@@ -65,7 +68,7 @@ void ParticleManager::CreateRootSignature()
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
@@ -77,9 +80,14 @@ void ParticleManager::CreateRootSignature()
 	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PSで使う
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // PixelShaderで使う
+	rootParameters[3].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
+
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
 
@@ -381,6 +389,86 @@ void ParticleManager::BlendModeSetting()
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 }
 
+void ParticleManager::GenerateCSPipelineState()
+{
+	// ルートシグネチャーを作成
+	CreateCSRootSignature();
+
+	// shaderをcompileする
+	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/InitializeParticle.CS.hlsl",
+		L"cs_6_0");
+	assert(computeShaderBlob != nullptr);
+
+	// CS用のパイプラインステートを設定する
+	D3D12_COMPUTE_PIPELINE_STATE_DESC computePipelineStateDesc{};
+	computePipelineStateDesc.CS =
+	{
+		.pShaderBytecode = computeShaderBlob->GetBufferPointer(),
+		.BytecodeLength = computeShaderBlob->GetBufferSize()
+	};
+
+	computePipelineStateDesc.pRootSignature = computeRootSignature.Get();
+	HRESULT hr = dxBasis_->GetDevice()->CreateComputePipelineState(&computePipelineStateDesc, IID_PPV_ARGS(&computePipelineState));
+}
+
+void ParticleManager::CreateCSRootSignature()
+{
+	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+	descriptionRootSignature.Flags =
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	D3D12_DESCRIPTOR_RANGE descriptorRangeOutput[1] = {};
+	descriptorRangeOutput[0].BaseShaderRegister = 0;// u0
+	descriptorRangeOutput[0].NumDescriptors = 1; // 数は1つ
+	descriptorRangeOutput[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	descriptorRangeOutput[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	// RootParameterを作成
+	D3D12_ROOT_PARAMETER rootParameters[1] = {};
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rootParameters[0].DescriptorTable.pDescriptorRanges = descriptorRangeOutput;
+	rootParameters[0].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeOutput);
+
+	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
+	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
+
+	// Samplerの設定
+	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+	staticSamplers[0].ShaderRegister = 0;
+	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	descriptionRootSignature.pStaticSamplers = staticSamplers;
+	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
+
+	// シリアライズしてバイナリにする
+	Microsoft::WRL::ComPtr <ID3DBlob> signatureBlob = nullptr;
+	Microsoft::WRL::ComPtr <ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature,
+		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		assert(false);
+	}
+	// バイナリを元に生成
+	hr = dxBasis_->GetDevice()->CreateRootSignature(0,
+		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+		IID_PPV_ARGS(&computeRootSignature));
+	assert(SUCCEEDED(hr));
+}
+
+void ParticleManager::DrawSettingCompute()
+{
+	dxBasis_->GetCommandList()->SetComputeRootSignature(computeRootSignature.Get());
+	dxBasis_->GetCommandList()->SetPipelineState(computePipelineState.Get());
+}
+
 ParticleManager::Particle ParticleManager::MakeNewNormalParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
 	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
 {
@@ -504,6 +592,39 @@ void ParticleManager::CreateParticleGroup(const std::string name, const std::str
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = srvManager_->GetCPUDescriptorHandle(particleData.srvIndex);
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = srvManager_->GetGPUDescriptorHandle(particleData.srvIndex);
 	srvManager_->CreateSRVforStructuredBuffer(particleData.srvIndex, particleData.instancingResource.Get(), instancingSrvDesc.Format, kMaxInstanceCount, sizeof(ParticleForGPU));
+
+	// UAVの生成
+	particleData.uavIndex = srvManager_->Allocate();
+	particleData.uavHandle.first = srvManager_->GetCPUDescriptorHandle(particleData.uavIndex);
+	particleData.uavHandle.second = srvManager_->GetGPUDescriptorHandle(particleData.uavIndex);
+	particleData.particlesResource = dxBasis_->CreateOutputVertexBuffer(sizeof(ParticleCS) * 1024);
+	particleData.particlesBufferView.BufferLocation = particleData.particlesResource->GetGPUVirtualAddress();
+	particleData.particlesBufferView.SizeInBytes = UINT(sizeof(ParticleCS) * 1024);
+	particleData.particlesBufferView.StrideInBytes = sizeof(ParticleCS);
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Buffer.NumElements = 1024;
+	uavDesc.Buffer.CounterOffsetInBytes = 0;
+	uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+	uavDesc.Buffer.StructureByteStride = sizeof(ParticleCS);
+
+	dxBasis_->GetDevice()->CreateUnorderedAccessView(particleData.particlesResource.Get(), nullptr, &uavDesc, particleData.uavHandle.first);
+
+	// SRVを作成
+	particleData.vertexIndex = srvManager_->Allocate();
+	particleData.srvHandle.first = srvManager_->GetCPUDescriptorHandle(particleData.vertexIndex);
+	particleData.srvHandle.second = srvManager_->GetGPUDescriptorHandle(particleData.vertexIndex);
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	srvDesc.Buffer.FirstElement = 0;
+	srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	srvDesc.Buffer.NumElements = 1024;
+	srvDesc.Buffer.StructureByteStride = sizeof(ParticleCS);
+	dxBasis_->GetDevice()->CreateShaderResourceView(particleData.particlesResource.Get(), &srvDesc, particleData.srvHandle.first);
 }
 
 void ParticleManager::Update()
@@ -588,6 +709,12 @@ void ParticleManager::Update()
 				group.instanceCount++;
 			}
 
+			perViewResource = dxBasis_->CreateBufferResources(sizeof(PerView));
+			PerView* info = nullptr;
+			perViewResource->Map(0, nullptr, reinterpret_cast<void**>(&info));
+			info->billboardMatrix = billboardMatrix;
+			info->viewProjection = viewProjectionMatrix;
+
 #ifdef USE_IMGUI
 
 			ImGui::Begin("Particle Manager");
@@ -611,13 +738,6 @@ void ParticleManager::Update()
 
 void ParticleManager::Draw()
 {
-	// RootSignatureを設定
-	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-	// PSOを設定
-	dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState.Get());
-	// 形状を設定
-	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
 	// グループごとに描画
 	for (auto& [name, group] : particleGroups)
 	{
@@ -627,10 +747,46 @@ void ParticleManager::Draw()
 			continue;
 		}
 
+		// CS用の設定
+		DrawSettingCompute();
+		dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0,group.uavHandle.second);
+
+		D3D12_RESOURCE_BARRIER barrier{};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = group.particlesResource.Get();
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+		dxBasis_->GetCommandList()->ResourceBarrier(1, &barrier);
+
+		dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
+
+		D3D12_RESOURCE_BARRIER barriers{};
+		barriers.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barriers.Transition.pResource = group.particlesResource.Get();
+		barriers.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		barriers.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+		barriers.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		dxBasis_->GetCommandList()->ResourceBarrier(1, &barriers);
+
+		// RootSignatureを設定
+		dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+		// PSOを設定
+		dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState.Get());
+		// 形状を設定
+		dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
 		// テクスチャのSRVのDescriptorTableを設定
 		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(group.materialData.textureFilePath));
 		// SRVのDescriptorTableの先頭を設定
 		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(group.srvIndex));
+
+		// Particleデータを格納
+		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(1, group.srvHandle.second);
+		// PerViewデータを転送
+		dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(3, perViewResource->GetGPUVirtualAddress());
 
 		switch (group.type)
 		{
@@ -638,7 +794,7 @@ void ParticleManager::Draw()
 			// VBVを設定
 			dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 			// 描画
-			dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelData.vertices.size()), group.instanceCount, 0, 0);
+			dxBasis_->GetCommandList()->DrawInstanced(6, 1024, 0, 0);
 			break;
 
 		case ParticleEmitter::Type::kHitEffect:
