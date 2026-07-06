@@ -199,6 +199,7 @@ private:
 
 	// perView
 	Microsoft::WRL::ComPtr<ID3D12Resource> perViewResource;
+	PerView* perView = nullptr;
 
 public:
 	// シングルトンインスタンスの取得
@@ -228,6 +229,8 @@ public:
 	void DrawSettingCompute();
 	// UAVの生成
 	void CreateUav();
+	// PerViewResourceの生成
+	void CreatePerViewResource();
 
 	// パーティクルの作成
 	// NormalParticle生成関数

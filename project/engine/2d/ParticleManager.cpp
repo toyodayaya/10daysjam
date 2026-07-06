@@ -48,6 +48,9 @@ void ParticleManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager, 
 	// 頂点データ作成
 	CreateVertexData();
 
+	// perViewResourceの生成
+	CreatePerViewResource();
+
 	// 効果範囲の設定
 	accelerationField.acceleration = Vector3(0.0f,0.0f,0.0f);
 	accelerationField.area.min = Vector3(-1.0f,-1.0f,-1.0f);
@@ -469,6 +472,12 @@ void ParticleManager::DrawSettingCompute()
 	dxBasis_->GetCommandList()->SetPipelineState(computePipelineState.Get());
 }
 
+void ParticleManager::CreatePerViewResource()
+{
+	perViewResource = dxBasis_->CreateBufferResources(sizeof(PerView));
+	perViewResource->Map(0, nullptr, reinterpret_cast<void**>(&perView));
+}
+
 ParticleManager::Particle ParticleManager::MakeNewNormalParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
 	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
 {
@@ -709,11 +718,8 @@ void ParticleManager::Update()
 				group.instanceCount++;
 			}
 
-			perViewResource = dxBasis_->CreateBufferResources(sizeof(PerView));
-			PerView* info = nullptr;
-			perViewResource->Map(0, nullptr, reinterpret_cast<void**>(&info));
-			info->billboardMatrix = billboardMatrix;
-			info->viewProjection = viewProjectionMatrix;
+			perView->billboardMatrix = billboardMatrix;
+			perView->viewProjection = viewProjectionMatrix;
 
 #ifdef USE_IMGUI
 
@@ -794,7 +800,7 @@ void ParticleManager::Draw()
 			// VBVを設定
 			dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 			// 描画
-			dxBasis_->GetCommandList()->DrawInstanced(6, 1024, 0, 0);
+			dxBasis_->GetCommandList()->DrawInstanced(6, group.instanceCount, 0, 0);
 			break;
 
 		case ParticleEmitter::Type::kHitEffect:
