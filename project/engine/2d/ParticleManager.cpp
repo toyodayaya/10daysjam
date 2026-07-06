@@ -634,6 +634,31 @@ void ParticleManager::CreateParticleGroup(const std::string name, const std::str
 	srvDesc.Buffer.NumElements = 1024;
 	srvDesc.Buffer.StructureByteStride = sizeof(ParticleCS);
 	dxBasis_->GetDevice()->CreateShaderResourceView(particleData.particlesResource.Get(), &srvDesc, particleData.srvHandle.first);
+
+	// CS用の設定
+	srvManager_->PreDraw();
+	DrawSettingCompute();
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, particleData.uavHandle.second);
+
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Transition.pResource = particleData.particlesResource.Get();
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	dxBasis_->GetCommandList()->ResourceBarrier(1, &barrier);
+
+	dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
+
+	D3D12_RESOURCE_BARRIER barriers{};
+	barriers.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barriers.Transition.pResource = particleData.particlesResource.Get();
+	barriers.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	barriers.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+	barriers.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	dxBasis_->GetCommandList()->ResourceBarrier(1, &barriers);
+
 }
 
 void ParticleManager::Update()
@@ -752,29 +777,6 @@ void ParticleManager::Draw()
 			// 一つもなかったら描画をスキップ
 			continue;
 		}
-
-		// CS用の設定
-		DrawSettingCompute();
-		dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0,group.uavHandle.second);
-
-		D3D12_RESOURCE_BARRIER barrier{};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Transition.pResource = group.particlesResource.Get();
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-
-		dxBasis_->GetCommandList()->ResourceBarrier(1, &barrier);
-
-		dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
-
-		D3D12_RESOURCE_BARRIER barriers{};
-		barriers.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barriers.Transition.pResource = group.particlesResource.Get();
-		barriers.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-		barriers.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-		barriers.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		dxBasis_->GetCommandList()->ResourceBarrier(1, &barriers);
 
 		// RootSignatureを設定
 		dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());

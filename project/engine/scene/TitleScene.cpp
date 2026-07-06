@@ -79,7 +79,7 @@ void TitleScene::Initialize()
 	Vector4 color = { 1.0f,1.0f,1.0f,0.5f };
 	float lifeTime = 3.0f;
 	float currentTime = 0.0f;
-	emitter = std::make_unique <ParticleEmitter>("Effect", transform, velocity, color, lifeTime, currentTime, 5.6f, 1);
+	emitter = std::make_unique <ParticleEmitter>("Effect", transform, velocity, color, lifeTime, currentTime, 1.0f, 1);
 
 
 	EulerTransform hitTransform;
