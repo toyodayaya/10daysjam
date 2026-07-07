@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DirectXBasis.h"
 #include "BaseScene.h"
 #include <string>
 
@@ -9,5 +9,5 @@ public:
 	// 仮想デストラクタ
 	virtual ~AbstractSceneFactory() = default;
 	// シーンの生成
-	virtual BaseScene* CreateScene(const std::string& sceneName) = 0;
+	virtual std::unique_ptr<BaseScene> CreateScene(const std::string& sceneName) = 0;
 };

@@ -36,8 +36,7 @@ void SceneManager::Update()
 		}
 
 		// シーンを切り替える
-		scene_.reset(nextScene_);
-		nextScene_ = nullptr;
+		scene_ = std::move(nextScene_);
 
 		// 次シーンを初期化する
 		scene_->Initialize();
