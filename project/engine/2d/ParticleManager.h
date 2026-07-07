@@ -70,12 +70,6 @@ private:
 		uint32_t instanceCount;
 		ParticleForGPU* instancingData;
 		ParticleEmitter::Type type;
-		Microsoft::WRL::ComPtr <ID3D12Resource> particlesResource;
-		uint32_t uavIndex;
-		D3D12_VERTEX_BUFFER_VIEW particlesBufferView;
-		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> uavHandle;
-		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> srvHandle;
-		uint32_t vertexIndex;
 	};
 
 	struct AccelerationField
@@ -98,6 +92,22 @@ private:
 	{
 		Matrix4x4 viewProjection;
 		Matrix4x4 billboardMatrix;
+	};
+
+	struct EmitterSphere
+	{
+		Vector3 translate;
+		float radius;
+		uint32_t count;
+		float frequency;
+		float frequencyTime;
+		uint32_t emit;
+	};
+
+	struct PerFrame
+	{
+		float time;
+		float deltaTime;
 	};
 
 	enum BlendMode
@@ -138,12 +148,16 @@ private:
 	ModelData modelDataRing;
 	ModelData modelDataCylinder;
 
+	// マテリアルデータ
+	MaterialData materialData;
+
 	// ルートシグネチャー
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> computeRootSignature;
 	// ComputePipelineState
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> computePipelineState;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> computePipelineStateEmit;
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
@@ -186,7 +200,7 @@ private:
 	AccelerationField accelerationField;
 
 	// パーティクル最大数
-	const uint32_t kMaxInstanceCount = 10;
+	const uint32_t kMaxInstanceCount = 1;
 
 	// 乱数生成器
 	std::random_device seedGenerator;
@@ -200,6 +214,35 @@ private:
 	// perView
 	Microsoft::WRL::ComPtr<ID3D12Resource> perViewResource;
 	PerView* perView = nullptr;
+
+	// EmitterSphere
+	Microsoft::WRL::ComPtr<ID3D12Resource> emitterResource;
+	EmitterSphere* emitterSphere = nullptr;
+
+	// PerFrame
+	Microsoft::WRL::ComPtr<ID3D12Resource> perFrameResource;
+	PerFrame* perFrame = nullptr;
+
+	// UAV生成用の変数
+	Microsoft::WRL::ComPtr <ID3D12Resource> particleResource;
+	uint32_t particleUavIndex;
+	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> particleUavHandle;
+	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> particleSrvHandle;
+	uint32_t vertexIndex;
+
+	// VS転送用の変数
+	std::list<Particle> particles;
+	uint32_t srvIndex;
+	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;
+	ParticleCS* particleData = nullptr;
+
+	// テクスチャデータ
+	std::string textureFilePath;
+
+	// FreeCounter
+	Microsoft::WRL::ComPtr <ID3D12Resource> freeCounterResource;
+	uint32_t freeCounterUavIndex;
+	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> freeCounterUavHandle;
 
 public:
 	// シングルトンインスタンスの取得
@@ -229,8 +272,14 @@ public:
 	void DrawSettingCompute();
 	// UAVの生成
 	void CreateUav();
+	// マテリアルリソースの生成
+	void CreateMaterialResource();
 	// PerViewResourceの生成
 	void CreatePerViewResource();
+	// EmitterResourceの生成
+	void CreateEmitterResource();
+	// PerFrameResourceの生成
+	void CreatePerFrameResource();
 
 	// パーティクルの作成
 	// NormalParticle生成関数
@@ -253,6 +302,9 @@ public:
 	// 効果範囲の当たり判定
 	bool IsCollision(const AABB& aabb, const Vector3& point);
 
+	// getter
+	DirectXBasis* GetDxBasis() const { return dxBasis_; }
+	SrvManager* GetSrvManager() const { return srvManager_; }
 
 
 	ParticleManager() = default;

@@ -17,7 +17,6 @@ void TitleScene::Initialize()
 
 	// スプライトの初期化
 	TextureManager::GetInstance()->LoadTexture("resources/sprite/uvChecker.png");
-	TextureManager::GetInstance()->LoadTexture("resources/sprite/circle2.png");
 	TextureManager::GetInstance()->LoadTexture("resources/sprite/gradationLine.png");
 	TextureManager::GetInstance()->LoadTexture("resources/human/white.png");
 
@@ -65,52 +64,52 @@ void TitleScene::Initialize()
 
 
 	// パーティクルグループの作成
-	ParticleManager::GetInstance()->CreateParticleGroup("Effect", "resources/sprite/circle2.png", ParticleEmitter::Type::kNormal);
-	ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", "resources/sprite/circle2.png", ParticleEmitter::Type::kHitEffect);
-	ParticleManager::GetInstance()->CreateParticleGroup("Ring", "resources/sprite/gradationLine.png", ParticleEmitter::Type::kRing);
-	ParticleManager::GetInstance()->CreateParticleGroup("Cylinder", "resources/sprite/gradationLine.png", ParticleEmitter::Type::kCylinder);
+	//ParticleManager::GetInstance()->CreateParticleGroup("Effect", "resources/sprite/circle2.png", ParticleEmitter::Type::kNormal);
+	//ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", "resources/sprite/circle2.png", ParticleEmitter::Type::kHitEffect);
+	//ParticleManager::GetInstance()->CreateParticleGroup("Ring", "resources/sprite/gradationLine.png", ParticleEmitter::Type::kRing);
+	//ParticleManager::GetInstance()->CreateParticleGroup("Cylinder", "resources/sprite/gradationLine.png", ParticleEmitter::Type::kCylinder);
 
-	// パーティクルエミッターの宣言
-	EulerTransform transform;
-	transform.translate = { 0.0f,0.0f,0.0f };
-	transform.rotate = { 0.0f,0.0f,0.0f };
-	transform.scale = { 1.0f,1.0f,1.0f };
-	Vector3 velocity = { 0.0f,0.0f,0.0f };
-	Vector4 color = { 1.0f,1.0f,1.0f,0.5f };
-	float lifeTime = 3.0f;
-	float currentTime = 0.0f;
-	emitter = std::make_unique <ParticleEmitter>("Effect", transform, velocity, color, lifeTime, currentTime, 1.0f, 1);
+	//// パーティクルエミッターの宣言
+	//EulerTransform transform;
+	//transform.translate = { 0.0f,0.0f,0.0f };
+	//transform.rotate = { 0.0f,0.0f,0.0f };
+	//transform.scale = { 1.0f,1.0f,1.0f };
+	//Vector3 velocity = { 0.0f,0.0f,0.0f };
+	//Vector4 color = { 1.0f,1.0f,1.0f,0.5f };
+	//float lifeTime = 3.0f;
+	//float currentTime = 0.0f;
+	//emitter = std::make_unique <ParticleEmitter>("Effect", transform, velocity, color, lifeTime, currentTime, 1.0f, 1);
 
 
-	EulerTransform hitTransform;
-	hitTransform.translate = { 0.0f,0.0f,0.0f };
-	hitTransform.rotate = { 0.0f,0.0f,0.0f };
-	hitTransform.scale = { 0.05f,1.0f,1.0f };
-	Vector3 hitVelocity = { 0.0f,0.0f,0.0f };
-	Vector4 hitColor = { 1.0f,1.0f,1.0f,1.0f };
-	float hitLifeTime = 3.0f;
-	float hitCurrentTime = 0.0f;
-	emitterHit = std::make_unique <ParticleEmitter>("HitEffect", hitTransform, hitVelocity, hitColor, hitLifeTime, hitCurrentTime, 5.5f, 8);
+	//EulerTransform hitTransform;
+	//hitTransform.translate = { 0.0f,0.0f,0.0f };
+	//hitTransform.rotate = { 0.0f,0.0f,0.0f };
+	//hitTransform.scale = { 0.05f,1.0f,1.0f };
+	//Vector3 hitVelocity = { 0.0f,0.0f,0.0f };
+	//Vector4 hitColor = { 1.0f,1.0f,1.0f,1.0f };
+	//float hitLifeTime = 3.0f;
+	//float hitCurrentTime = 0.0f;
+	//emitterHit = std::make_unique <ParticleEmitter>("HitEffect", hitTransform, hitVelocity, hitColor, hitLifeTime, hitCurrentTime, 5.5f, 8);
 
-	EulerTransform ringTransform;
-	ringTransform.translate = { 0.0f,0.0f,0.0f };
-	ringTransform.rotate = { 0.0f,0.0f,0.0f };
-	ringTransform.scale = { 1.0f,1.0f,1.0f };
-	Vector3 ringVelocity = { 0.0f,0.0f,0.0f };
-	Vector4 ringColor = { 1.0f,1.0f,1.0f,1.0f };
-	float ringLifeTime = 5.5f;
-	float ringCurrentTime = 0.0f;
-	emitterRing = std::make_unique <ParticleEmitter>("Ring", ringTransform, ringVelocity, ringColor, ringLifeTime, ringCurrentTime, 4.5f, 1);
+	//EulerTransform ringTransform;
+	//ringTransform.translate = { 0.0f,0.0f,0.0f };
+	//ringTransform.rotate = { 0.0f,0.0f,0.0f };
+	//ringTransform.scale = { 1.0f,1.0f,1.0f };
+	//Vector3 ringVelocity = { 0.0f,0.0f,0.0f };
+	//Vector4 ringColor = { 1.0f,1.0f,1.0f,1.0f };
+	//float ringLifeTime = 5.5f;
+	//float ringCurrentTime = 0.0f;
+	//emitterRing = std::make_unique <ParticleEmitter>("Ring", ringTransform, ringVelocity, ringColor, ringLifeTime, ringCurrentTime, 4.5f, 1);
 
-	EulerTransform cylinderTransform;
-	cylinderTransform.translate = { 0.0f,-1.0f,0.0f };
-	cylinderTransform.rotate = { 0.0f,0.0f,0.0f };
-	cylinderTransform.scale = { 1.0f,0.5f,1.0f };
-	Vector3 cylinderVelocity = { 0.0f,0.0f,0.0f };
-	Vector4 cylinderColor = { 1.0f,1.0f,1.0f,1.0f };
-	float cylinderLifeTime = 6.5f;
-	float cylinderCurrentTime = 0.0f;
-	emitterCylinder = std::make_unique <ParticleEmitter>("Cylinder", cylinderTransform, cylinderVelocity, cylinderColor, cylinderLifeTime, cylinderCurrentTime, 4.0f, 1);
+	//EulerTransform cylinderTransform;
+	//cylinderTransform.translate = { 0.0f,-1.0f,0.0f };
+	//cylinderTransform.rotate = { 0.0f,0.0f,0.0f };
+	//cylinderTransform.scale = { 1.0f,0.5f,1.0f };
+	//Vector3 cylinderVelocity = { 0.0f,0.0f,0.0f };
+	//Vector4 cylinderColor = { 1.0f,1.0f,1.0f,1.0f };
+	//float cylinderLifeTime = 6.5f;
+	//float cylinderCurrentTime = 0.0f;
+	//emitterCylinder = std::make_unique <ParticleEmitter>("Cylinder", cylinderTransform, cylinderVelocity, cylinderColor, cylinderLifeTime, cylinderCurrentTime, 4.0f, 1);
 }
 
 void TitleScene::Finalize()
@@ -147,11 +146,11 @@ void TitleScene::Update()
 	//skybox->Update();
 
 	// パーティクルの更新処理
-	emitter->Update();
+	//emitter->Update();
 	/*emitterHit->Update();
 	emitterRing->Update();
-	emitterCylinder->Update();
-	ParticleManager::GetInstance()->Update();*/
+	emitterCylinder->Update();*/
+	ParticleManager::GetInstance()->Update();
 
 }
 

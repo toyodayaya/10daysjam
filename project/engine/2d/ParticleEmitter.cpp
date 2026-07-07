@@ -1,5 +1,8 @@
 #include "ParticleEmitter.h"
 #include "ParticleManager.h"
+#include "DirectXBasis.h"
+#include "Logger.h"
+using namespace Logger;
 
 ParticleEmitter::ParticleEmitter(const std::string name, const EulerTransform& transform,
 	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, float frequency, uint32_t count)

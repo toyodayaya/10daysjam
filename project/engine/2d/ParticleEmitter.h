@@ -2,6 +2,7 @@
 #pragma once
 #include <string>
 #include <MathManager.h>
+#include <wrl.h>
 
 class ParticleEmitter
 {
@@ -53,5 +54,4 @@ public:
 
 	// 更新処理
 	void Update();
-
 };
