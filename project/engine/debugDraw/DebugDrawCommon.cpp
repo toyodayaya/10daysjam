@@ -2,16 +2,16 @@
 #include "Logger.h"
 using namespace Logger;
 
-DebugDrawCommon* DebugDrawCommon::instance = nullptr;
+std::unique_ptr<DebugDrawCommon> DebugDrawCommon::instance = nullptr;
 
 DebugDrawCommon* DebugDrawCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new DebugDrawCommon;
+		instance = std::make_unique<DebugDrawCommon>();
 	}
 
-	return instance;
+	return instance.get();
 }
 
 void DebugDrawCommon::Initialize(DirectXBasis* directXBasis)
@@ -185,6 +185,5 @@ void DebugDrawCommon::DrawSettingCommon()
 
 void DebugDrawCommon::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }

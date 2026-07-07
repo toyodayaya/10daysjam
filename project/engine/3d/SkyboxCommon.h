@@ -4,7 +4,7 @@
 
 class SkyboxCommon
 {
-private:
+public:
 	// コンストラクタ
 	SkyboxCommon() = default;
 	// デストラクタ
@@ -13,7 +13,7 @@ private:
 	SkyboxCommon(const SkyboxCommon&) = delete;
 	SkyboxCommon& operator=(const SkyboxCommon&) = delete;
 	// インスタンス
-	static SkyboxCommon* instance;
+	static std::unique_ptr<SkyboxCommon> instance;
 
 public:
 	// 初期化

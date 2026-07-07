@@ -12,7 +12,7 @@ void Game::Initialize()
 
 	// Imguiマネージャーの初期化
 	imguiManager = std::make_unique <ImguiManager>();
-	imguiManager->Initialize(winAPIManager.get(), dxBasis.get(), srvManager.get());
+	imguiManager->Initialize(winAPIManager.get(), dxBasis.get(), srvManager);
 
 	// シーンファクトリーの生成とセット
 	sceneFactory = std::make_unique <SceneFactory>();

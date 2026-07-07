@@ -7,7 +7,7 @@
 using namespace StringUtility;
 
 
-TextureManager* TextureManager::instance = nullptr;
+std::unique_ptr<TextureManager> TextureManager::instance = nullptr;
 
 // ImGuiで０番を使用するため1番から使用
 uint32_t TextureManager::kSRVIndexTop = 1;
@@ -16,16 +16,15 @@ TextureManager* TextureManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new TextureManager;
+		instance = std::make_unique<TextureManager>();
 	}
 
-	return instance;
+	return instance.get();
 }
 
 void TextureManager::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }
 
 void TextureManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager)

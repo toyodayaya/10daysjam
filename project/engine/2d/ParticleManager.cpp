@@ -16,7 +16,7 @@ ParticleManager* ParticleManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::unique_ptr<ParticleManager>(new ParticleManager);
+		instance = std::make_unique<ParticleManager>();
 	}
 
 	return instance.get();

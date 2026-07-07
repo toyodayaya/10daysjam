@@ -3,16 +3,16 @@
 #include "StringUtility.h"
 using namespace StringUtility;
 
-SkyboxCommon* SkyboxCommon::instance = nullptr;
+std::unique_ptr<SkyboxCommon> SkyboxCommon::instance = nullptr;
 
 SkyboxCommon* SkyboxCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new SkyboxCommon;
+		instance = std::make_unique<SkyboxCommon>();
 	}
 
-	return instance;
+	return instance.get();
 }
 
 
@@ -183,6 +183,5 @@ void SkyboxCommon::DrawSettingCommon()
 
 void SkyboxCommon::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }

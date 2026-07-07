@@ -4,7 +4,7 @@
 
 class DebugDrawCommon
 {
-private:
+public:
 	// コンストラクタ
 	DebugDrawCommon() = default;
 	// デストラクタ
@@ -13,7 +13,7 @@ private:
 	DebugDrawCommon(const DebugDrawCommon&) = delete;
 	DebugDrawCommon& operator=(const DebugDrawCommon&) = delete;
 	// インスタンス
-	static DebugDrawCommon* instance;
+	static std::unique_ptr<DebugDrawCommon> instance;
 
 public:
 	// 初期化

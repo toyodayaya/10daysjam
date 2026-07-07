@@ -6,16 +6,7 @@
 class Object3dCommon
 {
 private:
-	// コンストラクタ
-	Object3dCommon() = default;
-	// デストラクタ
-	~Object3dCommon() = default;
-	// コピーコンストラクタとコピー代入演算子を削除
-	Object3dCommon(const Object3dCommon&) = delete;
-	Object3dCommon& operator=(const Object3dCommon&) = delete;
-	// インスタンス
-	static Object3dCommon* instance;
-
+	
 	enum BlendMode
 	{
 		// ブレンドなし
@@ -59,7 +50,15 @@ public:
 	// 終了
 	void Finalize();
 
-	
+	// コンストラクタ
+	Object3dCommon() = default;
+	// デストラクタ
+	~Object3dCommon() = default;
+	// コピーコンストラクタとコピー代入演算子を削除
+	Object3dCommon(const Object3dCommon&) = delete;
+	Object3dCommon& operator=(const Object3dCommon&) = delete;
+	// インスタンス
+	static std::unique_ptr<Object3dCommon> instance;
 
 private:
 	// ポインタ

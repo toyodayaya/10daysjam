@@ -1,22 +1,21 @@
 #include "ModelManager.h"
 #include "Model.h"
 
-ModelManager* ModelManager::instance = nullptr;
+std::unique_ptr<ModelManager> ModelManager::instance = nullptr;
 
 ModelManager* ModelManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new ModelManager;
+		instance = std::make_unique<ModelManager>();
 	}
 
-	return instance;
+	return instance.get();
 }
 
 void ModelManager::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }
 
 void ModelManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager)

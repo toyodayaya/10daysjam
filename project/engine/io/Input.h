@@ -4,11 +4,12 @@
 #define DIRECTINPUT_VERSION 0x0800 // DirectInputのバージョン指定
 #include <dinput.h>
 #include "WinAPIManager.h"
+#include "DirectXBasis.h"
 
 // 入力クラス
 class Input
 {
-private:
+public:
 	// コンストラクタ
 	Input() = default;
 	// デストラクタ
@@ -17,7 +18,7 @@ private:
 	Input(const Input&) = delete;
 	Input& operator=(const Input&) = delete;
 	// インスタンス
-	static Input* instance;
+	static std::unique_ptr<Input> instance;
 
 public:
 	// namespaceを省略

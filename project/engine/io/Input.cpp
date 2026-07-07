@@ -4,15 +4,15 @@
 #pragma comment(lib,"dxguid.lib")
 #include <cassert>
 
-Input* Input::instance = nullptr;
+std::unique_ptr<Input> Input::instance = nullptr;
 
 Input* Input::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new Input;
+		instance = std::make_unique<Input>();
 	}
-	return instance;
+	return instance.get();
 }
 
 void Input::Initialize(WinAPIManager* winApiManager)
@@ -74,6 +74,5 @@ bool Input::TriggerKey(BYTE keyNumber)
 
 void Input::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }

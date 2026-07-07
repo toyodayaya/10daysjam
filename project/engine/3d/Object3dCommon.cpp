@@ -2,16 +2,16 @@
 #include "Logger.h"
 using namespace Logger;
 
-Object3dCommon* Object3dCommon::instance = nullptr;
+std::unique_ptr<Object3dCommon> Object3dCommon::instance = nullptr;
 
 Object3dCommon* Object3dCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new Object3dCommon;
+		instance = std::make_unique<Object3dCommon>();
 	}
 
-	return instance;
+	return instance.get();
 }
 
 void Object3dCommon::Initialize(DirectXBasis* directXBasis)
@@ -252,6 +252,5 @@ void Object3dCommon::BlendModeSetting()
 
 void Object3dCommon::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }

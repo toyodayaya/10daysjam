@@ -5,7 +5,7 @@
 
 class RenderTexture
 {
-private:
+public:
 	// コンストラクタ
 	RenderTexture() = default;
 	// デストラクタ
@@ -14,7 +14,7 @@ private:
 	RenderTexture(const RenderTexture&) = delete;
 	RenderTexture& operator=(const RenderTexture&) = delete;
 	// インスタンス
-	static RenderTexture* instance;
+	static std::unique_ptr<RenderTexture> instance;
 
 public:
 	struct Material

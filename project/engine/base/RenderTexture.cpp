@@ -5,16 +5,16 @@
 
 using namespace MathManager;
 
-RenderTexture* RenderTexture::instance = nullptr;
+std::unique_ptr<RenderTexture> RenderTexture::instance = nullptr;
 
 RenderTexture* RenderTexture::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new RenderTexture;
+		instance = std::make_unique<RenderTexture>();
 	}
 
-	return instance;
+	return instance.get();
 }
 
 void RenderTexture::Initialize(DirectXBasis* directXBasis,SrvManager* srvManager)
@@ -240,6 +240,5 @@ void RenderTexture::DrawSettingCommon()
 
 void RenderTexture::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }

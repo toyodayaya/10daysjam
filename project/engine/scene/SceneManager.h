@@ -5,7 +5,7 @@
 
 class SceneManager
 {
-private:
+public:
 	// コンストラクタ
 	SceneManager() = default;
 	// デストラクタ
@@ -14,7 +14,7 @@ private:
 	SceneManager(const SceneManager&) = delete;
 	SceneManager& operator=(const SceneManager&) = delete;
 	// インスタンス
-	static SceneManager* instance;
+	static std::unique_ptr<SceneManager> instance;
 
 public:
 	// 次シーン予約

@@ -5,16 +5,7 @@
 class SpriteCommon
 {
 private:
-	// コンストラクタ
-	SpriteCommon() = default;
-	// デストラクタ
-	~SpriteCommon() = default;
-	// コピーコンストラクタとコピー代入演算子を削除
-	SpriteCommon(const SpriteCommon&) = delete;
-	SpriteCommon& operator=(const SpriteCommon&) = delete;
-	// インスタンス
-	static SpriteCommon* instance;
-
+	
 	enum BlendMode
 	{
 		// ブレンドなし
@@ -54,6 +45,17 @@ public:
 	static SpriteCommon* GetInstance();
 	// 終了
 	void Finalize();
+
+	// コンストラクタ
+	SpriteCommon() = default;
+	// デストラクタ
+	~SpriteCommon() = default;
+	// コピーコンストラクタとコピー代入演算子を削除
+	SpriteCommon(const SpriteCommon&) = delete;
+	SpriteCommon& operator=(const SpriteCommon&) = delete;
+
+	// インスタンス
+	static std::unique_ptr<SpriteCommon> instance;
 	
 private:
 	// ポインタ

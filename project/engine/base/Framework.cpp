@@ -16,18 +16,18 @@ void Framework::Initialize()
 	dxBasis->Initialize(winAPIManager.get());
 
 	// SRVマネージャーの初期化
-	srvManager = std::make_unique <SrvManager>();
+	srvManager = SrvManager::GetInstance();
 	srvManager->Initialize(dxBasis.get());
 
 	// カメラの初期化
 	camera = std::make_unique <Camera>();
 
 	// テクスチャマネージャーの初期化
-	TextureManager::GetInstance()->Initialize(dxBasis.get(), srvManager.get());
+	TextureManager::GetInstance()->Initialize(dxBasis.get(), srvManager);
 
 	// RenderTextureの初期化
 	RenderTexture::GetInstance()->SetDefaultCamera(camera.get());
-	RenderTexture::GetInstance()->Initialize(dxBasis.get(),srvManager.get());
+	RenderTexture::GetInstance()->Initialize(dxBasis.get(),srvManager);
 
 	// スプライト共通部の初期化
 	SpriteCommon::GetInstance()->Initialize(dxBasis.get());
@@ -39,7 +39,7 @@ void Framework::Initialize()
 	SkyboxCommon::GetInstance()->Initialize(dxBasis.get());
 	SkyboxCommon::GetInstance()->SetDefaultCamera(camera.get());
 	// アニメーションモデルの初期化
-	AnimationCommon::GetInstance()->Initialize(dxBasis.get(), srvManager.get());
+	AnimationCommon::GetInstance()->Initialize(dxBasis.get(), srvManager);
 	AnimationCommon::GetInstance()->SetDefaultCamera(camera.get());
 
 	// デバッグ描画共通部の初期化
@@ -47,7 +47,7 @@ void Framework::Initialize()
 	DebugDrawCommon::GetInstance()->SetDefaultCamera(camera.get());
 
 	// 3Dモデルマネージャーの初期化
-	ModelManager::GetInstance()->Initialize(dxBasis.get(),srvManager.get());
+	ModelManager::GetInstance()->Initialize(dxBasis.get(),srvManager);
 
 	// Audioの初期化
 	Audio::GetInstance()->Initialize();
@@ -60,7 +60,7 @@ void Framework::Initialize()
 	assert(fenceEvent != nullptr);
 
 	// パーティクルマネージャーの初期化
-	ParticleManager::GetInstance()->Initialize(dxBasis.get(), srvManager.get(), camera.get());
+	ParticleManager::GetInstance()->Initialize(dxBasis.get(), srvManager, camera.get());
 	
 }
 
@@ -120,6 +120,9 @@ void Framework::Finalize()
 	TextureManager::GetInstance()->Finalize();
 	// カメラの終了
 	camera.reset();
+
+	// SRVマネージャーの終了
+	srvManager->Finalize();
 	
 	// WinAPIの終了処理
 	winAPIManager->Finalize();

@@ -11,12 +11,6 @@
 class TextureManager
 {
 private:
-	static TextureManager* instance;
-
-	TextureManager() = default;
-	~TextureManager() = default;
-	TextureManager(TextureManager&) = delete;
-	TextureManager& operator=(TextureManager&) = delete;
 
 	// テクスチャ1枚分のデータ
 	struct TextureData
@@ -54,6 +48,13 @@ private:
 	static uint32_t kSRVIndexTop;
 
 public:
+	static std::unique_ptr<TextureManager> instance;
+
+	TextureManager() = default;
+	~TextureManager() = default;
+	TextureManager(TextureManager&) = delete;
+	TextureManager& operator=(TextureManager&) = delete;
+
 	// シングルトンインスタンスの取得
 	static TextureManager* GetInstance();
 	// 終了

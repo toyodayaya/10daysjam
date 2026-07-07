@@ -8,7 +8,7 @@ AnimationCommon* AnimationCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::unique_ptr<AnimationCommon>(new AnimationCommon);
+		instance = std::make_unique<AnimationCommon>();
 	}
 
 	return instance.get();

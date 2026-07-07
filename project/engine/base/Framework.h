@@ -68,7 +68,7 @@ protected:
 	// DirectX基盤のポインタ
 	std::unique_ptr <DirectXBasis> dxBasis;
 	// SRVマネージャーのポインタ
-	std::unique_ptr <SrvManager> srvManager;
+	SrvManager* srvManager = nullptr;
 	// カメラのポインタ
 	std::unique_ptr <Camera> camera = nullptr;
 	

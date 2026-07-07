@@ -1,16 +1,16 @@
 #include "SpriteCommon.h"
 #include "Logger.h"
 
-SpriteCommon* SpriteCommon::instance = nullptr;
+std::unique_ptr<SpriteCommon> SpriteCommon::instance = nullptr;
 
 SpriteCommon* SpriteCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = new SpriteCommon;
+		instance = std::make_unique<SpriteCommon>();
 	}
 
-	return instance;
+	return instance.get();
 }
 
 void SpriteCommon::Initialize(DirectXBasis* directXBasis)
@@ -260,6 +260,5 @@ void SpriteCommon::BlendModeSetting()
 
 void SpriteCommon::Finalize()
 {
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 }
