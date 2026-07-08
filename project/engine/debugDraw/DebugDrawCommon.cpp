@@ -118,11 +118,11 @@ void DebugDrawCommon::GenerateGraphicsPipeline()
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 
 	// ShaderをCompileする
-	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/DebugDraw.VS.hlsl",
+	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/debugDraw/DebugDraw.VS.hlsl",
 		L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/DebugDraw.PS.hlsl",
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/debugDraw/DebugDraw.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 

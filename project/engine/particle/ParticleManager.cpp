@@ -181,11 +181,11 @@ void ParticleManager::GenerateGraphicsPipeline()
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 
 	// ShaderをCompileする
-	vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Particle.VS.hlsl",
+	vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/particle/Particle.VS.hlsl",
 		L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
 
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Particle.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/particle/Particle.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
@@ -419,7 +419,7 @@ void ParticleManager::GenerateCSPipelineState()
 	CreateCSRootSignature();
 
 	// initializeShaderをcompileする
-	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/ParticleInitialize.CS.hlsl",
+	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/particle/ParticleInitialize.CS.hlsl",
 		L"cs_6_0");
 	assert(computeShaderBlob != nullptr);
 
@@ -436,7 +436,7 @@ void ParticleManager::GenerateCSPipelineState()
 
 
 	// emitterShaderをcompileする
-	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/ParticleEmitter.CS.hlsl",
+	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/particle/ParticleEmitter.CS.hlsl",
 		L"cs_6_0");
 	assert(computeShaderBlob != nullptr);
 
@@ -452,7 +452,7 @@ void ParticleManager::GenerateCSPipelineState()
 	hr = dxBasis_->GetDevice()->CreateComputePipelineState(&computePipelineStateDescEmit, IID_PPV_ARGS(&computePipelineStateEmit));
 
 	// updateShaderをcompileする
-	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/ParticleUpdate.CS.hlsl",
+	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/particle/ParticleUpdate.CS.hlsl",
 		L"cs_6_0");
 	assert(computeShaderBlob != nullptr);
 
@@ -482,15 +482,22 @@ void ParticleManager::CreateCSRootSignature()
 	descriptorRangeParticle[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 	descriptorRangeParticle[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// FreeCounter用のUAVのDescriptorRange
-	D3D12_DESCRIPTOR_RANGE descriptorRangeFreeCounter[1] = {};
-	descriptorRangeFreeCounter[0].BaseShaderRegister = 1;// u1
-	descriptorRangeFreeCounter[0].NumDescriptors = 1; // 数は1つ
-	descriptorRangeFreeCounter[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-	descriptorRangeFreeCounter[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	// FreeListIndex用のUAVのDescriptorRange
+	D3D12_DESCRIPTOR_RANGE descriptorRangeFreeListIndex[1] = {};
+	descriptorRangeFreeListIndex[0].BaseShaderRegister = 1;// u1
+	descriptorRangeFreeListIndex[0].NumDescriptors = 1; // 数は1つ
+	descriptorRangeFreeListIndex[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	descriptorRangeFreeListIndex[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	// FreeList用のUAVのDescriptorRange
+	D3D12_DESCRIPTOR_RANGE descriptorRangeFreeList[1] = {};
+	descriptorRangeFreeList[0].BaseShaderRegister = 2;// u2
+	descriptorRangeFreeList[0].NumDescriptors = 1; // 数は1つ
+	descriptorRangeFreeList[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	descriptorRangeFreeList[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameterを作成
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	D3D12_ROOT_PARAMETER rootParameters[5] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 	rootParameters[0].DescriptorTable.pDescriptorRanges = descriptorRangeParticle;
@@ -503,8 +510,12 @@ void ParticleManager::CreateCSRootSignature()
 	rootParameters[2].Descriptor.ShaderRegister = 1;
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	rootParameters[3].DescriptorTable.pDescriptorRanges = descriptorRangeFreeCounter;
-	rootParameters[3].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeFreeCounter);
+	rootParameters[3].DescriptorTable.pDescriptorRanges = descriptorRangeFreeListIndex;
+	rootParameters[3].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeFreeListIndex);
+	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rootParameters[4].DescriptorTable.pDescriptorRanges = descriptorRangeFreeList;
+	rootParameters[4].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeFreeList);
 
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
@@ -574,32 +585,49 @@ void ParticleManager::CreateUav()
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	srvDesc.Buffer.FirstElement = 0;
 	srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	srvDesc.Buffer.NumElements = 1024;
+	srvDesc.Buffer.NumElements = kMaxInstanceCount;
 	srvDesc.Buffer.StructureByteStride = sizeof(ParticleCS);
 	dxBasis_->GetDevice()->CreateShaderResourceView(particleResource.Get(), &srvDesc, particleSrvHandle.first);
 
-	// freeCounter用のUAVを生成
-	// UAVの生成
-	freeCounterUavIndex = srvManager_->Allocate();
-	freeCounterUavHandle.first = srvManager_->GetCPUDescriptorHandle(freeCounterUavIndex);
-	freeCounterUavHandle.second = srvManager_->GetGPUDescriptorHandle(freeCounterUavIndex);
-	freeCounterResource = dxBasis_->CreateOutputVertexBuffer(sizeof(int32_t));
-	D3D12_UNORDERED_ACCESS_VIEW_DESC freeCounterUavDesc{};
-	freeCounterUavDesc.Format = DXGI_FORMAT_UNKNOWN;
-	freeCounterUavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-	freeCounterUavDesc.Buffer.FirstElement = 0;
-	freeCounterUavDesc.Buffer.NumElements = 1;
-	freeCounterUavDesc.Buffer.CounterOffsetInBytes = 0;
-	freeCounterUavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-	freeCounterUavDesc.Buffer.StructureByteStride = (sizeof(int32_t));
+	// freeListIndex用のUAVを生成
+	freeListIndexUavIndex = srvManager_->Allocate();
+	freeListIndexUavHandle.first = srvManager_->GetCPUDescriptorHandle(freeListIndexUavIndex);
+	freeListIndexUavHandle.second = srvManager_->GetGPUDescriptorHandle(freeListIndexUavIndex);
+	freeListIndexResource = dxBasis_->CreateOutputVertexBuffer(sizeof(int32_t));
+	D3D12_UNORDERED_ACCESS_VIEW_DESC freeListIndexUavDesc{};
+	freeListIndexUavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	freeListIndexUavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+	freeListIndexUavDesc.Buffer.FirstElement = 0;
+	freeListIndexUavDesc.Buffer.NumElements = 1;
+	freeListIndexUavDesc.Buffer.CounterOffsetInBytes = 0;
+	freeListIndexUavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+	freeListIndexUavDesc.Buffer.StructureByteStride = (sizeof(int32_t));
 
-	dxBasis_->GetDevice()->CreateUnorderedAccessView(freeCounterResource.Get(), nullptr, &freeCounterUavDesc, freeCounterUavHandle.first);
+	dxBasis_->GetDevice()->CreateUnorderedAccessView(freeListIndexResource.Get(), nullptr, &freeListIndexUavDesc, freeListIndexUavHandle.first);
+
+	// freeList用のUAVを生成
+	freeListUavIndex = srvManager_->Allocate();
+	freeListUavHandle.first = srvManager_->GetCPUDescriptorHandle(freeListUavIndex);
+	freeListUavHandle.second = srvManager_->GetGPUDescriptorHandle(freeListUavIndex);
+	freeListResource = dxBasis_->CreateOutputVertexBuffer(UINT(sizeof(uint32_t) * kMaxInstanceCount));
+	D3D12_UNORDERED_ACCESS_VIEW_DESC freeListUavDesc{};
+	freeListUavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	freeListUavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+	freeListUavDesc.Buffer.FirstElement = 0;
+	freeListUavDesc.Buffer.NumElements = kMaxInstanceCount;
+	freeListUavDesc.Buffer.CounterOffsetInBytes = 0;
+	freeListUavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+	freeListUavDesc.Buffer.StructureByteStride = sizeof(uint32_t);
+
+	dxBasis_->GetDevice()->CreateUnorderedAccessView(freeListResource.Get(), nullptr, &freeListUavDesc, freeListUavHandle.first);
+
 
 	// CS用の設定
 	srvManager_->PreDraw();
 	DrawSettingCompute();
 	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, particleUavHandle.second);
-	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, freeCounterUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, freeListIndexUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(4, freeListUavHandle.second);
 
 	D3D12_RESOURCE_BARRIER barrier{};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -643,11 +671,11 @@ void ParticleManager::CreateMaterialResource()
 	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	instancingSrvDesc.Buffer.FirstElement = 0;
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = kMaxInstanceCount;
+	instancingSrvDesc.Buffer.NumElements = 1;
 	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = srvManager_->GetCPUDescriptorHandle(srvIndex);
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = srvManager_->GetGPUDescriptorHandle(srvIndex);
-	srvManager_->CreateSRVforStructuredBuffer(srvIndex, instancingResource.Get(), instancingSrvDesc.Format, kMaxInstanceCount, sizeof(ParticleCS));
+	srvManager_->CreateSRVforStructuredBuffer(srvIndex, instancingResource.Get(), instancingSrvDesc.Format, 1, sizeof(ParticleCS));
 
 }
 
@@ -926,7 +954,8 @@ void ParticleManager::Draw()
 	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, particleUavHandle.second);
 	dxBasis_->GetCommandList()->SetComputeRootConstantBufferView(1, emitterResource->GetGPUVirtualAddress());
 	dxBasis_->GetCommandList()->SetComputeRootConstantBufferView(2, perFrameResource->GetGPUVirtualAddress());
-	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, freeCounterUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, freeListIndexUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(4, freeListUavHandle.second);
 	dxBasis_->GetCommandList()->SetPipelineState(computePipelineStateEmit.Get());
 	dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
 
@@ -962,7 +991,7 @@ void ParticleManager::Draw()
 	// VBVを設定
 	dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 	// 描画
-	dxBasis_->GetCommandList()->DrawInstanced(6, 1024, 0, 0);
+	dxBasis_->GetCommandList()->DrawInstanced(6, kMaxInstanceCount, 0, 0);
 
 
 	//// グループごとに描画

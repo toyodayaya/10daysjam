@@ -36,7 +36,7 @@ void AnimationCommon::GenerateCSPipelineState()
 	CreateCSRootSignature();
 
 	// shaderをcompileする
-	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Skinning.CS.hlsl",
+	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/object3d/Skinning.CS.hlsl",
 		L"cs_6_0");
 	assert(computeShaderBlob != nullptr);
 

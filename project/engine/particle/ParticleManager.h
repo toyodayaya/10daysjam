@@ -201,7 +201,7 @@ private:
 	AccelerationField accelerationField;
 
 	// パーティクル最大数
-	const uint32_t kMaxInstanceCount = 1;
+	const uint32_t kMaxInstanceCount = 1024;
 
 	// 乱数生成器
 	std::random_device seedGenerator;
@@ -240,10 +240,15 @@ private:
 	// テクスチャデータ
 	std::string textureFilePath;
 
-	// FreeCounter
-	Microsoft::WRL::ComPtr <ID3D12Resource> freeCounterResource;
-	uint32_t freeCounterUavIndex;
-	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> freeCounterUavHandle;
+	// FreeListIndex
+	Microsoft::WRL::ComPtr <ID3D12Resource> freeListIndexResource;
+	uint32_t freeListIndexUavIndex;
+	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> freeListIndexUavHandle;
+
+	// FreeList
+	Microsoft::WRL::ComPtr <ID3D12Resource> freeListResource;
+	uint32_t freeListUavIndex;
+	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> freeListUavHandle;
 
 public:
 	// シングルトンインスタンスの取得

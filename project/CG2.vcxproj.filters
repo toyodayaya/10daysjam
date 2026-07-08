@@ -203,85 +203,85 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="resources\shaders\Object3d.PS.hlsl">
+    <FxCompile Include="resources\shaders\object3d\Object3d.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Object3d.VS.hlsl">
+    <FxCompile Include="resources\shaders\object3d\Object3d.VS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Object3d.hlsli">
+    <FxCompile Include="resources\shaders\object3d\Object3d.hlsli">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\BoxFilter.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\BoxFilter.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\BoxFilter5x5.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\BoxFilter5x5.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\DebugDraw.PS.hlsl">
+    <FxCompile Include="resources\shaders\debugDraw\DebugDraw.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\DebugDraw.VS.hlsl">
+    <FxCompile Include="resources\shaders\debugDraw\DebugDraw.VS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\DepthBasedOutline.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\DepthBasedOutline.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Dissolve.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\Dissolve.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\FullScreen.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\FullScreen.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\FullScreen.VS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\FullScreen.VS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\GaussianFilter.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\GaussianFilter.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\GrayScale.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\GrayScale.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\LuminanceBasedOutline.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\LuminanceBasedOutline.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Particle.hlsli">
+    <FxCompile Include="resources\shaders\particle\Particle.hlsli">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Particle.PS.hlsl">
+    <FxCompile Include="resources\shaders\particle\Particle.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Particle.VS.hlsl">
+    <FxCompile Include="resources\shaders\particle\Particle.VS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\ParticleEmitter.CS.hlsl">
+    <FxCompile Include="resources\shaders\particle\ParticleEmitter.CS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\ParticleInitialize.CS.hlsl">
+    <FxCompile Include="resources\shaders\particle\ParticleInitialize.CS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\ParticleUpdate.CS.hlsl">
+    <FxCompile Include="resources\shaders\particle\ParticleUpdate.CS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\RadialBlur.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\RadialBlur.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Random.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\Random.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\SepiaScale.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\SepiaScale.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Skinning.CS.hlsl">
+    <FxCompile Include="resources\shaders\object3d\Skinning.CS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Skybox.PS.hlsl">
+    <FxCompile Include="resources\shaders\skybox\Skybox.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Skybox.VS.hlsl">
+    <FxCompile Include="resources\shaders\skybox\Skybox.VS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Vignette.PS.hlsl">
+    <FxCompile Include="resources\shaders\postEffect\Vignette.PS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
   </ItemGroup>
@@ -629,13 +629,13 @@
   <ItemGroup>
     <None Include="externals\assimp\include\assimp\.editorconfig" />
     <None Include="externals\assimp\include\assimp\config.h.in" />
-    <None Include="resources\shaders\DebugDraw.hlsli">
+    <None Include="resources\shaders\debugDraw\DebugDraw.hlsli">
       <Filter>シェーダーファイル</Filter>
     </None>
-    <None Include="resources\shaders\FullScreen.hlsli">
+    <None Include="resources\shaders\postEffect\FullScreen.hlsli">
       <Filter>シェーダーファイル</Filter>
     </None>
-    <None Include="resources\shaders\Skybox.hlsli">
+    <None Include="resources\shaders\skybox\Skybox.hlsli">
       <Filter>シェーダーファイル</Filter>
     </None>
     <None Include="externals\assimp\include\assimp\color4.inl">

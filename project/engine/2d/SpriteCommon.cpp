@@ -137,11 +137,11 @@ void SpriteCommon::GenerateGraphicsPipeline()
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 
 	// ShaderをCompileする
-	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Object3d.VS.hlsl",
+	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/object3d/Object3d.VS.hlsl",
 		L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Object3d.PS.hlsl",
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/object3d/Object3d.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 

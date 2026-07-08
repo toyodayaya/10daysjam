@@ -118,12 +118,12 @@ void SkyboxCommon::GenerateGraphicsPipeline()
 
 	// ShaderをCompileする
 	Microsoft::WRL::ComPtr <IDxcBlob> vertexShaderBlob;
-	vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Skybox.VS.hlsl",
+	vertexShaderBlob = dxBasis_->CompileShader(L"resources/shaders/skybox/Skybox.VS.hlsl",
 		L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlob;
-	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/Skybox.PS.hlsl",
+	pixelShaderBlob = dxBasis_->CompileShader(L"resources/shaders/skybox/Skybox.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 

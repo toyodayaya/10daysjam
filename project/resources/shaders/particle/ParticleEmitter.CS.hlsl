@@ -61,7 +61,8 @@ class RandomGenerator
 
 static const uint32_t kMaxParticles = 1024;
 RWStructuredBuffer<Particle> gParticle : register(u0);
-RWStructuredBuffer<int32_t> gFreeCounter : register(u1);
+RWStructuredBuffer<int32_t> gFreeListIndex : register(u1);
+RWStructuredBuffer<uint32_t> gFreeList : register(u2);
 ConstantBuffer<EmitterSphere> gEmitter : register(b0);
 ConstantBuffer<PerFrame> gParFrame : register(b1);
 
@@ -75,19 +76,26 @@ void main( uint3 DTid : SV_DispatchThreadID )
         
         for (uint32_t countIndex = 0; countIndex < gEmitter.count; ++countIndex)
         {
-            int32_t particleIndex;
-            InterlockedAdd(gFreeCounter[0], 1, particleIndex);
+            int32_t freeListIndex;
+            InterlockedAdd(gFreeListIndex[0], -1, freeListIndex);
             
-            if (particleIndex < kMaxParticles)
+            if(0 <= freeListIndex && freeListIndex < kMaxParticles)
             {
-                gParticle[countIndex].scale = generator.Generate3d();
-                gParticle[countIndex].translate = generator.Generate3d();
-                gParticle[countIndex].color.rgb = generator.Generate3d();
-                gParticle[countIndex].color.a = 1.0f;
-                gParticle[countIndex].lifeTime = gParFrame.time;
-                gParticle[countIndex].currentTime = gParFrame.deltaTime;
-                gParticle[countIndex].velocity = generator.Generate3d();
+                uint32_t particleIndex = gFreeList[freeListIndex];
+                gParticle[particleIndex].scale = generator.Generate3d();
+                gParticle[particleIndex].translate = generator.Generate3d();
+                gParticle[particleIndex].color.rgb = generator.Generate3d();
+                gParticle[particleIndex].color.a = 1.0f;
+                gParticle[particleIndex].lifeTime = gParFrame.time;
+                gParticle[particleIndex].currentTime = 0;
+                gParticle[particleIndex].velocity = generator.Generate3d();
             }
+            else
+            {
+                InterlockedAdd(gFreeListIndex[0], 1);
+                break;
+            }
+
         }
 
     }
