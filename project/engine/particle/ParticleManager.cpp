@@ -418,12 +418,12 @@ void ParticleManager::GenerateCSPipelineState()
 	// ルートシグネチャーを作成
 	CreateCSRootSignature();
 
-	// shaderをcompileする
-	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/InitializeParticle.CS.hlsl",
+	// initializeShaderをcompileする
+	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/ParticleInitialize.CS.hlsl",
 		L"cs_6_0");
 	assert(computeShaderBlob != nullptr);
 
-	// CS用のパイプラインステートを設定する
+	// initializeCS用のパイプラインステートを設定する
 	D3D12_COMPUTE_PIPELINE_STATE_DESC computePipelineStateDesc{};
 	computePipelineStateDesc.CS =
 	{
@@ -435,12 +435,12 @@ void ParticleManager::GenerateCSPipelineState()
 	HRESULT hr = dxBasis_->GetDevice()->CreateComputePipelineState(&computePipelineStateDesc, IID_PPV_ARGS(&computePipelineState));
 
 
-	// shaderをcompileする
-	computeShaderBlob = ParticleManager::GetInstance()->GetDxBasis()->CompileShader(L"resources/shaders/EmitterParticle.CS.hlsl",
+	// emitterShaderをcompileする
+	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/ParticleEmitter.CS.hlsl",
 		L"cs_6_0");
 	assert(computeShaderBlob != nullptr);
 
-	// CS用のパイプラインステートを設定する
+	// emitterCS用のパイプラインステートを設定する
 	D3D12_COMPUTE_PIPELINE_STATE_DESC computePipelineStateDescEmit{};
 	computePipelineStateDescEmit.CS =
 	{
@@ -450,6 +450,22 @@ void ParticleManager::GenerateCSPipelineState()
 
 	computePipelineStateDescEmit.pRootSignature = computeRootSignature.Get();
 	hr = dxBasis_->GetDevice()->CreateComputePipelineState(&computePipelineStateDescEmit, IID_PPV_ARGS(&computePipelineStateEmit));
+
+	// updateShaderをcompileする
+	computeShaderBlob = dxBasis_->CompileShader(L"resources/shaders/ParticleUpdate.CS.hlsl",
+		L"cs_6_0");
+	assert(computeShaderBlob != nullptr);
+
+	// updateCS用のパイプラインステートを設定する
+	D3D12_COMPUTE_PIPELINE_STATE_DESC computePipelineStateDescUpdate{};
+	computePipelineStateDescUpdate.CS =
+	{
+		.pShaderBytecode = computeShaderBlob->GetBufferPointer(),
+		.BytecodeLength = computeShaderBlob->GetBufferSize()
+	};
+
+	computePipelineStateDescUpdate.pRootSignature = computeRootSignature.Get();
+	hr = dxBasis_->GetDevice()->CreateComputePipelineState(&computePipelineStateDescUpdate, IID_PPV_ARGS(&computePipelineStateUpdate));
 
 }
 
@@ -905,13 +921,6 @@ void ParticleManager::Update()
 
 void ParticleManager::Draw()
 {
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = emitterResource.Get();
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-
 	// emitterデータを転送
 	DrawSettingCompute();
 	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, particleUavHandle.second);
@@ -921,15 +930,16 @@ void ParticleManager::Draw()
 	dxBasis_->GetCommandList()->SetPipelineState(computePipelineStateEmit.Get());
 	dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
 
-	D3D12_RESOURCE_BARRIER barriers{};
-	barriers.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barriers.Transition.pResource = emitterResource.Get();
-	barriers.Transition.StateBefore = D3D12_RESOURCE_STATE_GENERIC_READ;
-	barriers.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-	barriers.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	dxBasis_->GetCommandList()->ResourceBarrier(1, &barriers);
+	// 並列動作用にバリアを張る
+	D3D12_RESOURCE_BARRIER barrierUav{};
+	barrierUav.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrierUav.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrierUav.UAV.pResource = particleResource.Get();
+	dxBasis_->GetCommandList()->ResourceBarrier(1, &barrierUav);
 
-
+	// Updateデータを転送
+	dxBasis_->GetCommandList()->SetPipelineState(computePipelineStateUpdate.Get());
+	dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
 
 	// RootSignatureを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());

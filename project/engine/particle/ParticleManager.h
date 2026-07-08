@@ -158,6 +158,7 @@ private:
 	// ComputePipelineState
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> computePipelineState;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> computePipelineStateEmit;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> computePipelineStateUpdate;
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
