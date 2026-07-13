@@ -169,8 +169,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\scene\GamePlayScene.cpp" />
     <ClCompile Include="engine\debugDraw\DebugDraw.cpp" />
     <ClCompile Include="engine\debugDraw\DebugDrawCommon.cpp" />
-    <ClCompile Include="engine\dataLoad\JsonLoader.cpp" />
-    <ClCompile Include="engine\dataLoad\LevelData.cpp" />
+    <ClCompile Include="engine\stageLoad\StageManager.cpp" />
+    <ClCompile Include="engine\stageLoad\LevelData.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
@@ -195,6 +195,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\SkyboxCommon.cpp" />
     <ClCompile Include="engine\3d\Skybox.cpp" />
     <ClCompile Include="engine\base\RenderTexture.cpp" />
+    <ClCompile Include="engine\stageLoad\StageCreate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\particle\ParticleEmitter.CS.hlsl">
@@ -467,8 +468,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\3d\SkyboxCommon.h" />
     <ClInclude Include="engine\3d\Skybox.h" />
     <ClInclude Include="engine\base\RenderTexture.h" />
-    <ClInclude Include="engine\dataLoad\JsonLoader.h" />
-    <ClInclude Include="engine\dataLoad\LevelData.h" />
+    <ClInclude Include="engine\stageLoad\StageManager.h" />
+    <ClInclude Include="engine\stageLoad\LevelData.h" />
+    <ClInclude Include="engine\stageLoad\StageCreate.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

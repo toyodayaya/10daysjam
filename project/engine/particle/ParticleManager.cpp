@@ -663,13 +663,6 @@ void ParticleManager::LaunchEmitterCS(ParticleGroup& group)
 
 void ParticleManager::LaunchUpdateCS(ParticleGroup& group)
 {
-	// 並列動作用にバリアを張る
-	D3D12_RESOURCE_BARRIER barrierUav{};
-	barrierUav.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-	barrierUav.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrierUav.UAV.pResource = group.particleResource.Get();
-	dxBasis_->GetCommandList()->ResourceBarrier(1, &barrierUav);
-
 	// Updateデータを転送
 	dxBasis_->GetCommandList()->SetPipelineState(computePipelineStateUpdate.Get());
 	// ParticleCSのDescriptorTableを設定
@@ -878,4 +871,11 @@ void ParticleManager::Emit(const std::string name, const EmitterSphere& emitterS
 
 	// EmitterCSを起動する
 	LaunchEmitterCS(group);
+
+	// 並列動作用にバリアを張る
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.UAV.pResource = group.particleResource.Get();
+	dxBasis_->GetCommandList()->ResourceBarrier(1, &barrier);
 }
