@@ -6,7 +6,6 @@
 #include "DirectXBasis.h"
 #include "SrvManager.h"
 #include "MathManager.h"
-#include "ParticleEmitter.h"
 #include <numbers>
 #include "Camera.h"
 #include <random>
@@ -60,23 +59,47 @@ private:
 		Vector4 Color;
 	};
 
-
-	struct ParticleGroup
+public:
+	enum ShapeType
 	{
-		MaterialData materialData;
-		std::list<Particle> particles;
-		uint32_t srvIndex;
-		Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;
-		uint32_t instanceCount;
-		ParticleForGPU* instancingData;
-		ParticleEmitter::Type type;
+		// 通常
+		kNormal,
+		// 斬撃
+		kHitEffect,
+		// 円
+		kRing,
+		// 円柱
+		kCylinder,
 	};
 
-	struct AccelerationField
+	enum MoveType
 	{
-		Vector3 acceleration;
-		AABB area;
+		// 動きなし
+		kNone,
+		// 拡散
+		kDiffusion,
 	};
+
+	struct EmitterSphere
+	{
+		Vector3 translate;
+		float pad0;
+		Vector3 scale;
+		float pad1;
+		Vector3 velocity;
+		float pad2;
+		Vector4 color;
+		float lifeTime;
+		float currentTime;
+		float radius;
+		uint32_t count;
+		float frequency;
+		float frequencyTime;
+		MoveType type;
+	};
+
+
+private:
 
 	struct ParticleCS
 	{
@@ -88,20 +111,36 @@ private:
 		Vector4 color;
 	};
 
+	struct ParticleGroup
+	{
+		MaterialData materialData;
+		Microsoft::WRL::ComPtr <ID3D12Resource> freeListIndexResource;
+		uint32_t freeListIndexUavIndex;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> freeListIndexUavHandle;
+		Microsoft::WRL::ComPtr <ID3D12Resource> freeListResource;
+		uint32_t freeListUavIndex;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> freeListUavHandle;
+		Microsoft::WRL::ComPtr <ID3D12Resource> particleResource;
+		uint32_t particleUavIndex;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> particleUavHandle;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> particleSrvHandle;
+		uint32_t particleSrvIndex;
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+		ModelData modelData;
+		Microsoft::WRL::ComPtr<ID3D12Resource> emitterResource;
+		EmitterSphere* emitterSphere = nullptr;
+	};
+
+	struct AccelerationField
+	{
+		Vector3 acceleration;
+		AABB area;
+	};
+
 	struct PerView
 	{
 		Matrix4x4 viewProjection;
 		Matrix4x4 billboardMatrix;
-	};
-
-	struct EmitterSphere
-	{
-		Vector3 translate;
-		float radius;
-		uint32_t count;
-		float frequency;
-		float frequencyTime;
-		uint32_t emit;
 	};
 
 	struct PerFrame
@@ -128,6 +167,7 @@ private:
 		kCountOfBlendMode
 	};
 
+
 private:
 
 
@@ -147,9 +187,6 @@ private:
 	ModelData modelData;
 	ModelData modelDataRing;
 	ModelData modelDataCylinder;
-
-	// マテリアルデータ
-	MaterialData materialData;
 
 	// ルートシグネチャー
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
@@ -187,7 +224,7 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewRing;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewCylinder;
-	
+
 	// パーティクルグループコンテナ
 	std::unordered_map<std::string, ParticleGroup> particleGroups;
 
@@ -216,39 +253,15 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> perViewResource;
 	PerView* perView = nullptr;
 
-	// EmitterSphere
-	Microsoft::WRL::ComPtr<ID3D12Resource> emitterResource;
-	EmitterSphere* emitterSphere = nullptr;
-
 	// PerFrame
 	Microsoft::WRL::ComPtr<ID3D12Resource> perFrameResource;
 	PerFrame* perFrame = nullptr;
-
-	// UAV生成用の変数
-	Microsoft::WRL::ComPtr <ID3D12Resource> particleResource;
-	uint32_t particleUavIndex;
-	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> particleUavHandle;
-	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> particleSrvHandle;
-	uint32_t vertexIndex;
 
 	// VS転送用の変数
 	std::list<Particle> particles;
 	uint32_t srvIndex;
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;
 	ParticleCS* particleData = nullptr;
-
-	// テクスチャデータ
-	std::string textureFilePath;
-
-	// FreeListIndex
-	Microsoft::WRL::ComPtr <ID3D12Resource> freeListIndexResource;
-	uint32_t freeListIndexUavIndex;
-	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> freeListIndexUavHandle;
-
-	// FreeList
-	Microsoft::WRL::ComPtr <ID3D12Resource> freeListResource;
-	uint32_t freeListUavIndex;
-	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> freeListUavHandle;
 
 public:
 	// シングルトンインスタンスの取得
@@ -268,6 +281,10 @@ public:
 	void GenerateGraphicsPipeline();
 	// 頂点データ作成
 	void CreateVertexData();
+	// Ringの頂点データ作成
+	void CreateVertexDataRing();
+	// Cylinderの頂点データ作成
+	void CreateVertexDataCylinder();
 	// ブレンドモード設定
 	void BlendModeSetting();
 	// ComputeShader用のパイプラインステートの生成
@@ -276,34 +293,34 @@ public:
 	void CreateCSRootSignature();
 	// 共通描画設定
 	void DrawSettingCompute();
-	// UAVの生成
-	void CreateUav();
-	// マテリアルリソースの生成
-	void CreateMaterialResource();
+
+	// Particle用のリソースの生成
+	void CreateParticleResource(ParticleGroup& group);
+	// freeListIndex用のUAVの生成
+	void CreateFreeListIndexUav(ParticleGroup& group);
+	// freeList用のUAVの生成
+	void CreateFreeListUav(ParticleGroup& group);
+	// EmitterResourceの生成
+	void CreateEmitterResource(ParticleGroup& group);
+
+	// vertexBufferViewとモデルデータを設定
+	void SetupParticleData(ShapeType type, ParticleGroup& group);
 	// PerViewResourceの生成
 	void CreatePerViewResource();
-	// EmitterResourceの生成
-	void CreateEmitterResource();
 	// PerFrameResourceの生成
 	void CreatePerFrameResource();
-
-	// パーティクルの作成
-	// NormalParticle生成関数
-	Particle MakeNewNormalParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
-	Particle MakeNewHitEffectParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
-	Particle MakeNewRingParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
-	Particle MakeNewCylinderParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime);
+	// EmitterCSを起動する
+	void LaunchEmitterCS(ParticleGroup& group);
+	// UpdateCSを起動する
+	void LaunchUpdateCS(ParticleGroup& group);
+	// InitializeParticleCSを起動する
+	void LaunchInitializeParticleCS(ParticleGroup& group);
 
 	// パーティクルグループの生成
-	void CreateParticleGroup(const std::string name, const std::string textureFilePath, ParticleEmitter::Type type);
+	void CreateParticleGroup(const std::string name, const std::string textureFilePath, ShapeType type);
 
 	// パーティクルの発生
-	void Emit(const std::string name, const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-		const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, uint32_t count);
+	void Emit(const std::string name, const EmitterSphere& emitterSphere);
 
 	// 効果範囲の当たり判定
 	bool IsCollision(const AABB& aabb, const Vector3& point);

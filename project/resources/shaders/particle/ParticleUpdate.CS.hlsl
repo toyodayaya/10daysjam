@@ -20,7 +20,7 @@ RWStructuredBuffer<int32_t> gFreeListIndex : register(u1);
 RWStructuredBuffer<uint32_t> gFreeList : register(u2);
 ConstantBuffer<PerFrame> gParFrame : register(b1);
 
-[numthreads(1, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
     uint32_t particleIndex = DTid.x;
@@ -43,7 +43,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         }
         else
         {
-            gParticle[particleIndex].translate += gParticle[particleIndex].velocity;
+            gParticle[particleIndex].translate += gParticle[particleIndex].velocity * gParFrame.deltaTime;
             gParticle[particleIndex].currentTime += gParFrame.deltaTime;
             float32_t alpha = 1.0f - (gParticle[particleIndex].currentTime / gParticle[particleIndex].lifeTime);
             gParticle[particleIndex].color.a = saturate(alpha);

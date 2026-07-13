@@ -4,30 +4,17 @@
 #include "Logger.h"
 using namespace Logger;
 
-ParticleEmitter::ParticleEmitter(const std::string name, const EulerTransform& transform,
-	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, float frequency, uint32_t count)
+ParticleEmitter::ParticleEmitter(const std::string name,const ParticleManager::EmitterSphere& emitterSphere)
 
 	// 引数で受け取ってメンバ変数として記録する
 	: name(name)
 {
-	emitter.transform.scale = transform.scale;
-	emitter.transform.rotate = transform.rotate;
-	emitter.transform.translate = transform.translate;
-
-	emitter.velocity = velocity;
-	emitter.color = color;
-	emitter.lifeTime = lifeTime;
-	emitter.currentTime = currentTime;
-
-	emitter.frequency = frequency;
-	emitter.count = count;
-	emitter.frequencyTime = 0.0f;
+	emitter = emitterSphere;
 }
 
 void ParticleEmitter::Emit()
 {
-	ParticleManager::GetInstance()->Emit(name, emitter.transform.translate, emitter.transform.scale, emitter.transform.rotate,
-		emitter.velocity, emitter.color, emitter.lifeTime, emitter.currentTime, emitter.count);
+	ParticleManager::GetInstance()->Emit(name,emitter);
 }
 
 void ParticleEmitter::Update()
@@ -37,11 +24,10 @@ void ParticleEmitter::Update()
 
 	if (emitter.frequencyTime >= emitter.frequency)
 	{
-		// 発生頻度より大きいなら発生
-		Emit();
-
-		// 余計に過ぎた時間も加味
+		// 射出間隔を過ぎていたら射出許可を送信
 		emitter.frequencyTime -= emitter.frequency;
+		// Particleデータを転送
+		Emit();
 	}
-
+	
 }

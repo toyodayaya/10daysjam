@@ -46,19 +46,19 @@ void GamePlayScene::Initialize()
 	
 
 	// パーティクルグループの作成
-	ParticleManager::GetInstance()->CreateParticleGroup("Particle", "resources/circle.png", ParticleEmitter::Type::kNormal);
+	//ParticleManager::GetInstance()->CreateParticleGroup("Particle", "resources/circle.png", ParticleEmitter::Type::kNormal);
 
 	// パーティクルエミッターの宣言
-	EulerTransform transform;
-	transform.translate = { 1.0f,1.0f,1.0f };
-	transform.rotate = { 0.0f,0.0f,0.0f };
-	transform.scale = { 1.0f,1.0f,1.0f };
-	transform.translate = Vector3Add(transform.translate, randomTranslate);
-	Vector3 velocity = { 0.0f,0.0f,0.0f };
-	Vector4 color = { 0.0f,0.0f,0.0f,0.0f };
-	float lifeTime = 0.0f;
-	float currentTime = 0;
-	emitter = std::make_unique <ParticleEmitter>("Particle", transform,velocity,color,lifeTime,currentTime,0.5f,2);
+	///*EulerTransform transform;
+	//transform.translate = { 1.0f,1.0f,1.0f };
+	//transform.rotate = { 0.0f,0.0f,0.0f };
+	//transform.scale = { 1.0f,1.0f,1.0f };
+	//transform.translate = Vector3Add(transform.translate, randomTranslate);
+	//Vector3 velocity = { 0.0f,0.0f,0.0f };
+	//Vector4 color = { 0.0f,0.0f,0.0f,0.0f };
+	//float lifeTime = 0.0f;
+	//float currentTime = 0;
+	//emitter = std::make_unique <ParticleEmitter>("Particle", transform,velocity,color,lifeTime,currentTime,0.5f,2);*/
 
 	// 音声再生
 	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);

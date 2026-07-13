@@ -1,11 +1,19 @@
+static const uint PARTICLE_NONE = 0;
+static const uint PARTICLE_DIFFUSION = 1;
+
 struct EmitterSphere
 {
     float32_t3 translate;
+    float32_t3 scale;
+    float32_t3 velocity;
+    float32_t4 color;
+    float32_t lifeTime;
+    float32_t currentTime;
     float32_t radius;
     uint32_t count;
     float32_t frequency;
     float32_t frequencyTime;
-    uint32_t emit;
+    uint32_t type;
 };
 
 struct Particle
@@ -67,36 +75,56 @@ ConstantBuffer<EmitterSphere> gEmitter : register(b0);
 ConstantBuffer<PerFrame> gParFrame : register(b1);
 
 [numthreads(1, 1, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
+void main(uint3 DTid : SV_DispatchThreadID)
 {
-    if(gEmitter.emit != 0)
-    {
-        RandomGenerator generator;
-        generator.seed = (DTid + gParFrame.time) * gParFrame.time;
+   
+    RandomGenerator generator;
+    generator.seed = (DTid + gParFrame.time) * gParFrame.time;
         
-        for (uint32_t countIndex = 0; countIndex < gEmitter.count; ++countIndex)
-        {
-            int32_t freeListIndex;
-            InterlockedAdd(gFreeListIndex[0], -1, freeListIndex);
+    for (uint32_t countIndex = 0; countIndex < gEmitter.count; ++countIndex)
+    {
+        int32_t freeListIndex;
+        InterlockedAdd(gFreeListIndex[0], -1, freeListIndex);
             
-            if(0 <= freeListIndex && freeListIndex < kMaxParticles)
+        if (0 <= freeListIndex && freeListIndex < kMaxParticles)
+        {
+            uint32_t particleIndex = gFreeList[freeListIndex];
+            
+            switch (gEmitter.type)
             {
-                uint32_t particleIndex = gFreeList[freeListIndex];
-                gParticle[particleIndex].scale = generator.Generate3d();
-                gParticle[particleIndex].translate = generator.Generate3d();
-                gParticle[particleIndex].color.rgb = generator.Generate3d();
-                gParticle[particleIndex].color.a = 1.0f;
-                gParticle[particleIndex].lifeTime = gParFrame.time;
-                gParticle[particleIndex].currentTime = 0;
-                gParticle[particleIndex].velocity = generator.Generate3d();
+                case PARTICLE_NONE:
+                    gParticle[particleIndex].scale = gEmitter.scale;
+                    gParticle[particleIndex].translate = gEmitter.translate;
+                    gParticle[particleIndex].color.rgb = gEmitter.color.rgb;
+                    gParticle[particleIndex].color.a = 1.0f;
+                    gParticle[particleIndex].lifeTime = gEmitter.lifeTime;
+                    gParticle[particleIndex].currentTime = 0;
+                    gParticle[particleIndex].velocity = gEmitter.velocity;
+                
+                    break;
+                
+                case PARTICLE_DIFFUSION:
+                    gParticle[particleIndex].scale = gEmitter.scale;
+                    gParticle[particleIndex].translate = gEmitter.translate;
+                    gParticle[particleIndex].color.rgb = generator.Generate3d();
+                    gParticle[particleIndex].color.a = 1.0f;
+                    gParticle[particleIndex].lifeTime = generator.Generate1d();
+                    gParticle[particleIndex].currentTime = 0;
+                    gParticle[particleIndex].velocity = generator.Generate3d();
+                
+                    break;
+                
+                
             }
-            else
-            {
-                InterlockedAdd(gFreeListIndex[0], 1);
-                break;
-            }
-
+            
         }
+        else
+        {
+            InterlockedAdd(gFreeListIndex[0], 1);
+            break;
+        }
+
+        
 
     }
 }

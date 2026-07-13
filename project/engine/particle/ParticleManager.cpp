@@ -47,12 +47,8 @@ void ParticleManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager, 
 
 	// 頂点データ作成
 	CreateVertexData();
-
-	// マテリアルリソースの作成
-	CreateMaterialResource();
-
-	// UAVの生成
-	CreateUav();
+	CreateVertexDataRing();
+	CreateVertexDataCylinder();
 
 	// perViewResourceの生成
 	CreatePerViewResource();
@@ -60,23 +56,11 @@ void ParticleManager::Initialize(DirectXBasis* dxBasis, SrvManager* srvManager, 
 	// perFrameResourceの生成
 	CreatePerFrameResource();
 
-	// EmitterResourceの生成
-	CreateEmitterResource();
-
 	// 効果範囲の設定
 	accelerationField.acceleration = Vector3(0.0f, 0.0f, 0.0f);
 	accelerationField.area.min = Vector3(-1.0f, -1.0f, -1.0f);
 	accelerationField.area.max = Vector3(1.0f, 1.0f, 1.0f);
 
-	// emitterの初期値を設定
-	emitterSphere->count = 10;
-	emitterSphere->frequency = 0.5f;
-	emitterSphere->frequencyTime = 0.0f;
-	emitterSphere->translate = Vector3(0.0f, 0.0f, 0.0f);
-	emitterSphere->radius = 1.0f;
-	emitterSphere->emit = 0;
-
-	perFrame->time = 1.0f;
 }
 
 void ParticleManager::CreateRootSignature()
@@ -262,6 +246,11 @@ void ParticleManager::CreateVertexData()
 	// 頂点データにリソースをコピー
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 
+}
+
+void ParticleManager::CreateVertexDataRing()
+{
+
 	// Ringの初期化
 	// 分割数
 	const uint32_t kRingDivide = 32;
@@ -312,6 +301,11 @@ void ParticleManager::CreateVertexData()
 	vertexResourceRing->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataRing));
 	// 頂点データにリソースをコピー
 	std::memcpy(vertexDataRing, modelDataRing.vertices.data(), sizeof(VertexData) * modelDataRing.vertices.size());
+}
+
+void ParticleManager::CreateVertexDataCylinder()
+{
+
 
 	// Cylinderの頂点データ作成
 	const uint32_t kCylinderDivide = 32;
@@ -557,13 +551,13 @@ void ParticleManager::DrawSettingCompute()
 	dxBasis_->GetCommandList()->SetPipelineState(computePipelineState.Get());
 }
 
-void ParticleManager::CreateUav()
+void ParticleManager::CreateParticleResource(ParticleGroup& group)
 {
 	// Particle用のUAVの生成
-	particleUavIndex = srvManager_->Allocate();
-	particleUavHandle.first = srvManager_->GetCPUDescriptorHandle(particleUavIndex);
-	particleUavHandle.second = srvManager_->GetGPUDescriptorHandle(particleUavIndex);
-	particleResource = dxBasis_->CreateOutputVertexBuffer(sizeof(ParticleCS) * 1024);
+	group.particleUavIndex = srvManager_->Allocate();
+	group.particleUavHandle.first = srvManager_->GetCPUDescriptorHandle(group.particleUavIndex);
+	group.particleUavHandle.second = srvManager_->GetGPUDescriptorHandle(group.particleUavIndex);
+	group.particleResource = dxBasis_->CreateOutputVertexBuffer(sizeof(ParticleCS) * 1024);
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
 	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
 	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
@@ -573,12 +567,12 @@ void ParticleManager::CreateUav()
 	uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 	uavDesc.Buffer.StructureByteStride = sizeof(ParticleCS);
 
-	dxBasis_->GetDevice()->CreateUnorderedAccessView(particleResource.Get(), nullptr, &uavDesc, particleUavHandle.first);
+	dxBasis_->GetDevice()->CreateUnorderedAccessView(group.particleResource.Get(), nullptr, &uavDesc, group.particleUavHandle.first);
 
 	// Particle用のSRVを作成
-	vertexIndex = srvManager_->Allocate();
-	particleSrvHandle.first = srvManager_->GetCPUDescriptorHandle(vertexIndex);
-	particleSrvHandle.second = srvManager_->GetGPUDescriptorHandle(vertexIndex);
+	group.particleSrvIndex = srvManager_->Allocate();
+	group.particleSrvHandle.first = srvManager_->GetCPUDescriptorHandle(group.particleSrvIndex);
+	group.particleSrvHandle.second = srvManager_->GetGPUDescriptorHandle(group.particleSrvIndex);
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -587,13 +581,16 @@ void ParticleManager::CreateUav()
 	srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 	srvDesc.Buffer.NumElements = kMaxInstanceCount;
 	srvDesc.Buffer.StructureByteStride = sizeof(ParticleCS);
-	dxBasis_->GetDevice()->CreateShaderResourceView(particleResource.Get(), &srvDesc, particleSrvHandle.first);
+	dxBasis_->GetDevice()->CreateShaderResourceView(group.particleResource.Get(), &srvDesc, group.particleSrvHandle.first);
+}
 
+void ParticleManager::CreateFreeListIndexUav(ParticleGroup& group)
+{
 	// freeListIndex用のUAVを生成
-	freeListIndexUavIndex = srvManager_->Allocate();
-	freeListIndexUavHandle.first = srvManager_->GetCPUDescriptorHandle(freeListIndexUavIndex);
-	freeListIndexUavHandle.second = srvManager_->GetGPUDescriptorHandle(freeListIndexUavIndex);
-	freeListIndexResource = dxBasis_->CreateOutputVertexBuffer(sizeof(int32_t));
+	group.freeListIndexUavIndex = srvManager_->Allocate();
+	group.freeListIndexUavHandle.first = srvManager_->GetCPUDescriptorHandle(group.freeListIndexUavIndex);
+	group.freeListIndexUavHandle.second = srvManager_->GetGPUDescriptorHandle(group.freeListIndexUavIndex);
+	group.freeListIndexResource = dxBasis_->CreateOutputVertexBuffer(sizeof(int32_t));
 	D3D12_UNORDERED_ACCESS_VIEW_DESC freeListIndexUavDesc{};
 	freeListIndexUavDesc.Format = DXGI_FORMAT_UNKNOWN;
 	freeListIndexUavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
@@ -603,13 +600,17 @@ void ParticleManager::CreateUav()
 	freeListIndexUavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 	freeListIndexUavDesc.Buffer.StructureByteStride = (sizeof(int32_t));
 
-	dxBasis_->GetDevice()->CreateUnorderedAccessView(freeListIndexResource.Get(), nullptr, &freeListIndexUavDesc, freeListIndexUavHandle.first);
+	dxBasis_->GetDevice()->CreateUnorderedAccessView(
+		group.freeListIndexResource.Get(), nullptr, &freeListIndexUavDesc, group.freeListIndexUavHandle.first);
+}
 
+void ParticleManager::CreateFreeListUav(ParticleGroup& group)
+{
 	// freeList用のUAVを生成
-	freeListUavIndex = srvManager_->Allocate();
-	freeListUavHandle.first = srvManager_->GetCPUDescriptorHandle(freeListUavIndex);
-	freeListUavHandle.second = srvManager_->GetGPUDescriptorHandle(freeListUavIndex);
-	freeListResource = dxBasis_->CreateOutputVertexBuffer(UINT(sizeof(uint32_t) * kMaxInstanceCount));
+	group.freeListUavIndex = srvManager_->Allocate();
+	group.freeListUavHandle.first = srvManager_->GetCPUDescriptorHandle(group.freeListUavIndex);
+	group.freeListUavHandle.second = srvManager_->GetGPUDescriptorHandle(group.freeListUavIndex);
+	group.freeListResource = dxBasis_->CreateOutputVertexBuffer(UINT(sizeof(uint32_t) * kMaxInstanceCount));
 	D3D12_UNORDERED_ACCESS_VIEW_DESC freeListUavDesc{};
 	freeListUavDesc.Format = DXGI_FORMAT_UNKNOWN;
 	freeListUavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
@@ -619,19 +620,90 @@ void ParticleManager::CreateUav()
 	freeListUavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 	freeListUavDesc.Buffer.StructureByteStride = sizeof(uint32_t);
 
-	dxBasis_->GetDevice()->CreateUnorderedAccessView(freeListResource.Get(), nullptr, &freeListUavDesc, freeListUavHandle.first);
+	dxBasis_->GetDevice()->CreateUnorderedAccessView(group.freeListResource.Get(),
+		nullptr, &freeListUavDesc, group.freeListUavHandle.first);
+}
 
+
+void ParticleManager::CreatePerViewResource()
+{
+	perViewResource = dxBasis_->CreateBufferResources(sizeof(PerView));
+	perViewResource->Map(0, nullptr, reinterpret_cast<void**>(&perView));
+}
+
+void ParticleManager::CreateEmitterResource(ParticleGroup& group)
+{
+	group.emitterResource = dxBasis_->CreateBufferResources(sizeof(EmitterSphere));
+	group.emitterResource->Map(0, nullptr, reinterpret_cast<void**>(&group.emitterSphere));
+}
+
+void ParticleManager::CreatePerFrameResource()
+{
+	perFrameResource = dxBasis_->CreateBufferResources(sizeof(PerFrame));
+	perFrameResource->Map(0, nullptr, reinterpret_cast<void**>(&perFrame));
+}
+
+void ParticleManager::LaunchEmitterCS(ParticleGroup& group)
+{
+	// CSにデータを転送
+	// ParticleCSのDescriptorTableを設定
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, group.particleUavHandle.second);
+	// ParticleEmitterのCBVを設定
+	dxBasis_->GetCommandList()->SetComputeRootConstantBufferView(1, group.emitterResource->GetGPUVirtualAddress());
+	// PerFrameのCBVを設定
+	dxBasis_->GetCommandList()->SetComputeRootConstantBufferView(2, perFrameResource->GetGPUVirtualAddress());
+	// freeListのDescriptorTableを設定
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, group.freeListIndexUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(4, group.freeListUavHandle.second);
+	// EmitterのPSOを設定
+	dxBasis_->GetCommandList()->SetPipelineState(computePipelineStateEmit.Get());
+	// CS起動
+	dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
+}
+
+void ParticleManager::LaunchUpdateCS(ParticleGroup& group)
+{
+	// 並列動作用にバリアを張る
+	D3D12_RESOURCE_BARRIER barrierUav{};
+	barrierUav.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrierUav.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrierUav.UAV.pResource = group.particleResource.Get();
+	dxBasis_->GetCommandList()->ResourceBarrier(1, &barrierUav);
+
+	// Updateデータを転送
+	dxBasis_->GetCommandList()->SetPipelineState(computePipelineStateUpdate.Get());
+	// ParticleCSのDescriptorTableを設定
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, group.particleUavHandle.second);
+	// PerFrameのCBVを設定
+	dxBasis_->GetCommandList()->SetComputeRootConstantBufferView(2, perFrameResource->GetGPUVirtualAddress());
+	// freeListのDescriptorTableを設定
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, group.freeListIndexUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(4, group.freeListUavHandle.second);
+	// CS起動
+	dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
+}
+
+void ParticleManager::LaunchInitializeParticleCS(ParticleGroup& group)
+{
+	// ParticleCS用のResourceの生成
+	CreateParticleResource(group);
+	// FreeListIndex用のUAVの生成
+	CreateFreeListIndexUav(group);
+	// FreeList用のUAVの生成
+	CreateFreeListUav(group);
+	// EmitterSphere用のResourceの生成
+	CreateEmitterResource(group);
 
 	// CS用の設定
 	srvManager_->PreDraw();
 	DrawSettingCompute();
-	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, particleUavHandle.second);
-	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, freeListIndexUavHandle.second);
-	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(4, freeListUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, group.particleUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, group.freeListIndexUavHandle.second);
+	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(4, group.freeListUavHandle.second);
 
 	D3D12_RESOURCE_BARRIER barrier{};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = particleResource.Get();
+	barrier.Transition.pResource = group.particleResource.Get();
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -641,129 +713,12 @@ void ParticleManager::CreateUav()
 
 	D3D12_RESOURCE_BARRIER barriers{};
 	barriers.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barriers.Transition.pResource = particleResource.Get();
+	barriers.Transition.pResource = group.particleResource.Get();
 	barriers.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	barriers.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 	barriers.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	dxBasis_->GetCommandList()->ResourceBarrier(1, &barriers);
-
 }
-
-void ParticleManager::CreateMaterialResource()
-{
-	// テクスチャファイルを読み込む
-	TextureManager::GetInstance()->LoadTexture("resources/sprite/circle2.png");
-	textureFilePath = "resources/sprite/circle2.png";
-	materialData.textureFilePath = textureFilePath;
-	materialData.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
-
-	// インスタンシング用リソースを生成
-	instancingResource = dxBasis_->CreateBufferResources(sizeof(ParticleCS));
-	// 書き込むためのアドレスを取得
-	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&particleData));
-
-	// インスタンシング用にSRVを確保してインデックスを記録
-	srvIndex = srvManager_->Allocate();
-
-	// SRVの生成
-	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
-	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-	instancingSrvDesc.Buffer.FirstElement = 0;
-	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = 1;
-	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);
-	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = srvManager_->GetCPUDescriptorHandle(srvIndex);
-	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = srvManager_->GetGPUDescriptorHandle(srvIndex);
-	srvManager_->CreateSRVforStructuredBuffer(srvIndex, instancingResource.Get(), instancingSrvDesc.Format, 1, sizeof(ParticleCS));
-
-}
-
-void ParticleManager::CreatePerViewResource()
-{
-	perViewResource = dxBasis_->CreateBufferResources(sizeof(PerView));
-	perViewResource->Map(0, nullptr, reinterpret_cast<void**>(&perView));
-}
-
-void ParticleManager::CreateEmitterResource()
-{
-	emitterResource = dxBasis_->CreateBufferResources(sizeof(EmitterSphere));
-	emitterResource->Map(0, nullptr, reinterpret_cast<void**>(&emitterSphere));
-}
-
-void ParticleManager::CreatePerFrameResource()
-{
-	perFrameResource = dxBasis_->CreateBufferResources(sizeof(PerFrame));
-	perFrameResource->Map(0, nullptr, reinterpret_cast<void**>(&perFrame));
-}
-
-
-ParticleManager::Particle ParticleManager::MakeNewNormalParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
-{
-	// ランダムエンジンの初期化
-	std::random_device seedGenerator;
-	std::mt19937 randomEngine(seedGenerator());
-	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
-	randomTranslate = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
-
-	particle.transform.scale = scale;
-	particle.transform.rotate = rotate;
-	particle.transform.translate = translate;
-	particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
-	particle.color = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) ,1.0f };
-	particle.lifeTime = distTime(randomEngine);
-	particle.currentTime = currentTime;
-
-	return particle;
-}
-
-ParticleManager::Particle ParticleManager::MakeNewHitEffectParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
-{
-	// ランダムエンジンの初期化
-	std::random_device seedGenerator;
-	std::mt19937 randomEngine(seedGenerator());
-	std::uniform_real_distribution<float> distRotate(-std::numbers::pi_v<float>, std::numbers::pi_v<float>);
-	std::uniform_real_distribution<float> distScale(0.4f, 1.5f);
-
-	particle.transform.scale = { scale.x,distScale(randomEngine),scale.z };;
-	particle.transform.rotate = { rotate.x,rotate.y,distRotate(randomEngine) };
-	particle.transform.translate = translate;
-	particle.velocity = velocity;
-	particle.color = color;
-	particle.lifeTime = lifeTime;
-	particle.currentTime = currentTime;
-	return particle;
-}
-
-ParticleManager::Particle ParticleManager::MakeNewRingParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
-{
-	particle.transform.scale = scale;
-	particle.transform.rotate = rotate;
-	particle.transform.translate = translate;
-	particle.velocity = velocity;
-	particle.color = color;
-	particle.lifeTime = lifeTime;
-	particle.currentTime = currentTime;
-	return particle;
-}
-
-ParticleManager::Particle ParticleManager::MakeNewCylinderParticle(const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime)
-{
-	particle.transform.scale = scale;
-	particle.transform.rotate = rotate;
-	particle.transform.translate = translate;
-	particle.velocity = velocity;
-	particle.color = color;
-	particle.lifeTime = lifeTime;
-	particle.currentTime = currentTime;
-	return particle;
-}
-
 
 bool ParticleManager::IsCollision(const AABB& aabb, const Vector3& point) {
 	if (aabb.min.x <= point.x && aabb.max.x >= point.x &&
@@ -775,7 +730,7 @@ bool ParticleManager::IsCollision(const AABB& aabb, const Vector3& point) {
 	return false;
 }
 
-void ParticleManager::CreateParticleGroup(const std::string name, const std::string textureFilePath, ParticleEmitter::Type type)
+void ParticleManager::CreateParticleGroup(const std::string name, const std::string textureFilePath,ShapeType type)
 {
 	// 登録済みの名前かチェック
 	const bool alreadyExists =
@@ -783,45 +738,61 @@ void ParticleManager::CreateParticleGroup(const std::string name, const std::str
 	assert(!alreadyExists);
 
 	// 新たなパーティクルグループを作成
-	ParticleGroup newGrounp{};
-	particleGroups.emplace(name, std::move(newGrounp));
+	ParticleGroup newGroup{};
+	particleGroups.emplace(name, std::move(newGroup));
 
 	// 追加したマテリアルデータの参照を取得する
-	ParticleGroup& particleData = particleGroups.at(name);
+	ParticleGroup& group = particleGroups.at(name);
 
 	// テクスチャファイルを読み込む
-	particleData.materialData.textureFilePath = textureFilePath;
-	particleData.materialData.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+	TextureManager::GetInstance()->LoadTexture(textureFilePath);
+	group.materialData.textureFilePath = textureFilePath;
+	group.materialData.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 
-	// インスタンシング用リソースを生成
-	particleData.instancingResource = dxBasis_->CreateBufferResources(sizeof(ParticleForGPU) * kMaxInstanceCount);
-	// 書き込むためのアドレスを取得
-	particleData.instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&particleData.instancingData));
-	// 単位行列を書き込んでおく
-	for (uint32_t index = 0; index < kMaxInstanceCount; ++index)
+
+	// パーティクルのモデルタイプを設定
+	SetupParticleData(type, group);
+
+	// 共通CS設定
+	DrawSettingCompute();
+
+	// particleを初期化する
+	LaunchInitializeParticleCS(group);
+}
+
+
+void ParticleManager::SetupParticleData(ShapeType type, ParticleGroup& group)
+{
+	switch (type)
 	{
-		particleData.instancingData[index].WVP = MakeIdentity4x4();
-		particleData.instancingData[index].World = MakeIdentity4x4();
-		particleData.instancingData[index].Color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	case kNormal:
+
+		group.modelData = modelData;
+		group.vertexBufferView = vertexBufferView;
+
+		break;
+
+	case kHitEffect:
+
+		group.modelData = modelData;
+		group.vertexBufferView = vertexBufferView;
+
+		break;
+
+	case kRing:
+
+		group.modelData = modelDataRing;
+		group.vertexBufferView = vertexBufferViewRing;
+
+		break;
+
+	case kCylinder:
+
+		group.modelData = modelDataCylinder;
+		group.vertexBufferView = vertexBufferViewCylinder;
+
+		break;
 	}
-
-	// パーティクルグループのタイプを記録
-	particleData.type = type;
-
-	// インスタンシング用にSRVを確保してインデックスを記録
-	particleData.srvIndex = srvManager_->Allocate();
-
-	// SRVの生成
-	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
-	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-	instancingSrvDesc.Buffer.FirstElement = 0;
-	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = kMaxInstanceCount;
-	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);
-	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = srvManager_->GetCPUDescriptorHandle(particleData.srvIndex);
-	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = srvManager_->GetGPUDescriptorHandle(particleData.srvIndex);
-	srvManager_->CreateSRVforStructuredBuffer(particleData.srvIndex, particleData.instancingResource.Get(), instancingSrvDesc.Format, kMaxInstanceCount, sizeof(ParticleForGPU));
 }
 
 void ParticleManager::Update()
@@ -848,127 +819,23 @@ void ParticleManager::Update()
 		billboardMatrix.m[3][2] = 0.0f;
 	}
 
-	emitterSphere->frequencyTime += kDeltaTime;
-
-	if (emitterSphere->frequency <= emitterSphere->frequencyTime)
-	{
-		emitterSphere->frequencyTime = emitterSphere->frequency;
-		emitterSphere->emit = 1;
-	}
-	else
-	{
-		emitterSphere->emit = 0;
-	}
-
 	perView->billboardMatrix = billboardMatrix;
 	perView->viewProjection = camera->GetViewProjectionMatrix();
 
 	perFrame->time += kDeltaTime;
 	perFrame->deltaTime = kDeltaTime;
 
-	//	// 全てのパーティクルグループ
-	//	for (auto& [name, group] : particleGroups)
-	//	{
-	//		group.instanceCount = 0;
-	//		// 各グループのリスト
-	//		for (auto it = group.particles.begin(); it != group.particles.end();)
-	//		{
-	//			if (it->lifeTime <= it->currentTime)
-	//			{
-	//				// 生存時間を過ぎていたら表示しない
-	//				it = group.particles.erase(it);
-	//				continue;
-	//			}
-	//
-	//			// Fieldの範囲内のParticleにはAccelerationを適用
-	//			if (IsCollision(accelerationField.area, it->transform.translate))
-	//			{
-	//				Vector3 accelDelta =
-	//				{
-	//				   accelerationField.acceleration.x * kDeltaTime,
-	//				   accelerationField.acceleration.y * kDeltaTime,
-	//				   accelerationField.acceleration.z * kDeltaTime
-	//				};
-	//				it->velocity = Vector3Add(it->velocity, accelDelta);
-	//			}
-	//
-	//			it->transform.translate = Vector3Add(it->transform.translate, FloatMultiply(it->velocity, kDeltaTime));
-	//			it->currentTime += kDeltaTime;
-	//			float alpha = 1.0f - (it->currentTime / it->lifeTime);
-	//			it->color.w = alpha;
-	//
-	//			Matrix4x4 scaleMatrix = MakeScaleMatrix(it->transform.scale);
-	//			Matrix4x4 translateMatrix = MakeTranslateMatrix(it->transform.translate);
-	//			Matrix4x4 worldMatrix;
-	//
-	//			if (isBillboard)
-	//			{
-	//				worldMatrix = Multiply(scaleMatrix, billboardMatrix);
-	//				worldMatrix = Multiply(worldMatrix, translateMatrix);
-	//			}
-	//			else
-	//			{
-	//				worldMatrix = MakeAffineMatrix(it->transform.scale, it->transform.rotate, it->transform.translate);
-	//			}
-	//
-	//			Matrix4x4 viewProjectionMatrix = camera->GetViewProjectionMatrix();
-	//			Matrix4x4 wvp = Multiply(worldMatrix, viewProjectionMatrix);
-	//
-	//			// インスタンシング用データ1個分を書き込み
-	//			if (group.instanceCount < kMaxInstanceCount) {
-	//				group.instancingData[group.instanceCount].World = worldMatrix;
-	//				group.instancingData[group.instanceCount].WVP = wvp;
-	//				group.instancingData[group.instanceCount].Color = it->color;
-	//				group.instancingData[group.instanceCount].Color.w = alpha;
-	//
-	//				group.instanceCount++;
-	//			}
-	//
-	//			
-	//
-	//#ifdef USE_IMGUI
-	//
-	//			ImGui::Begin("Particle Manager");
-	//			ImGui::DragFloat3("Position", &it->transform.translate.x, 0.1f);
-	//			
-	//			ImGui::End();
-	//
-	//#endif
-	//
-	//
-	//
-	//
-	//
-	//			++it;
-	//
-	//		}
-	//
-	//	}
-
+	// CSを起動する
+	DrawSettingCompute();
+	srvManager_->PreDraw();
+	for (auto& [name, group] : particleGroups)
+	{
+		LaunchUpdateCS(group);
+	}
 }
 
 void ParticleManager::Draw()
 {
-	// emitterデータを転送
-	DrawSettingCompute();
-	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(0, particleUavHandle.second);
-	dxBasis_->GetCommandList()->SetComputeRootConstantBufferView(1, emitterResource->GetGPUVirtualAddress());
-	dxBasis_->GetCommandList()->SetComputeRootConstantBufferView(2, perFrameResource->GetGPUVirtualAddress());
-	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(3, freeListIndexUavHandle.second);
-	dxBasis_->GetCommandList()->SetComputeRootDescriptorTable(4, freeListUavHandle.second);
-	dxBasis_->GetCommandList()->SetPipelineState(computePipelineStateEmit.Get());
-	dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
-
-	// 並列動作用にバリアを張る
-	D3D12_RESOURCE_BARRIER barrierUav{};
-	barrierUav.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-	barrierUav.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrierUav.UAV.pResource = particleResource.Get();
-	dxBasis_->GetCommandList()->ResourceBarrier(1, &barrierUav);
-
-	// Updateデータを転送
-	dxBasis_->GetCommandList()->SetPipelineState(computePipelineStateUpdate.Get());
-	dxBasis_->GetCommandList()->Dispatch(1, 1, 1);
 
 	// RootSignatureを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
@@ -977,102 +844,38 @@ void ParticleManager::Draw()
 	// 形状を設定
 	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+	// グループごとに描画
+	for (auto& [name, group] : particleGroups)
+	{
+		// テクスチャのSRVのDescriptorTableを設定
+		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(group.materialData.textureFilePath));
 
-	// テクスチャのSRVのDescriptorTableを設定
-	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(materialData.textureFilePath));
-	// SRVのDescriptorTableの先頭を設定
-	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(srvIndex));
+		// Particleデータを格納
+		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(1, group.particleSrvHandle.second);
+		// PerViewデータを転送
+		dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(3, perViewResource->GetGPUVirtualAddress());
 
-	// Particleデータを格納
-	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(1, particleSrvHandle.second);
-	// PerViewデータを転送
-	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(3, perViewResource->GetGPUVirtualAddress());
-
-	// VBVを設定
-	dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-	// 描画
-	dxBasis_->GetCommandList()->DrawInstanced(6, kMaxInstanceCount, 0, 0);
-
-
-	//// グループごとに描画
-	//for (auto& [name, group] : particleGroups)
-	//{
-	//	if (group.instanceCount == 0)
-	//	{
-	//		// 一つもなかったら描画をスキップ
-	//		continue;
-	//	}
-
-	//	switch (group.type)
-	//	{
-	//	case ParticleEmitter::Type::kNormal:
-	//		// VBVを設定
-	//		dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-	//		// 描画
-	//		dxBasis_->GetCommandList()->DrawInstanced(6, group.instanceCount, 0, 0);
-	//		break;
-
-	//	case ParticleEmitter::Type::kHitEffect:
-	//		// VBVを設定
-	//		dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-	//		// 描画
-	//		dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelData.vertices.size()), group.instanceCount, 0, 0);
-	//		break;
-
-	//	case ParticleEmitter::Type::kRing:
-	//		// VBVを設定
-	//		dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewRing);
-	//		// 描画
-	//		dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelDataRing.vertices.size()), group.instanceCount, 0, 0);
-	//		break;
-
-	//	case ParticleEmitter::Type::kCylinder:
-	//		// VBVを設定
-	//		dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewCylinder);
-	//		// 描画
-	//		dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelDataCylinder.vertices.size()), group.instanceCount, 0, 0);
-	//		break;
-	//	}
-	//	
-	//}
+		// VBVを設定
+		dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &group.vertexBufferView);
+		// 描画
+		dxBasis_->GetCommandList()->DrawInstanced(static_cast<UINT>(group.modelData.vertices.size()), kMaxInstanceCount, 0, 0);
+	}
 }
 
-void ParticleManager::Emit(const std::string name, const Vector3& translate, const Vector3& scale, const Vector3& rotate,
-	const Vector3& velocity, const Vector4& color, const float lifeTime, const float currentTime, uint32_t count)
+void ParticleManager::Emit(const std::string name, const EmitterSphere& emitterSphere)
 {
 	// 登録済みかチェック
 	auto it = particleGroups.find(name);
-	assert(it != particleGroups.end() && "Particle group not found.");
+	assert(it != particleGroups.end() && "Particleが見つかりませんでした");
 	ParticleGroup& group = it->second;
 
-	// パーティクルグループを作成して登録
-	for (uint32_t i = 0; i < count; ++i) {
-		if (group.particles.size() >= kMaxInstanceCount) {
-			break; // 上限以上は積まない
-		}
+	// emitterの初期値を設定
+	*group.emitterSphere = emitterSphere;
 
-		switch (group.type)
-		{
-		case ParticleEmitter::Type::kNormal:
-			group.particles.push_back(MakeNewNormalParticle(translate, scale, rotate, velocity, color, lifeTime, currentTime));
+	// 共通CS設定
+	DrawSettingCompute();
+	srvManager_->PreDraw();
 
-			break;
-
-		case ParticleEmitter::Type::kHitEffect:
-			group.particles.push_back(MakeNewHitEffectParticle(translate, scale, rotate, velocity, color, lifeTime, currentTime));
-
-
-			break;
-		case ParticleEmitter::Type::kRing:
-			group.particles.push_back(MakeNewRingParticle(translate, scale, rotate, velocity, color, lifeTime, currentTime));
-
-
-			break;
-
-		case ParticleEmitter::Type::kCylinder:
-			group.particles.push_back(MakeNewCylinderParticle(translate, scale, rotate, velocity, color, lifeTime, currentTime));
-			break;
-		}
-
-	}
+	// EmitterCSを起動する
+	LaunchEmitterCS(group);
 }
