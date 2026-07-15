@@ -24,25 +24,10 @@ public:
 	// 描画
 	void Draw() override;
 
+	// PostEffect切り替え
+	void ChangePostEffect();
+
 private:
-	// サウンドデータ
-	Audio::SoundData soundData1;
-
-	// スプライト
-	std::vector<std::unique_ptr<Sprite>> sprites;
-	// スプライト切り替えフラグ
-	bool useMonsterBall = true;
-
-	// 3dオブジェクト
-	std::vector<std::unique_ptr<Object3d>> object3ds;
 	
-	// skybox
-	std::unique_ptr<Skybox> skybox;
-
-	// パーティクルエミッターのポインタ
-	std::unique_ptr <ParticleEmitter> emitter;
-	std::unique_ptr <ParticleEmitter> emitterHit;
-	std::unique_ptr <ParticleEmitter> emitterRing;
-	std::unique_ptr <ParticleEmitter> emitterCylinder;
 
 };

@@ -27,14 +27,53 @@ public:
 		float time;
 	};
 
+	// ポストエフェクトのタイプ
+	enum PostEffect
+	{
+		kNormal,
+		kGrayScale,
+		kSepiaScale,
+		kVignetting,
+		kBoxFilter,
+		kGaussianFilter,
+		kOutline,
+		kRadialBlur,
+		kDissolve,
+		kRandom
+	};
+
 	// 初期化
 	void Initialize(DirectXBasis* directXBasis, SrvManager* srvManager);
 	// ルートシグネチャーの作成
 	void CreateRootSignature();
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeline();
+	// 各シェーダー用の設定
+	void GeneratePostEffect();
+	// シェーダーの生成
+	// Grayscaleの生成
+	void GenerateGrayScale();
+	// Sepiaの生成
+	void GenerateSepia();
+	// Vignettingの生成
+	void GenerateVignetting();
+	// BoxFilterの生成
+	void GenerateBoxFilter();
+	// GaussianFilterの生成
+	void GenerateGaussianFilter();
+	// Outlineの生成
+	void GenerateOutline();
+	// RadialBlurの生成
+	void GenerateRadialBlur();
+	// Dissolveの生成
+	void GenerateDissolve();
+	// Randomの生成
+	void GenerateRandom();
+
 	// 共通描画設定
 	void DrawSettingCommon();
+	// PSO設定
+	void DrawSettingPSO();
 	// projectionInverseの作成
 	void CreateProjectionInverse();
 	// 経過時間の作成
@@ -45,6 +84,8 @@ public:
 	Microsoft::WRL::ComPtr <ID3D12Resource> GetTexture() const { return texture_; }
 	// setter
 	void SetDefaultCamera(Camera* camera) { this->defaultCamera_ = camera; }
+	void SetPostEffect(PostEffect type) { this->type_ = type; }
+	void SetDissolveTexture(std::string filePath) { dissolveFilePath_ = filePath; }
 
 	// インスタンス
 	static RenderTexture* GetInstance();
@@ -57,8 +98,6 @@ private:
 	SrvManager* srvManager_ = nullptr;
 	// ルートシグネチャー
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature_;
-	// グラフィックスパイプラインステート
-	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState_;
 	// BlendStateの設定
 	D3D12_BLEND_DESC blendDesc_{};
 	// デフォルトカメラ
@@ -83,5 +122,41 @@ private:
 	Microsoft::WRL::ComPtr <ID3D12Resource> materialTimeResource_;
 	MaterialTime* timeData_ = nullptr;
 	const float kDeltaTime = 1.0f / 60.0f;
+
+	// 各シェーダーのPSO
+	// normal
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState_;
+	// Grayscale
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC grayscaleGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> grayscaleGPS_;
+	// Sepiascale
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC sepiascaleGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> sepiascaleGPS_;
+	// Vignetting
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC vignettingGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> vignettingGPS_;
+	// BoxFilter
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC boxFilterGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> boxFilterGPS_;
+	// GaussianFilter
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC gaussianFilterGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> gaussianFilterGPS_;
+	// OutLine
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC outlineGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> outlineGPS_;
+	// RadialBlur
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC radialBlurGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> radialBlurGPS_;
+	// Dissolve
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC dissolveGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> dissolveGPS_;
+	// Random
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC randomGPSD_{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> randomGPS_;
+
+	// 使用するシェーダーのタイプ
+	PostEffect type_ = kNormal;
 };
+
 

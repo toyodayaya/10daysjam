@@ -161,7 +161,6 @@ void RenderTexture::GenerateGraphicsPipeline()
 	depthStencilDesc.DepthEnable = false;
 
 	// PSOを生成する
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
 	graphicPipelineStateDesc.BlendState = blendDesc_;
 	graphicPipelineStateDesc.pRootSignature = rootSignature_.Get();
 	graphicPipelineStateDesc.InputLayout = inputLayoutDesc;
@@ -193,6 +192,237 @@ void RenderTexture::GenerateGraphicsPipeline()
 	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&graphicPipelineStateDesc,
 		IID_PPV_ARGS(&graphicPipelineState_));
 	assert(SUCCEEDED(hr));
+
+	// 他のシェーダーもコンパイルしておく
+	GeneratePostEffect();
+}
+
+void RenderTexture::GeneratePostEffect()
+{
+	// 各シェーダーをコンパイル
+
+	// GrayScale
+	GenerateGrayScale();
+
+	// SepiaScale
+	GenerateSepia();
+
+	// Vignetting
+	GenerateVignetting();
+	
+	// BoxFilter
+	GenerateBoxFilter();
+	
+	// GaussianFilter
+	GenerateGaussianFilter();
+
+	// OutLine
+	GenerateOutline();
+	
+	// radialBlur
+	GenerateRadialBlur();
+
+	// Dissolve
+	GenerateDissolve();
+	
+	// Random
+	GenerateRandom();
+	
+}
+
+void RenderTexture::GenerateGrayScale()
+{
+	// 設定をコピー
+	grayscaleGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobGrayscale;
+	pixelShaderBlobGrayscale = dxBasis_->CompileShader(L"resources/shaders/postEffect/GrayScale.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobGrayscale != nullptr);
+	grayscaleGPSD_.PS =
+	{
+		pixelShaderBlobGrayscale->GetBufferPointer(),
+		pixelShaderBlobGrayscale->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&grayscaleGPSD_,
+		IID_PPV_ARGS(&grayscaleGPS_));
+	assert(SUCCEEDED(hr));
+
+}
+
+void RenderTexture::GenerateSepia()
+{
+	// 設定をコピー
+	sepiascaleGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobSepia;
+	pixelShaderBlobSepia = dxBasis_->CompileShader(L"resources/shaders/postEffect/SepiaScale.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobSepia != nullptr);
+	sepiascaleGPSD_.PS =
+	{
+		pixelShaderBlobSepia->GetBufferPointer(),
+		pixelShaderBlobSepia->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&sepiascaleGPSD_,
+		IID_PPV_ARGS(&sepiascaleGPS_));
+	assert(SUCCEEDED(hr));
+}
+
+void RenderTexture::GenerateVignetting()
+{
+	// 設定をコピー
+	vignettingGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobVignetting;
+	pixelShaderBlobVignetting = dxBasis_->CompileShader(L"resources/shaders/postEffect/Vignette.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobVignetting != nullptr);
+	vignettingGPSD_.PS =
+	{
+		pixelShaderBlobVignetting->GetBufferPointer(),
+		pixelShaderBlobVignetting->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&vignettingGPSD_,
+		IID_PPV_ARGS(&vignettingGPS_));
+	assert(SUCCEEDED(hr));
+
+
+}
+
+void RenderTexture::GenerateBoxFilter()
+{
+	// 設定をコピー
+	boxFilterGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobBoxFilter;
+	pixelShaderBlobBoxFilter = dxBasis_->CompileShader(L"resources/shaders/postEffect/BoxFilter5x5.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobBoxFilter != nullptr);
+	boxFilterGPSD_.PS =
+	{
+		pixelShaderBlobBoxFilter->GetBufferPointer(),
+		pixelShaderBlobBoxFilter->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&boxFilterGPSD_,
+		IID_PPV_ARGS(&boxFilterGPS_));
+	assert(SUCCEEDED(hr));
+
+}
+
+void RenderTexture::GenerateGaussianFilter()
+{
+	// 設定をコピー
+	gaussianFilterGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobGaussianFilter;
+	pixelShaderBlobGaussianFilter = dxBasis_->CompileShader(L"resources/shaders/postEffect/GaussianFilter.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobGaussianFilter != nullptr);
+	gaussianFilterGPSD_.PS =
+	{
+		pixelShaderBlobGaussianFilter->GetBufferPointer(),
+		pixelShaderBlobGaussianFilter->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&gaussianFilterGPSD_,
+		IID_PPV_ARGS(&gaussianFilterGPS_));
+	assert(SUCCEEDED(hr));
+}
+
+void RenderTexture::GenerateOutline()
+{
+	// 設定をコピー
+	outlineGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobOutLine;
+	pixelShaderBlobOutLine = dxBasis_->CompileShader(L"resources/shaders/postEffect/DepthBasedoutline.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobOutLine != nullptr);
+	outlineGPSD_.PS =
+	{
+		pixelShaderBlobOutLine->GetBufferPointer(),
+		pixelShaderBlobOutLine->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&outlineGPSD_,
+		IID_PPV_ARGS(&outlineGPS_));
+	assert(SUCCEEDED(hr));
+
+}
+
+void RenderTexture::GenerateRadialBlur()
+{
+	// 設定をコピー
+	radialBlurGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobRadialBlur;
+	pixelShaderBlobRadialBlur = dxBasis_->CompileShader(L"resources/shaders/postEffect/RadialBlur.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobRadialBlur != nullptr);
+	radialBlurGPSD_.PS =
+	{
+		pixelShaderBlobRadialBlur->GetBufferPointer(),
+		pixelShaderBlobRadialBlur->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&radialBlurGPSD_,
+		IID_PPV_ARGS(&radialBlurGPS_));
+	assert(SUCCEEDED(hr));
+}
+
+void RenderTexture::GenerateDissolve()
+{
+	// 設定をコピー
+	dissolveGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobDissolve;
+	pixelShaderBlobDissolve = dxBasis_->CompileShader(L"resources/shaders/postEffect/Dissolve.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobDissolve != nullptr);
+	dissolveGPSD_.PS =
+	{
+		pixelShaderBlobDissolve->GetBufferPointer(),
+		pixelShaderBlobDissolve->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&dissolveGPSD_,
+		IID_PPV_ARGS(&dissolveGPS_));
+	assert(SUCCEEDED(hr));
+
+}
+
+void RenderTexture::GenerateRandom()
+{
+	// 設定をコピー
+	randomGPSD_ = graphicPipelineStateDesc;
+
+	// PSをコンパイル
+	Microsoft::WRL::ComPtr <IDxcBlob> pixelShaderBlobRandom;
+	pixelShaderBlobRandom = dxBasis_->CompileShader(L"resources/shaders/postEffect/Random.PS.hlsl",
+		L"ps_6_0");
+	assert(pixelShaderBlobRandom != nullptr);
+	randomGPSD_.PS =
+	{
+		pixelShaderBlobRandom->GetBufferPointer(),
+		pixelShaderBlobRandom->GetBufferSize()
+	};
+	// 生成
+	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&randomGPSD_,
+		IID_PPV_ARGS(&randomGPS_));
+	assert(SUCCEEDED(hr));
 }
 
 
@@ -220,22 +450,84 @@ void RenderTexture::CreateMaterialTime()
 
 void RenderTexture::DrawSettingCommon()
 {
-	projectionInverseData_->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
-	timeData_->time += kDeltaTime;
-
 	// RootSignatureを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature_.Get());
-	// PSOを設定
-	dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState_.Get());
+
+	// タイプに合わせて使うPSOを変更
+	DrawSettingPSO();
+
 	// 形状を設定
 	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// CBufferの場所を設定
-	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialTimeResource_->GetGPUVirtualAddress());
 	// SRVを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, handle_);
-	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, dissolveHandle_);
 	// 描画
 	dxBasis_->GetCommandList()->DrawInstanced(3, 1, 0, 0);
+}
+
+void RenderTexture::DrawSettingPSO()
+{
+	// タイプに合わせて使うPSOを変更
+	switch (type_)
+	{
+	case kNormal:
+		// 通常のシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineState_.Get());
+		break;
+
+	case kGrayScale:
+		// GrayScaleのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(grayscaleGPS_.Get());
+		break;
+
+	case kSepiaScale:
+		// Sepiaのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(sepiascaleGPS_.Get());
+		break;
+
+	case kVignetting:
+		// Vignettingのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(vignettingGPS_.Get());
+		break;
+
+	case kBoxFilter:
+		// BoxFilterのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(boxFilterGPS_.Get());
+		break;
+
+	case kGaussianFilter:
+		// GaussianFilterのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(gaussianFilterGPS_.Get());
+		break;
+
+	case kOutline:
+		// OutLineのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(outlineGPS_.Get());
+		// SRVを設定
+		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, depthHandle_);
+		// CBufferの場所を設定
+		projectionInverseData_->projectionInverse = Inverse(defaultCamera_->GetProjectionMatrix());
+		dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, projecttionInverseResource_->GetGPUVirtualAddress());
+		break;
+
+	case kRadialBlur:
+		// RadialBlurのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(radialBlurGPS_.Get());
+		break;
+
+	case kDissolve:
+		// Dissolveのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(dissolveGPS_.Get());
+		dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(3, dissolveHandle_);
+		break;
+
+	case kRandom:
+		// Randomのシェーダー
+		dxBasis_->GetCommandList()->SetPipelineState(randomGPS_.Get());
+		// CBufferの場所を設定
+		timeData_->time += kDeltaTime;
+		dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialTimeResource_->GetGPUVirtualAddress());
+		break;
+	}
 }
 
 void RenderTexture::Finalize()
