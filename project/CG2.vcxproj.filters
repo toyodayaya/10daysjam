@@ -204,10 +204,7 @@
     <ClCompile Include="engine\stageLoad\StageManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engine\stageLoad\LevelData.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\stageLoad\StageCreate.cpp">
+    <ClCompile Include="engine\stageLoad\StageData.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -637,10 +634,7 @@
     <ClInclude Include="engine\stageLoad\StageManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="engine\stageLoad\LevelData.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\stageLoad\StageCreate.h">
+    <ClInclude Include="engine\stageLoad\StageData.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

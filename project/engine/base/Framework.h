@@ -39,6 +39,7 @@
 #include "RenderTexture.h"
 #include "DebugDrawCommon.h"
 #include "AnimationCommon.h"
+#include "StageManager.h"
 
 class Framework
 {

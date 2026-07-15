@@ -55,6 +55,9 @@ void Framework::Initialize()
 	// 入力の初期化
 	Input::GetInstance()->Initialize(winAPIManager.get());
 
+	// ステージマネージャーの初期化
+	StageManager::GetInstance()->Initialize();
+
 	// Fenceのsignalを待つためのイベントを作成する
 	fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
@@ -97,6 +100,8 @@ void Framework::Finalize()
 	CloseHandle(fenceEvent);
 	// パーティクルマネージャーの終了
 	ParticleManager::GetInstance()->Finalize();
+	// ステージマネージャーの終了
+	StageManager::GetInstance()->Finalize();
 	// 入力クラスの終了
 	Input::GetInstance()->Finalize();
 	// 音声データ解放

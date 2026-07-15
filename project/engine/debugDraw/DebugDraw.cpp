@@ -2,6 +2,7 @@
 #include "DebugDrawCommon.h"
 #include "TextureManager.h"
 #include "ImGuiManager.h"
+#include "Object3d.h"
 using namespace MathManager;
 
 void DebugDraw::Initialize(DebugDrawCommon* debugDrawCommon, std::string textureFilePath, DrawState state)
@@ -26,6 +27,10 @@ void DebugDraw::Initialize(DebugDrawCommon* debugDrawCommon, std::string texture
 
 	case kLine:
 		CreateVertexDataLine();
+		break;
+
+	case kBox:
+		CreateVertexDataBox();
 		break;
 	}
 
@@ -111,16 +116,77 @@ void DebugDraw::CreateVertexDataLine()
 	std::memcpy(vertexDataLine, modelDataLine.vertices.data(), sizeof(VertexData) * modelDataLine.vertices.size());
 }
 
+void DebugDraw::CreateVertexDataBox()
+{
+	// 立方体の8つの角の座標（中心 0,0,0 からの距離）
+	modelDataBox.vertices.push_back({ .position = { -1.0f,  1.0f, -1.0f, 1.0f },.texcoord = {0.0f,0.0f},.normal = {0.0f,0.0f,1.0f} }); // 0: 左上奥
+	modelDataBox.vertices.push_back({ .position = { 1.0f,  1.0f, -1.0f, 1.0f },.texcoord = {1.0f,0.0f},.normal = {0.0f,0.0f,1.0f} }); // 1: 右上奥
+	modelDataBox.vertices.push_back({ .position = { -1.0f, -1.0f, -1.0f, 1.0f },.texcoord = {0.0f,1.0f},.normal = {0.0f,0.0f,1.0f} }); // 2: 左下奥
+	modelDataBox.vertices.push_back({ .position = { 1.0f, -1.0f, -1.0f, 1.0f },.texcoord = {0.0f,1.0f},.normal = {0.0f,0.0f,1.0f} }); // 3: 右下奥
+	modelDataBox.vertices.push_back({ .position = { -1.0f,  1.0f,  1.0f, 1.0f },.texcoord = {1.0f,0.0f},.normal = {0.0f,0.0f,1.0f} }); // 4: 左上正面
+	modelDataBox.vertices.push_back({ .position = { 1.0f,  1.0f,  1.0f, 1.0f },.texcoord = {1.0f,1.0f},.normal = {0.0f,0.0f,1.0f} }); // 5: 右上正面
+	modelDataBox.vertices.push_back({ .position = { -1.0f, -1.0f,  1.0f, 1.0f },.texcoord = {0.0f,0.0f},.normal = {0.0f,0.0f,1.0f} }); // 6: 左下正面
+	modelDataBox.vertices.push_back({ .position = { 1.0f, -1.0f,  1.0f, 1.0f },.texcoord = {0.0f,0.0f},.normal = {0.0f,0.0f,1.0f} }); // 7: 右下正面
+	modelDataBox.material.textureFilePath = filePath;
+
+	// 頂点リソースを作成
+	vertexResourceBox = dxBasis_->CreateBufferResources(sizeof(VertexData) * modelDataBox.vertices.size());
+	indexResource = dxBasis_->CreateBufferResources(sizeof(uint32_t) * 36);
+
+
+	// 頂点バッファビューを作成する
+	// リソースの先頭のアドレスから使う
+	vertexBufferViewBox.BufferLocation = vertexResourceBox->GetGPUVirtualAddress();
+	vertexBufferViewBox.SizeInBytes = sizeof(VertexData) * static_cast<UINT>(modelDataBox.vertices.size());
+	// 1頂点辺りのサイズ
+	vertexBufferViewBox.StrideInBytes = sizeof(VertexData);
+
+	uint32_t indices[] = {
+		// 前面
+		4, 5, 6, 7, 6, 5,
+		// 後面
+		1, 0, 3, 2, 3, 0,
+		// 左面
+		0, 4, 2, 6, 2, 4,
+		// 右面
+		5, 1, 7, 3, 7, 1,
+		// 上面
+		0, 1, 4, 5, 4, 1,
+		// 下面
+		6, 7, 2, 3, 2, 7
+	};
+
+	// 頂点バッファビューを作成する
+	// リソースの先頭のアドレスから使う
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+
+	// 頂点データを設定する
+	vertexResourceBox->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataBox));
+	// 頂点データにリソースをコピー
+	std::memcpy(vertexDataBox, modelDataBox.vertices.data(), sizeof(VertexData) * modelDataBox.vertices.size());
+
+	// 使用するリソースのサイズ
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * 36;
+	// 1頂点辺りのサイズ
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	// インデックスリソースにデータを書き込む
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+	std::memcpy(indexData, indices, sizeof(uint32_t) * 36);
+
+}
+
 void DebugDraw::CreateTransformMatrixData3d()
 {
 	// WVP用のリソースを作る
 	transformationResource = dxBasis_->CreateBufferResources(sizeof(TransformationMatrix));
 	transformationResourceLine = dxBasis_->CreateBufferResources(sizeof(TransformationMatrix));
+	transformationResourceBox = dxBasis_->CreateBufferResources(sizeof(TransformationMatrix));
 
 	// データを書き込む
 	// 書き込むためのアドレスを取得
 	transformationResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationData));
 	transformationResourceLine->Map(0, nullptr, reinterpret_cast<void**>(&transformationDataLine));
+	transformationResourceBox->Map(0, nullptr, reinterpret_cast<void**>(&transformationDataBox));
 
 	// 単位行列を書き込んでおく
 	transformationData->World = MakeIdentity4x4();
@@ -131,6 +197,10 @@ void DebugDraw::CreateTransformMatrixData3d()
 	transformationDataLine->WVP = MakeIdentity4x4();
 	transformationDataLine->WorldInverseTranspose = Inverse(transformationDataLine->World);
 	transformationDataLine->WorldInverseTranspose = Transpose(transformationDataLine->WorldInverseTranspose);
+	transformationDataBox->World = MakeIdentity4x4();
+	transformationDataBox->WVP = MakeIdentity4x4();
+	transformationDataBox->WorldInverseTranspose = Inverse(transformationDataBox->World);
+	transformationDataBox->WorldInverseTranspose = Transpose(transformationDataBox->WorldInverseTranspose);
 }
 
 void DebugDraw::CreateCameraResource()
@@ -156,6 +226,12 @@ void DebugDraw::Update()
 	else
 	{
 		worldViewProjectionMatrix = worldMatrix;
+	}
+
+	if (parent)
+	{
+		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
+		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
 	}
 
 	transformationData->WVP = worldViewProjectionMatrix;
@@ -187,11 +263,44 @@ void DebugDraw::UpdateLine()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
+	if (parent)
+	{
+		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
+		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
+	}
+
 	transformationDataLine->WVP = worldViewProjectionMatrix;
 	transformationDataLine->World = worldMatrix;
 
 	transformationDataLine->WorldInverseTranspose = Transpose(Inverse(transformationDataLine->World));
 
+}
+
+void DebugDraw::UpdateBox()
+{
+	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transformBox.scale, transformBox.rotate, transformBox.translate);
+	Matrix4x4 worldViewProjectionMatrix;
+
+	if (camera)
+	{
+		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
+		worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
+	}
+	else
+	{
+		worldViewProjectionMatrix = worldMatrix;
+	}
+
+	if (parent)
+	{
+		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
+		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
+	}
+
+	transformationDataBox->WVP = worldViewProjectionMatrix;
+	transformationDataBox->World = worldMatrix;
+					  
+	transformationDataBox->WorldInverseTranspose = Transpose(Inverse(transformationDataBox->World));
 }
 
 
@@ -211,6 +320,8 @@ void DebugDraw::Draw()
 
 void DebugDraw::DrawLine()
 {
+	// 描画準備
+	debugDraw_->DrawSettingCommon();
 	// テクスチャのSRVのDescriptorTableを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(modelDataLine.material.textureFilePath));
 	// wvp用のCBufferの場所を設定
@@ -219,5 +330,21 @@ void DebugDraw::DrawLine()
 	dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewLine);
 	// 描画
 	dxBasis_->GetCommandList()->DrawInstanced(UINT(modelDataLine.vertices.size()), 1, 0, 0);
+}
+
+void DebugDraw::DrawBox()
+{
+	// 描画準備
+	debugDraw_->DrawSettingCommon();
+	// テクスチャのSRVのDescriptorTableを設定
+	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(modelDataBox.material.textureFilePath));
+	// wvp用のCBufferの場所を設定
+	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationResourceBox->GetGPUVirtualAddress());
+	// VBVを設定
+	dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewBox);
+	// IBVを設定
+	dxBasis_->GetCommandList()->IASetIndexBuffer(&indexBufferView);
+	// 描画
+	dxBasis_->GetCommandList()->DrawIndexedInstanced(36, 1, 0, 0, 0);
 }
 

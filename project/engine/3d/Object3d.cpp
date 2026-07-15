@@ -38,7 +38,6 @@ void Object3d::Initialize(Object3dCommon* object3dManager)
 	// Transform変数を作る
 	cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-
 }
 
 void Object3d::CreateTransformMatrixData3d()
@@ -137,6 +136,11 @@ void Object3d::Update()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
+	if (parent)
+	{
+		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
+		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
+	}
 	
 	transformationData->WVP = worldViewProjectionMatrix;
 	transformationData->World = worldMatrix;
