@@ -36,6 +36,12 @@ void StageData::Update()
 		object3d->Update();
 	}
 
+	// プレイヤーの更新処理
+	for (const std::unique_ptr<Player>& player : players_)
+	{
+		player->Update();
+	}
+
 	// デバッグ更新
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
@@ -50,6 +56,13 @@ void StageData::Draw()
 	{
 		object3d->Draw();
 	}
+
+	// プレイヤーの描画処理
+	for (const std::unique_ptr<Player>& player : players_)
+	{
+		player->Draw();
+	}
+
 
 	// デバッグ描画
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
@@ -126,6 +139,11 @@ StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, c
 			// オブジェクトを読み込む
 			levelData.objects.push_back(LoadObject(object));
 		}
+		else if (type.compare("PlayerSpawn") == 0)
+		{
+			// プレイヤーの読み込み
+			levelData.players.push_back(LoadPlayer(object));
+		}
 	}
 
 	// レベルデータを返す
@@ -141,11 +159,18 @@ void StageData::CreateStage(const std::string& fileName)
 	// ファイル名からレベルデータを検索して格納
 	levelData = StageManager::GetInstance()->FindJsonData(fileName)->levelData_;
 
-	// 再帰呼び出しでツリー構造を生成
+	// 再帰呼び出しでオブジェクトのツリー構造を生成
 	for (const auto& objectData : levelData.objects)
 	{
 		CreateObject(objectData, nullptr);
 	}
+
+	// プレイヤーを生成
+	for (const auto& playerData : levelData.players)
+	{
+		CreatePlayer(playerData);
+	}
+
 }
 
 StageData::ObjectData StageData::LoadObject(nlohmann::json& object)
@@ -208,6 +233,58 @@ StageData::ObjectData StageData::LoadObject(nlohmann::json& object)
 	return objectData;
 }
 
+
+StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
+{
+	// データ格納用の変数を宣言
+	PlayerSpawnData playerSpawnData;
+
+	if (player.contains("file_name"))
+	{
+		// ファイル名を登録
+		playerSpawnData.filePath = player["file_name"].get<std::string>();
+	}
+
+	// トランスフォームのパラメータ読み込み
+	nlohmann::json& transform = player["transform"];
+	// 平行移動データを格納
+	playerSpawnData.translate.x = (float)transform["translation"][0];
+	playerSpawnData.translate.y = (float)transform["translation"][2];
+	playerSpawnData.translate.z = (float)transform["translation"][1];
+	// 回転角データを格納
+	playerSpawnData.rotate.x = -(float)transform["rotation"][0];
+	playerSpawnData.rotate.y = -(float)transform["rotation"][2];
+	playerSpawnData.rotate.z = -(float)transform["rotation"][1];
+	playerSpawnData.rotate.w = 1.0f;
+	// スケーリングデータを格納
+	playerSpawnData.scale.x = (float)transform["scaling"][0];
+	playerSpawnData.scale.y = (float)transform["scaling"][2];
+	playerSpawnData.scale.z = (float)transform["scaling"][1];
+
+	// コライダーのパラメータ読み込み
+	if (player.contains("collider"))
+	{
+		nlohmann::json& collider = player["collider"];
+		// コライダーフラグを立てる
+		playerSpawnData.hasCollier = true;
+		// 中心点のデータを格納
+		playerSpawnData.center.x = (float)collider["center"][0];
+		playerSpawnData.center.y = (float)collider["center"][2];
+		playerSpawnData.center.z = (float)collider["center"][1];
+		// サイズデータを格納
+		playerSpawnData.size.x = (float)(collider["size"][0] / 2);
+		playerSpawnData.size.y = (float)(collider["size"][2] / 2);
+		playerSpawnData.size.z = (float)(collider["size"][1] / 2);
+	}
+	else
+	{
+		// コライダーフラグを立てる
+		playerSpawnData.hasCollier = false;
+	}
+
+	return playerSpawnData;
+}
+
 void StageData::CreateObject(const ObjectData& objectData, Object3d* parent)
 {
 	// レベルデータからオブジェクトを生成、配置
@@ -230,18 +307,7 @@ void StageData::CreateObject(const ObjectData& objectData, Object3d* parent)
 	// コライダーがあれば生成、配置
 	if (objectData.hasCollier)
 	{
-		std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
-		debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
-		debugDraw->SetBoxScale(Vector3Add(objectData.size,objectData.scale));
-		debugDraw->SetBoxTranslate(Vector3Add(objectData.center,objectData.translate));
-
-		// 親オブジェクトがあればセット
-		if (parent)
-		{
-			debugDraw->SetParent(parent);
-		}
-
-		debugBoxs_.push_back(std::move(debugDraw));
+		CreateCollider(objectData.size, objectData.translate, objectData.scale, objectData.center, object3d.get());
 	}
 
 	// 親オブジェクトがあればセット
@@ -250,7 +316,7 @@ void StageData::CreateObject(const ObjectData& objectData, Object3d* parent)
 		object3d->SetParent(parent);
 	}
 
-	
+
 	// オブジェクトデータをセット
 	object3ds.push_back(std::move(object3d));
 
@@ -259,4 +325,41 @@ void StageData::CreateObject(const ObjectData& objectData, Object3d* parent)
 		CreateObject(child, current);
 	}
 
+}
+
+
+void StageData::CreatePlayer(const PlayerSpawnData& playerData)
+{
+	std::unique_ptr<Player> player = std::make_unique<Player>();
+	player->Initialize();
+	player->GetObject3d()->SetModel(playerData.filePath);
+	player->GetObject3d()->SetEnvironmentMapTextureFilePath("resources/human/white.png");
+	player->GetObject3d()->SetScale(playerData.scale);
+	player->GetObject3d()->SetTranslate(playerData.translate);
+	player->GetObject3d()->SetRotate(playerData.rotate);
+
+	// コライダーがあれば生成、配置
+	if (playerData.hasCollier)
+	{
+		CreateCollider(playerData.size, playerData.translate, playerData.scale, playerData.center, player->GetObject3d());
+	}
+
+	players_.push_back(std::move(player));
+}
+
+void StageData::CreateCollider(const Vector3& size, const Vector3 translate, const Vector3& scale, const Vector3& center, 
+	Object3d* parent)
+{
+	std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
+	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
+	debugDraw->SetBoxScale(Vector3Add(size, scale));
+	debugDraw->SetBoxTranslate(Vector3Add(center, translate));
+
+	// 親オブジェクトがあればセット
+	if (parent)
+	{
+		debugDraw->SetParent(parent);
+	}
+
+	debugBoxs_.push_back(std::move(debugDraw));
 }
