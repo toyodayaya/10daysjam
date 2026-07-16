@@ -21,57 +21,8 @@
                     1.0
                 ]
             },
-            "file_name": "axis.obj",
-            "collider": {
-                "type": "BOX",
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "size": [
-                    2.0,
-                    2.0,
-                    2.0
-                ]
-            },
-            "children": [
-                {
-                    "type": "MESH",
-                    "name": "立方体",
-                    "transform": {
-                        "translation": [
-                            5.416641712188721,
-                            0.0,
-                            0.0
-                        ],
-                        "rotation": [
-                            0.0,
-                            -0.0,
-                            0.0
-                        ],
-                        "scaling": [
-                            2.485649585723877,
-                            2.133686065673828,
-                            2.634000062942505
-                        ]
-                    },
-                    "file_name": "terrain.obj",
-                    "collider": {
-                        "type": "BOX",
-                        "center": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        "size": [
-                            2.0,
-                            2.0,
-                            2.0
-                        ]
-                    }
-                }
-            ]
+            "disabled_option": false,
+            "file_name": "axis.obj"
         },
         {
             "type": "LIGHT",

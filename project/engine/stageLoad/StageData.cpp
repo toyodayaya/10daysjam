@@ -104,6 +104,19 @@ StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, c
 	{
 		assert(object.contains("type"));
 
+		// 無効化オプションがあったら
+		if (object.contains("disabled_option"))
+		{
+			// 無効か有効かを判定
+			bool disabled = object["disabled_option"].get<bool>();
+
+			if (disabled)
+			{
+				// 無効ならスキップ
+				continue;
+			}
+		}
+
 		// 種別を取得
 		std::string type = object["type"].get<std::string>();
 
