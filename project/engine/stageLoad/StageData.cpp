@@ -42,6 +42,12 @@ void StageData::Update()
 		player->Update();
 	}
 
+	// 敵の更新処理
+	for (const std::unique_ptr<Enemy>& enemy : enemies_)
+	{
+		enemy->Update();
+	}
+
 	// デバッグ更新
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
@@ -61,6 +67,12 @@ void StageData::Draw()
 	for (const std::unique_ptr<Player>& player : players_)
 	{
 		player->Draw();
+	}
+
+	// 敵の描画処理
+	for (const std::unique_ptr<Enemy>& enemy : enemies_)
+	{
+		enemy->Draw();
 	}
 
 
@@ -144,6 +156,11 @@ StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, c
 			// プレイヤーの読み込み
 			levelData.players.push_back(LoadPlayer(object));
 		}
+		else if (type.compare("EnemySpawn") == 0)
+		{
+			// プレイヤーの読み込み
+			levelData.enemies.push_back(LoadEnemy(object));
+		}
 	}
 
 	// レベルデータを返す
@@ -171,6 +188,11 @@ void StageData::CreateStage(const std::string& fileName)
 		CreatePlayer(playerData);
 	}
 
+	// 敵を生成
+	for (const auto& enemyData : levelData.enemies)
+	{
+		CreateEnemy(enemyData);
+	}
 }
 
 StageData::ObjectData StageData::LoadObject(nlohmann::json& object)
@@ -345,6 +367,76 @@ void StageData::CreatePlayer(const PlayerSpawnData& playerData)
 	}
 
 	players_.push_back(std::move(player));
+}
+
+StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
+{
+	// データ格納用の変数を宣言
+	EnemySpawnData enemySpawnData;
+
+	if (enemy.contains("file_name"))
+	{
+		// ファイル名を登録
+		enemySpawnData.filePath = enemy["file_name"].get<std::string>();
+	}
+
+	// トランスフォームのパラメータ読み込み
+	nlohmann::json& transform = enemy["transform"];
+	// 平行移動データを格納
+	enemySpawnData.translate.x = (float)transform["translation"][0];
+	enemySpawnData.translate.y = (float)transform["translation"][2];
+	enemySpawnData.translate.z = (float)transform["translation"][1];
+	// 回転角データを格納
+	enemySpawnData.rotate.x = -(float)transform["rotation"][0];
+	enemySpawnData.rotate.y = -(float)transform["rotation"][2];
+	enemySpawnData.rotate.z = -(float)transform["rotation"][1];
+	enemySpawnData.rotate.w = 1.0f;
+	// スケーリングデータを格納
+	enemySpawnData.scale.x = (float)transform["scaling"][0];
+	enemySpawnData.scale.y = (float)transform["scaling"][2];
+	enemySpawnData.scale.z = (float)transform["scaling"][1];
+
+	// コライダーのパラメータ読み込み
+	if (enemy.contains("collider"))
+	{
+		nlohmann::json& collider = enemy["collider"];
+		// コライダーフラグを立てる
+		enemySpawnData.hasCollier = true;
+		// 中心点のデータを格納
+		enemySpawnData.center.x = (float)collider["center"][0];
+		enemySpawnData.center.y = (float)collider["center"][2];
+		enemySpawnData.center.z = (float)collider["center"][1];
+		// サイズデータを格納
+		enemySpawnData.size.x = (float)(collider["size"][0] / 2);
+		enemySpawnData.size.y = (float)(collider["size"][2] / 2);
+		enemySpawnData.size.z = (float)(collider["size"][1] / 2);
+	}
+	else
+	{
+		// コライダーフラグを立てる
+		enemySpawnData.hasCollier = false;
+	}
+
+	return enemySpawnData;
+}
+
+void StageData::CreateEnemy(const EnemySpawnData& enemyData)
+{
+	std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>();
+	enemy->Initialize();
+	enemy->GetObject3d()->SetModel(enemyData.filePath);
+	enemy->GetObject3d()->SetEnvironmentMapTextureFilePath("resources/human/white.png");
+	enemy->GetObject3d()->SetScale(enemyData.scale);
+	enemy->GetObject3d()->SetTranslate(enemyData.translate);
+	enemy->GetObject3d()->SetRotate(enemyData.rotate);
+
+	// コライダーがあれば生成、配置
+	if (enemyData.hasCollier)
+	{
+		CreateCollider(enemyData.size, enemyData.translate, enemyData.scale, enemyData.center, enemy->GetObject3d());
+	}
+
+	enemies_.push_back(std::move(enemy));
 }
 
 void StageData::CreateCollider(const Vector3& size, const Vector3 translate, const Vector3& scale, const Vector3& center, 

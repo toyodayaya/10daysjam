@@ -1,22 +1,22 @@
-#include "Player.h"
+#include "Enemy.h"
 #include "Object3dCommon.h"
 #include "ModelManager.h"
 #include "Model.h"
 #include "TextureManager.h"
 
-void Player::Initialize()
+void Enemy::Initialize()
 {
 	// オブジェクトの初期化
 	object3d = std::make_unique<Object3d>();
 	object3d->Initialize(Object3dCommon::GetInstance());
 }
 
-void Player::Update()
+void Enemy::Update()
 {
 	object3d->Update();
 }
 
-void Player::Draw()
+void Enemy::Draw()
 {
 	object3d->Draw();
 }

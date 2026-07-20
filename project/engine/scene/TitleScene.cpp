@@ -14,6 +14,7 @@ void TitleScene::Initialize()
 	// objファイルからモデルを読み込む
 	ModelManager::GetInstance()->LoadModel("resources/model", "axis.obj", Model::AnimationType::kNone);
 	ModelManager::GetInstance()->LoadModel("resources/model", "terrain.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/model", "fence.obj", Model::AnimationType::kNone);
 	
 	// ステージを読み込む
 	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");

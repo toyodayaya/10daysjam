@@ -3,6 +3,7 @@
 #include "DirectXBasis.h"
 #include "Object3d.h"
 #include "Player.h"
+#include "Enemy.h"
 #include <string>
 #include <vector>
 #include <externals/nlohmannJson/Json.hpp>
@@ -37,11 +38,24 @@ public:
 		int32_t hasCollier;
 	};
 
+	// 敵の生成データ
+	struct EnemySpawnData
+	{
+		Vector3 translate;
+		Quaternion rotate;
+		Vector3 scale;
+		std::string filePath;
+		Vector3 center;
+		Vector3 size;
+		int32_t hasCollier;
+	};
+
 	// レベルデータ
 	struct LevelData
 	{
 		std::vector<ObjectData> objects;
 		std::vector<PlayerSpawnData> players;
+		std::vector<EnemySpawnData> enemies;
 	};
 
 	static std::unique_ptr<StageData> instance;
@@ -81,6 +95,10 @@ public:
 	PlayerSpawnData LoadPlayer(nlohmann::json& player);
 	// プレイヤー生成の関数
 	void CreatePlayer(const PlayerSpawnData& playerData);
+	// 敵読み込みの関数
+	EnemySpawnData LoadEnemy(nlohmann::json& enemy);
+	// 敵生成の関数
+	void CreateEnemy(const EnemySpawnData& enemyData);
 	// コライダー生成の関数
 	void CreateCollider(const Vector3& size,const Vector3 translate, const Vector3& scale,const Vector3& center,Object3d* parent);
 
@@ -93,4 +111,7 @@ private:
 	std::vector<std::unique_ptr<DebugDraw>> debugBoxs_;
 	// プレイヤーデータ
 	std::vector<std::unique_ptr<Player>> players_;
+	// 敵データ
+	std::vector<std::unique_ptr<Enemy>> enemies_;
+
 };
