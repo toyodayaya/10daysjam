@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <map>
+#include "Camera.h"
 #include "StageData.h"
 
 class StageManager
@@ -8,6 +9,9 @@ class StageManager
 private:
 	// レベルデータ
 	std::map<std::string, std::unique_ptr<StageData>> stageDatas;
+
+	// デフォルトカメラ
+	Camera* defaultCamera_ = nullptr;
 
 public:
 	static std::unique_ptr<StageManager> instance;
@@ -29,5 +33,8 @@ public:
 	// Jsonデータ取得
 	StageData* FindJsonData(const std::string& filePath);
 
-
+	// getter
+	Camera* GetDefaultCamera() const { return defaultCamera_; }
+	// setter
+	void SetDefaultCamera(Camera* camera) { this->defaultCamera_ = camera; }
 };

@@ -18,19 +18,21 @@ void TitleScene::Initialize()
 	
 	// ステージを読み込む
 	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");
-	// ステージを生成する
-	StageData::GetInstance()->CreateStage("1.json");
+	// ステージを設定する
+	stageData = StageManager::GetInstance()->FindJsonData("1.json");
+	// ステージを作成する
+	stageData->CreateStage("1.json");
 }
 
 void TitleScene::Finalize()
 {
-	StageData::GetInstance()->Finalize();
+	
 }
 
 void TitleScene::Update()
 {
 	// ステージを更新
-	StageData::GetInstance()->Update();
+	stageData->Update();
 
 	// キー入力でPostEffectを変更
 	ChangePostEffect();
@@ -39,7 +41,7 @@ void TitleScene::Update()
 void TitleScene::Draw()
 {
 	// ステージを描画
-	StageData::GetInstance()->Draw();
+	stageData->Draw();
 }
 
 void TitleScene::ChangePostEffect()

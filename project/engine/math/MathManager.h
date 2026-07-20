@@ -97,6 +97,9 @@ namespace MathManager
 	// Vector3の掛け算
 	Vector3 Vector3Multiply(const Vector3& v1, const Vector3& v2);
 	Vector3 FloatMultiply(const Vector3& v1, const float v2);
+
+	// Quaternionの掛け算
+	Quaternion QuaternionMultiply(const Quaternion& q1, const Quaternion& q2);
 	
 	// Vector3の足し算
 	Vector3 Vector3Add(const Vector3& v1, const Vector3& v2);
@@ -134,5 +137,8 @@ namespace MathManager
 	Quaternion MakeQuaternionAxisAngle(const Vector3& axis, float radian);
 	// 2つのベクトルから回転クォータニオンを作成
 	Quaternion FromToRotation(const Vector3& from, const Vector3& to);
+
+	// Blenderのカメラ角対応用
+	Quaternion MakeRotateXQuaternion(float rad);
 
 }

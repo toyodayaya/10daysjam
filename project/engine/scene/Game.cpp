@@ -7,7 +7,7 @@ void Game::Initialize()
 	// 汎用部の初期化処理
 	Framework::Initialize();
 
-	camera->SetRotate(Vector3{ 0.0f,0.0f,0.0f});
+	camera->SetRotate(Quaternion{ 0.0f,0.0f,0.0f,1.0f});
 	camera->SetTranslate({ 0.0f,1.0f,-8.0f });
 
 	// Imguiマネージャーの初期化

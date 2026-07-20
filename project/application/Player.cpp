@@ -3,6 +3,7 @@
 #include "ModelManager.h"
 #include "Model.h"
 #include "TextureManager.h"
+#include "ImGuiManager.h"
 
 void Player::Initialize()
 {
@@ -14,6 +15,18 @@ void Player::Initialize()
 void Player::Update()
 {
 	object3d->Update();
+
+#ifdef USE_IMGUI
+	ImGui::Begin("Player");
+	QuaternionTransform transform = object3d->GetTransform();
+	ImGui::DragFloat3("pos", &transform.translate.x);
+	ImGui::DragFloat3("scale", &transform.scale.x);
+	ImGui::DragFloat4("rotate", &transform.rotate.x);
+
+	ImGui::End();
+
+#endif // USE_IMGUI
+
 }
 
 void Player::Draw()

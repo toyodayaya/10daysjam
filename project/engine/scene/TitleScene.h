@@ -11,6 +11,7 @@
 #include <memory>
 #include "ParticleEmitter.h"
 #include <random>
+#include "StageData.h"
 
 class TitleScene : public BaseScene
 {
@@ -28,6 +29,7 @@ public:
 	void ChangePostEffect();
 
 private:
-	
+	// ステージデータ
+	StageData* stageData = nullptr;
 
 };

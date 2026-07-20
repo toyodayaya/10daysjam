@@ -7,7 +7,7 @@ using namespace MathManager;
 void Camera::Update()
 {
 	// ビュー行列の計算処理
-	worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
 	viewMatrix = Inverse(worldMatrix);
 
 	// プロジェクション行列の計算処理
@@ -20,7 +20,7 @@ void Camera::Update()
 
 	// 開発用UIの処理
 	ImGui::Begin("Camera");
-	ImGui::DragFloat3("Rotate", &transform.rotate.x, 0.01f);
+	ImGui::DragFloat4("Rotate", &transform.rotate.x, 0.01f);
 	ImGui::DragFloat3("Translate", &transform.translate.x, 1.0f);
 	ImGui::End();
 
@@ -35,7 +35,7 @@ Camera::Camera()
 	, aspectRatio(float(WinAPIManager::kClientWidth) / float(WinAPIManager::kClientHeight))
 	, nearClip(0.1f)
 	, farClip(100.0f)
-	, worldMatrix(MakeAffineMatrix(transform.scale, transform.rotate, transform.translate))
+	, worldMatrix(MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate))
 	, viewMatrix(Inverse(worldMatrix))
 	, projectionMatrix(MakePerspectiveFovMatrix(fovY, aspectRatio, nearClip, farClip))
 	, viewProjectionMatrix(Multiply(viewMatrix, projectionMatrix))

@@ -10,44 +10,48 @@
 #include "DebugDraw.h"
 #include "DebugDrawCommon.h"
 
+class StageManager;
+
 class StageData
 {
 public:
-	// オブジェクトの生成データ
-	struct ObjectData
+	// コライダーの生成データ
+	struct ColliderSpawnData
 	{
-		Vector3 translate;
-		Quaternion rotate;
-		Vector3 scale;
-		std::string filePath;
-		std::vector<ObjectData> children;
 		Vector3 center;
 		Vector3 size;
 		int32_t hasCollier;
+	};
+
+	// オブジェクトの生成データ
+	struct ObjectData
+	{
+		QuaternionTransform transform;
+		std::string filePath;
+		std::vector<ObjectData> children;
+		ColliderSpawnData collider;
 	};
 
 	// プレイヤーの生成データ
 	struct PlayerSpawnData
 	{
-		Vector3 translate;
-		Quaternion rotate;
-		Vector3 scale;
+		QuaternionTransform transform;
 		std::string filePath;
-		Vector3 center;
-		Vector3 size;
-		int32_t hasCollier;
+		ColliderSpawnData collider;
 	};
 
 	// 敵の生成データ
 	struct EnemySpawnData
 	{
-		Vector3 translate;
-		Quaternion rotate;
-		Vector3 scale;
+		QuaternionTransform transform;
 		std::string filePath;
-		Vector3 center;
-		Vector3 size;
-		int32_t hasCollier;
+		ColliderSpawnData collider;
+	};
+
+	// カメラデータ
+	struct CameraData
+	{
+		QuaternionTransform transform;
 	};
 
 	// レベルデータ
@@ -56,21 +60,14 @@ public:
 		std::vector<ObjectData> objects;
 		std::vector<PlayerSpawnData> players;
 		std::vector<EnemySpawnData> enemies;
+		CameraData cameraData;
 	};
 
-	static std::unique_ptr<StageData> instance;
-
-	StageData() = default;
-	~StageData() = default;
-	StageData(StageData&) = delete;
-	StageData& operator = (StageData&) = delete;
-
+	
 public:
-	// シングルトンインスタンスの取得
-	static StageData* GetInstance();
-
+	
 	// 初期化
-	void Initialize(const std::string& directoryPath, const std::string& filePath);
+	void Initialize(const std::string& directoryPath, const std::string& filePath,StageManager* stageManager);
 
 	// 更新
 	void Update();
@@ -100,7 +97,11 @@ public:
 	// 敵生成の関数
 	void CreateEnemy(const EnemySpawnData& enemyData);
 	// コライダー生成の関数
-	void CreateCollider(const Vector3& size,const Vector3 translate, const Vector3& scale,const Vector3& center,Object3d* parent);
+	void CreateCollider(const QuaternionTransform& transform,const ColliderSpawnData& colliderData,Object3d* parent);
+	// カメラデータ読み込みの関数
+	CameraData LoadCameraData(nlohmann::json& camera);
+	// カメラデータセットの関数
+	void SetCameraData(CameraData& cameraData);
 
 private:
 	// jsonファイルのデータ
@@ -113,5 +114,8 @@ private:
 	std::vector<std::unique_ptr<Player>> players_;
 	// 敵データ
 	std::vector<std::unique_ptr<Enemy>> enemies_;
-
+	// デフォルトカメラ
+	Camera* camera_ = nullptr;
+	// ポインタ
+	StageManager* stageManager_ = nullptr;
 };

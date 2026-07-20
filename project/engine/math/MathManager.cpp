@@ -153,7 +153,8 @@ namespace MathManager
 
 	Matrix4x4 MakeAffineMatrixQuat(const Vector3& scale, const Quaternion& rotate, const Vector3& translate)
 	{
-		Matrix4x4 rotateXYZ = MakeRotateMatrix(rotate);
+		Quaternion q = QuaternionNormalize(rotate);
+		Matrix4x4 rotateXYZ = MakeRotateMatrix(q);
 
 		Matrix4x4 ret;
 		ret.m[0][0] = scale.x * rotateXYZ.m[0][0]; ret.m[0][1] = scale.x * rotateXYZ.m[0][1]; ret.m[0][2] = scale.x * rotateXYZ.m[0][2]; ret.m[0][3] = 0.0f;
@@ -270,6 +271,18 @@ namespace MathManager
 		ret.x = v1.x * v2;
 		ret.y = v1.y * v2;
 		ret.z = v1.z * v2;
+		return ret;
+	}
+
+	Quaternion QuaternionMultiply(const Quaternion& q1, const Quaternion& q2)
+	{
+		Quaternion ret;
+
+		ret.x = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y;
+		ret.y = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x;
+		ret.z = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w;
+		ret.w = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z;
+
 		return ret;
 	}
 
@@ -442,6 +455,18 @@ namespace MathManager
 		q.w = dot + std::sqrtf(LengthSquared(f) * LengthSquared(t));
 
 		return QuaternionNormalize(q);
+	}
+
+	Quaternion MakeRotateXQuaternion(float rad)
+	{
+		Quaternion q;
+
+		q.x = sinf(rad * 0.5f);
+		q.y = 0.0f;
+		q.z = 0.0f;
+		q.w = cosf(rad * 0.5f);
+
+		return q;
 	}
 
 	Vector3 Normalize(const Vector3& v)

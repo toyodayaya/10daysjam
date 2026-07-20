@@ -33,7 +33,7 @@ void StageManager::LoadJsonData(const std::string& directoryPath, const std::str
 
 	// Jsonデータの生成とファイル読み込み、初期化
 	std::unique_ptr<StageData> stageData = std::make_unique<StageData>();
-	stageData->Initialize(directoryPath, filePath);
+	stageData->Initialize(directoryPath, filePath,StageManager::GetInstance());
 
 	// Jsonデータをmapコンテナに格納する
 	stageDatas.insert(std::make_pair(filePath, std::move(stageData)));

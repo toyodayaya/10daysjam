@@ -79,6 +79,7 @@ public:
 	void SetScale(const Vector3& scale) { this->transform.scale = scale; }
 	void SetRotate(const Quaternion& rotate) { this->transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { this->transform.translate = translate; }
+	void SetTransform(const QuaternionTransform& transform) { this->transform = transform; }
 	void SetCamera(Camera* camera) { this->camera = camera; }
 	void SetEnvironmentMapTextureFilePath(const std::string& filePath) { environmentMapTextureFilePath = filePath; }
 	void SetParent(Object3d* parent) { this->parent = parent; }
@@ -87,6 +88,7 @@ public:
 	const Vector3& GetScale() const { return transform.scale; }
 	const Quaternion& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
+	const QuaternionTransform& GetTransform() const { return transform; }
 
 private:
 	// ポインタ

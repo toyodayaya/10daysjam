@@ -57,6 +57,7 @@ void Framework::Initialize()
 
 	// ステージマネージャーの初期化
 	StageManager::GetInstance()->Initialize();
+	StageManager::GetInstance()->SetDefaultCamera(camera.get());
 
 	// Fenceのsignalを待つためのイベントを作成する
 	fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);

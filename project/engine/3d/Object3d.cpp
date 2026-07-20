@@ -8,8 +8,6 @@
 
 using namespace MathManager;
 
-using namespace MathManager;
-
 void Object3d::Initialize(Object3dCommon* object3dManager)
 {
 	// 引数で受け取ってメンバ変数として記録する
@@ -126,6 +124,12 @@ void Object3d::Update()
 	// モデルを更新
 	model->Update(worldMatrix);
 
+	if (parent)
+	{
+		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
+		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
+	}
+
 	if (camera)
 	{
 		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
@@ -136,11 +140,6 @@ void Object3d::Update()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	if (parent)
-	{
-		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
-		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
-	}
 	
 	transformationData->WVP = worldViewProjectionMatrix;
 	transformationData->World = worldMatrix;
