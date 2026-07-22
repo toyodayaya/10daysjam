@@ -4,6 +4,7 @@
 #include "Object3d.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "ChangePostEffectEvent.h"
 #include <string>
 #include <vector>
 #include <externals/nlohmannJson/Json.hpp>
@@ -11,6 +12,7 @@
 #include "DebugDrawCommon.h"
 
 class StageManager;
+class EventManager;
 
 class StageData
 {
@@ -48,6 +50,13 @@ public:
 		ColliderSpawnData collider;
 	};
 
+	// イベントの生成データ
+	struct EventSpawnData
+	{
+		QuaternionTransform transform;
+		ColliderSpawnData collider;
+	};
+
 	// カメラデータ
 	struct CameraData
 	{
@@ -60,6 +69,7 @@ public:
 		std::vector<ObjectData> objects;
 		std::vector<PlayerSpawnData> players;
 		std::vector<EnemySpawnData> enemies;
+		std::vector<EventSpawnData> events;
 		CameraData cameraData;
 	};
 
@@ -96,8 +106,14 @@ public:
 	EnemySpawnData LoadEnemy(nlohmann::json& enemy);
 	// 敵生成の関数
 	void CreateEnemy(const EnemySpawnData& enemyData);
+	// コライダー読み込みの関数
+	ColliderSpawnData LoadCollider(nlohmann::json& collider);
 	// コライダー生成の関数
-	void CreateCollider(const QuaternionTransform& transform,const ColliderSpawnData& colliderData,Object3d* parent);
+	void CreateCollider(const QuaternionTransform& transform,const ColliderSpawnData& colliderData);
+	// イベントデータ読み込みの関数
+	EventSpawnData LoadEvent(nlohmann::json& event);
+	// イベント生成の関数
+	void CreateEvents(const EventSpawnData& eventData);
 	// カメラデータ読み込みの関数
 	CameraData LoadCameraData(nlohmann::json& camera);
 	// カメラデータセットの関数

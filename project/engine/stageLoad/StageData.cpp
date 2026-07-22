@@ -41,6 +41,9 @@ void StageData::Update()
 		enemy->Update();
 	}
 
+	// イベントの更新処理
+	EventManager::GetInstance()->Update();
+
 	// デバッグ更新
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
@@ -68,6 +71,8 @@ void StageData::Draw()
 		enemy->Draw();
 	}
 
+	// イベントの描画処理
+	EventManager::GetInstance()->Draw();
 
 	// デバッグ描画
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
@@ -146,14 +151,20 @@ StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, c
 		}
 		else if (type.compare("EnemySpawn") == 0)
 		{
-			// プレイヤーの読み込み
+			// 敵の読み込み
 			levelData.enemies.push_back(LoadEnemy(object));
+		}
+		else if (type.compare("EventSpawn") == 0)
+		{
+			// イベントデータの読み込み
+			levelData.events.push_back(LoadEvent(object));
 		}
 		else if (type.compare("CAMERA") == 0)
 		{
 			// カメラデータの読み込み
 			levelData.cameraData = LoadCameraData(object);
 		}
+
 	}
 
 	// レベルデータを返す
@@ -187,6 +198,12 @@ void StageData::CreateStage(const std::string& fileName)
 		CreateEnemy(enemyData);
 	}
 
+	// イベントを生成
+	for (const auto& eventData : levelData.events)
+	{
+		CreateEvents(eventData);
+	}
+
 	// カメラデータをセット
 	if (&levelData.cameraData)
 	{
@@ -215,7 +232,7 @@ StageData::ObjectData StageData::LoadObject(nlohmann::json& object)
 	objectData.transform.rotate.x = -(float)transform["rotation"][0];
 	objectData.transform.rotate.y = -(float)transform["rotation"][2];
 	objectData.transform.rotate.z = -(float)transform["rotation"][1];
-	objectData.transform.rotate.w = -(float)transform["rotation"][3];
+	objectData.transform.rotate.w = (float)transform["rotation"][3];
 	// スケーリングデータを格納
 	objectData.transform.scale.x = (float)transform["scaling"][0];
 	objectData.transform.scale.y = (float)transform["scaling"][2];
@@ -225,16 +242,8 @@ StageData::ObjectData StageData::LoadObject(nlohmann::json& object)
 	if (object.contains("collider"))
 	{
 		nlohmann::json& collider = object["collider"];
-		// コライダーフラグを立てる
-		objectData.collider.hasCollier = true;
-		// 中心点のデータを格納
-		objectData.collider.center.x = (float)collider["center"][0];
-		objectData.collider.center.y = (float)collider["center"][2];
-		objectData.collider.center.z = (float)collider["center"][1];
-		// サイズデータを格納
-		objectData.collider.size.x = (float)(collider["size"][0] / 2);
-		objectData.collider.size.y = (float)(collider["size"][2] / 2);
-		objectData.collider.size.z = (float)(collider["size"][1] / 2);
+		// コライダーデータを読み込む
+		objectData.collider = LoadCollider(collider);
 	}
 	else
 	{
@@ -254,6 +263,45 @@ StageData::ObjectData StageData::LoadObject(nlohmann::json& object)
 	return objectData;
 }
 
+
+
+void StageData::CreateObject(const ObjectData& objectData, Object3d* parent)
+{
+	// レベルデータからオブジェクトを生成、配置
+	std::unique_ptr<Object3d> object3d = std::make_unique<Object3d>();
+	// オブジェクトの初期化
+	object3d->Initialize(Object3dCommon::GetInstance());
+	// モデルをセット
+	object3d->SetModel(objectData.filePath);
+	// 環境マップ用テクスチャデータをセット
+	object3d->SetEnvironmentMapTextureFilePath("resources/human/white.png");
+	// Transformデータをセット
+	object3d->SetTransform(objectData.transform);
+	// 現在のオブジェクトを記録
+	Object3d* current = object3d.get();
+
+	// コライダーがあれば生成、配置
+	if (objectData.collider.hasCollier)
+	{
+		CreateCollider(objectData.transform, objectData.collider);
+	}
+
+	// 親オブジェクトがあればセット
+	if (parent)
+	{
+		object3d->SetParent(parent);
+	}
+
+
+	// オブジェクトデータをセット
+	object3ds.push_back(std::move(object3d));
+
+	for (const auto& child : objectData.children)
+	{
+		CreateObject(child, current);
+	}
+
+}
 
 StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 {
@@ -276,7 +324,7 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 	playerSpawnData.transform.rotate.x = -(float)transform["rotation"][0];
 	playerSpawnData.transform.rotate.y = -(float)transform["rotation"][2];
 	playerSpawnData.transform.rotate.z = -(float)transform["rotation"][1];
-	playerSpawnData.transform.rotate.w = -(float)transform["rotation"][3];
+	playerSpawnData.transform.rotate.w = (float)transform["rotation"][3];
 	// スケーリングデータを格納
 	playerSpawnData.transform.scale.x = (float)transform["scaling"][0];
 	playerSpawnData.transform.scale.y = (float)transform["scaling"][2];
@@ -286,16 +334,7 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 	if (player.contains("collider"))
 	{
 		nlohmann::json& collider = player["collider"];
-		// コライダーフラグを立てる
-		playerSpawnData.collider.hasCollier = true;
-		// 中心点のデータを格納
-		playerSpawnData.collider.center.x = (float)collider["center"][0];
-		playerSpawnData.collider.center.y = (float)collider["center"][2];
-		playerSpawnData.collider.center.z = (float)collider["center"][1];
-		// サイズデータを格納
-		playerSpawnData.collider.size.x = (float)(collider["size"][0] / 2);
-		playerSpawnData.collider.size.y = (float)(collider["size"][2] / 2);
-		playerSpawnData.collider.size.z = (float)(collider["size"][1] / 2);
+		playerSpawnData.collider = LoadCollider(collider);
 	}
 	else
 	{
@@ -306,43 +345,6 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 	return playerSpawnData;
 }
 
-void StageData::CreateObject(const ObjectData& objectData, Object3d* parent)
-{
-	// レベルデータからオブジェクトを生成、配置
-	std::unique_ptr<Object3d> object3d = std::make_unique<Object3d>();
-	// オブジェクトの初期化
-	object3d->Initialize(Object3dCommon::GetInstance());
-	// モデルをセット
-	object3d->SetModel(objectData.filePath);
-	// 環境マップ用テクスチャデータをセット
-	object3d->SetEnvironmentMapTextureFilePath("resources/human/white.png");
-	// Transformデータをセット
-	object3d->SetTransform(objectData.transform);
-	// 現在のオブジェクトを記録
-	Object3d* current = object3d.get();
-
-	// コライダーがあれば生成、配置
-	if (objectData.collider.hasCollier)
-	{
-		CreateCollider(objectData.transform, objectData.collider, parent);
-	}
-
-	// 親オブジェクトがあればセット
-	if (parent)
-	{
-		object3d->SetParent(parent);
-	}
-
-
-	// オブジェクトデータをセット
-	object3ds.push_back(std::move(object3d));
-
-	for (const auto& child : objectData.children)
-	{
-		CreateObject(child, current);
-	}
-
-}
 
 
 void StageData::CreatePlayer(const PlayerSpawnData& playerData)
@@ -358,7 +360,7 @@ void StageData::CreatePlayer(const PlayerSpawnData& playerData)
 	// コライダーがあれば生成、配置
 	if (playerData.collider.hasCollier)
 	{
-		CreateCollider(playerData.transform,playerData.collider,player->GetObject3d());
+		CreateCollider(playerData.transform, playerData.collider);
 	}
 
 	players_.push_back(std::move(player));
@@ -385,7 +387,7 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 	enemySpawnData.transform.rotate.x = -(float)transform["rotation"][0];
 	enemySpawnData.transform.rotate.y = -(float)transform["rotation"][2];
 	enemySpawnData.transform.rotate.z = -(float)transform["rotation"][1];
-	enemySpawnData.transform.rotate.w = -(float)transform["rotation"][3];
+	enemySpawnData.transform.rotate.w = (float)transform["rotation"][3];
 	// スケーリングデータを格納
 	enemySpawnData.transform.scale.x = (float)transform["scaling"][0];
 	enemySpawnData.transform.scale.y = (float)transform["scaling"][2];
@@ -395,16 +397,8 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 	if (enemy.contains("collider"))
 	{
 		nlohmann::json& collider = enemy["collider"];
-		// コライダーフラグを立てる
-		enemySpawnData.collider.hasCollier = true;
-		// 中心点のデータを格納
-		enemySpawnData.collider.center.x = (float)collider["center"][0];
-		enemySpawnData.collider.center.y = (float)collider["center"][2];
-		enemySpawnData.collider.center.z = (float)collider["center"][1];
-		// サイズデータを格納
-		enemySpawnData.collider.size.x = (float)(collider["size"][0] / 2);
-		enemySpawnData.collider.size.y = (float)(collider["size"][2] / 2);
-		enemySpawnData.collider.size.z = (float)(collider["size"][1] / 2);
+		// コライダーデータを読み込む
+		enemySpawnData.collider = LoadCollider(collider);
 	}
 	else
 	{
@@ -426,13 +420,32 @@ void StageData::CreateEnemy(const EnemySpawnData& enemyData)
 	// コライダーがあれば生成、配置
 	if (enemyData.collider.hasCollier)
 	{
-		CreateCollider(enemyData.transform,enemyData.collider,enemy->GetObject3d());
+		CreateCollider(enemyData.transform, enemyData.collider);
 	}
 
 	enemies_.push_back(std::move(enemy));
 }
 
-void StageData::CreateCollider(const QuaternionTransform& transform, const ColliderSpawnData& collider,Object3d* parent)
+StageData::ColliderSpawnData StageData::LoadCollider(nlohmann::json& collider)
+{
+	// データ格納用の変数を宣言
+	ColliderSpawnData colliderData;
+
+	// コライダーフラグを立てる
+	colliderData.hasCollier = true;
+	// 中心点のデータを格納
+	colliderData.center.x = (float)collider["center"][0];
+	colliderData.center.y = (float)collider["center"][2];
+	colliderData.center.z = (float)collider["center"][1];
+	// サイズデータを格納
+	colliderData.size.x = (float)(collider["size"][0]);
+	colliderData.size.y = (float)(collider["size"][2]);
+	colliderData.size.z = (float)(collider["size"][1]);
+
+	return colliderData;
+}
+
+void StageData::CreateCollider(const QuaternionTransform& transform, const ColliderSpawnData& collider)
 {
 	std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
 	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
@@ -440,12 +453,60 @@ void StageData::CreateCollider(const QuaternionTransform& transform, const Colli
 	debugDraw->SetBoxTranslate(Vector3Add(collider.center, transform.translate));
 
 	// 親オブジェクトがあればセット
-	if (parent)
-	{
-		debugDraw->SetParent(parent);
-	}
+	debugDraw->SetParent(transform);
 
 	debugBoxs_.push_back(std::move(debugDraw));
+}
+
+StageData::EventSpawnData StageData::LoadEvent(nlohmann::json& event)
+{
+	// データ格納用の変数を宣言
+	EventSpawnData eventSpawnData;
+
+	// トランスフォームのパラメータ読み込み
+	nlohmann::json& transform = event["transform"];
+	// 平行移動データを格納
+	eventSpawnData.transform.translate.x = (float)transform["translation"][0];
+	eventSpawnData.transform.translate.y = (float)transform["translation"][2];
+	eventSpawnData.transform.translate.z = (float)transform["translation"][1];
+	// 回転角データを格納
+	eventSpawnData.transform.rotate.x = -(float)transform["rotation"][0];
+	eventSpawnData.transform.rotate.y = -(float)transform["rotation"][2];
+	eventSpawnData.transform.rotate.z = -(float)transform["rotation"][1];
+	eventSpawnData.transform.rotate.w = (float)transform["rotation"][3];
+	// スケーリングデータを格納
+	eventSpawnData.transform.scale.x = (float)transform["scaling"][0];
+	eventSpawnData.transform.scale.y = (float)transform["scaling"][2];
+	eventSpawnData.transform.scale.z = (float)transform["scaling"][1];
+
+	// コライダーのパラメータ読み込み
+	if (event.contains("collider"))
+	{
+		nlohmann::json& collider = event["collider"];
+		// コライダーデータを読み込む
+		eventSpawnData.collider = LoadCollider(collider);
+	}
+	else
+	{
+		// コライダーフラグを立てる
+		eventSpawnData.collider.hasCollier = false;
+	}
+
+	return eventSpawnData;
+}
+
+void StageData::CreateEvents(const EventSpawnData& eventData)
+{
+	std::unique_ptr<ChangePostEffectEvent> event = std::make_unique<ChangePostEffectEvent>();
+	event->Initialize(eventData.transform);
+	
+	// コライダーがあれば生成、配置
+	if (eventData.collider.hasCollier)
+	{
+		CreateCollider(eventData.transform, eventData.collider);
+	}
+
+	EventManager::GetInstance()->SetEvents(std::move(event));
 }
 
 StageData::CameraData StageData::LoadCameraData(nlohmann::json& camera)
@@ -476,7 +537,7 @@ void StageData::SetCameraData(CameraData& cameraData)
 {
 	// カメラの回転角を補正
 	Quaternion correction = MakeRotateXQuaternion(-std::numbers::pi_v<float> / 2.0f);
-	cameraData.transform.rotate = QuaternionNormalize(QuaternionMultiply(correction,cameraData.transform.rotate));
+	cameraData.transform.rotate = QuaternionNormalize(QuaternionMultiply(correction, cameraData.transform.rotate));
 	cameraData.transform.rotate.w *= -1.0f;
 
 	// カメラデータをセット

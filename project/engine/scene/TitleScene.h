@@ -25,9 +25,6 @@ public:
 	// 描画
 	void Draw() override;
 
-	// PostEffect切り替え
-	void ChangePostEffect();
-
 private:
 	// ステージデータ
 	StageData* stageData = nullptr;

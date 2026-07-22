@@ -40,6 +40,7 @@
 #include "DebugDrawCommon.h"
 #include "AnimationCommon.h"
 #include "StageManager.h"
+#include "EventManager.h"
 
 class Framework
 {

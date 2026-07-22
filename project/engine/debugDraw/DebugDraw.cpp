@@ -39,11 +39,16 @@ void DebugDraw::Initialize(DebugDrawCommon* debugDrawCommon, std::string texture
 
 	// 単位行列を書き込んでおく
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+
+	// 親オブジェクト用のTransformを初期化
+	parent.scale = Vector3{ 1.0f,1.0f,1.0f };
+	parent.rotate = Quaternion{ 1.0f,1.0f,1.0f,1.0f };
+	parent.translate = Vector3{ 1.0f,1.0f,1.0f };
 }
 
 void DebugDraw::CreateVertexData()
 {
-	
+
 	// 経度の方向に分割
 	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex)
 	{
@@ -214,7 +219,7 @@ void DebugDraw::CreateCameraResource()
 
 
 void DebugDraw::Update()
-{	
+{
 	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 
@@ -228,24 +233,23 @@ void DebugDraw::Update()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	if (parent)
-	{
-		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
-		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
-	}
+	// 親オブジェクトのTransformをかける
+	Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent.scale, parent.rotate, parent.translate);
+	worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
+
 
 	transformationData->WVP = worldViewProjectionMatrix;
 	transformationData->World = worldMatrix;
 
 	transformationData->WorldInverseTranspose = Transpose(Inverse(transformationData->World));
 
-	
+
 	if (camera)
 	{
 		cameraData_->worldPosition = camera->GetTranslate();
 	}
 
-	
+
 }
 
 void DebugDraw::UpdateLine()
@@ -263,11 +267,9 @@ void DebugDraw::UpdateLine()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	if (parent)
-	{
-		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
-		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
-	}
+	// 親オブジェクトのTransformをかける
+	Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent.scale, parent.rotate, parent.translate);
+	worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
 
 	transformationDataLine->WVP = worldViewProjectionMatrix;
 	transformationDataLine->World = worldMatrix;
@@ -291,15 +293,13 @@ void DebugDraw::UpdateBox()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	if (parent)
-	{
-		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetScale(), parent->GetRotate(), parent->GetTranslate());
-		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
-	}
+	// 親オブジェクトのTransformをかける
+	Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent.scale, parent.rotate, parent.translate);
+	worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
 
 	transformationDataBox->WVP = worldViewProjectionMatrix;
 	transformationDataBox->World = worldMatrix;
-					  
+
 	transformationDataBox->WorldInverseTranspose = Transpose(Inverse(transformationDataBox->World));
 }
 

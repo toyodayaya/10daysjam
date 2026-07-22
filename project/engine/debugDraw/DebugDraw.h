@@ -95,7 +95,7 @@ public:
 	void SetBoxTranslate(const Vector3& translate) { this->transformBox.translate = translate; }
 	void SetCamera(Camera* camera) { this->camera = camera; }
 	void SetMatrix(const Matrix4x4& matrix) { transformationData->World = matrix; }
-	void SetParent(Object3d* parent) { this->parent = parent; }
+	void SetParent(QuaternionTransform parent) { this->parent = parent; }
 
 	// getter
 	const Vector3& GetScale() const { return transform.scale; }
@@ -168,5 +168,5 @@ private:
 	QuaternionTransform transformBox;
 
 	// 親オブジェクト
-	Object3d* parent;
+	QuaternionTransform parent;
 };
