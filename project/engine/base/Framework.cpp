@@ -101,8 +101,6 @@ void Framework::Finalize()
 	CloseHandle(fenceEvent);
 	// パーティクルマネージャーの終了
 	ParticleManager::GetInstance()->Finalize();
-	// イベントマネージャーの終了
-	EventManager::GetInstance()->Finalize();
 	// ステージマネージャーの終了
 	StageManager::GetInstance()->Finalize();
 	// 入力クラスの終了

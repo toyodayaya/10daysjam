@@ -5,11 +5,14 @@
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 
-void Player::Initialize()
+void Player::Initialize(QuaternionTransform transform, const std::string& filePath)
 {
 	// オブジェクトの初期化
 	object3d = std::make_unique<Object3d>();
 	object3d->Initialize(Object3dCommon::GetInstance());
+	object3d->SetModel(filePath);
+	object3d->SetEnvironmentMapTextureFilePath("resources/human/white.png");
+	object3d->SetTransform(transform);
 }
 
 void Player::Update()

@@ -12,7 +12,6 @@
 #include "DebugDrawCommon.h"
 
 class StageManager;
-class EventManager;
 
 class StageData
 {
@@ -128,8 +127,6 @@ private:
 	std::vector<std::unique_ptr<DebugDraw>> debugBoxs_;
 	// プレイヤーデータ
 	std::vector<std::unique_ptr<Player>> players_;
-	// 敵データ
-	std::vector<std::unique_ptr<Enemy>> enemies_;
 	// デフォルトカメラ
 	Camera* camera_ = nullptr;
 	// ポインタ

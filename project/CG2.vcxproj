@@ -83,7 +83,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)application;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -113,7 +113,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)application;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,7 +140,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)application;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,9 +155,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="application\Enemy.cpp" />
+    <ClCompile Include="application\enemy\Enemy.cpp" />
     <ClCompile Include="application\event\BaseEvent.cpp" />
     <ClCompile Include="application\event\ChangePostEffectEvent.cpp" />
+    <ClCompile Include="application\enemy\BaseEnemy.cpp" />
+    <ClCompile Include="application\enemy\EnemyManager.cpp" />
     <ClCompile Include="engine\animation\AnimationCommon.cpp" />
     <ClCompile Include="engine\scene\BaseScene.cpp" />
     <ClCompile Include="engine\audio\Audio.cpp" />
@@ -199,7 +201,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\SkyboxCommon.cpp" />
     <ClCompile Include="engine\3d\Skybox.cpp" />
     <ClCompile Include="engine\base\RenderTexture.cpp" />
-    <ClCompile Include="application\Player.cpp" />
+    <ClCompile Include="application\player\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\particle\ParticleEmitter.CS.hlsl">
@@ -359,9 +361,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\Enemy.h" />
+    <ClInclude Include="application\enemy\Enemy.h" />
     <ClInclude Include="application\event\BaseEvent.h" />
     <ClInclude Include="application\event\ChangePostEffectEvent.h" />
+    <ClInclude Include="application\enemy\BaseEnemy.h" />
+    <ClInclude Include="application\enemy\EnemyManager.h" />
     <ClInclude Include="engine\animation\AnimationCommon.h" />
     <ClInclude Include="engine\scene\AbstractSceneFactory.h" />
     <ClInclude Include="engine\scene\BaseScene.h" />
@@ -478,7 +482,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\base\RenderTexture.h" />
     <ClInclude Include="engine\stageLoad\StageManager.h" />
     <ClInclude Include="engine\stageLoad\StageData.h" />
-    <ClInclude Include="application\Player.h" />
+    <ClInclude Include="application\player\Player.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

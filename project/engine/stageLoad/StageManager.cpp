@@ -1,5 +1,7 @@
 #include "StageManager.h"
 #include "StageData.h"
+#include "EventManager.h"
+#include "EnemyManager.h"
 
 std::unique_ptr<StageManager> StageManager::instance = nullptr;
 
@@ -15,6 +17,11 @@ StageManager* StageManager::GetInstance()
 
 void StageManager::Finalize()
 {
+	// イベントマネージャーの終了
+	EventManager::GetInstance()->Finalize();
+	// 敵マネージャーの終了
+	EnemyManager::GetInstance()->Finalize();
+
 	instance.reset();
 }
 

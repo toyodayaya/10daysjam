@@ -6,6 +6,8 @@
 #include <externals/nlohmannJson/Json.hpp>
 #include "Object3dCommon.h"
 #include "ModelManager.h"
+#include "EventManager.h"
+#include "EnemyManager.h"
 #include "MathManager.h"
 #include <numbers>
 using namespace MathManager;
@@ -36,10 +38,7 @@ void StageData::Update()
 	}
 
 	// 敵の更新処理
-	for (const std::unique_ptr<Enemy>& enemy : enemies_)
-	{
-		enemy->Update();
-	}
+	EnemyManager::GetInstance()->Update();
 
 	// イベントの更新処理
 	EventManager::GetInstance()->Update();
@@ -66,10 +65,7 @@ void StageData::Draw()
 	}
 
 	// 敵の描画処理
-	for (const std::unique_ptr<Enemy>& enemy : enemies_)
-	{
-		enemy->Draw();
-	}
+	EnemyManager::GetInstance()->Draw();
 
 	// イベントの描画処理
 	EventManager::GetInstance()->Draw();
@@ -350,13 +346,8 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 void StageData::CreatePlayer(const PlayerSpawnData& playerData)
 {
 	std::unique_ptr<Player> player = std::make_unique<Player>();
-	player->Initialize();
-	player->GetObject3d()->SetModel(playerData.filePath);
-	player->GetObject3d()->SetEnvironmentMapTextureFilePath("resources/human/white.png");
-	player->GetObject3d()->SetTranslate(playerData.transform.translate);
-	player->GetObject3d()->SetRotate(playerData.transform.rotate);
-	player->GetObject3d()->SetScale(playerData.transform.scale);
-
+	player->Initialize(playerData.transform,playerData.filePath);
+	
 	// コライダーがあれば生成、配置
 	if (playerData.collider.hasCollier)
 	{
@@ -412,18 +403,15 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 void StageData::CreateEnemy(const EnemySpawnData& enemyData)
 {
 	std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>();
-	enemy->Initialize();
-	enemy->GetObject3d()->SetModel(enemyData.filePath);
-	enemy->GetObject3d()->SetEnvironmentMapTextureFilePath("resources/human/white.png");
-	enemy->GetObject3d()->SetTransform(enemyData.transform);
-
+	enemy->Initialize(enemyData.transform,enemyData.filePath);
+	
 	// コライダーがあれば生成、配置
 	if (enemyData.collider.hasCollier)
 	{
 		CreateCollider(enemyData.transform, enemyData.collider);
 	}
 
-	enemies_.push_back(std::move(enemy));
+	EnemyManager::GetInstance()->SetEnemies(std::move(enemy));
 }
 
 StageData::ColliderSpawnData StageData::LoadCollider(nlohmann::json& collider)

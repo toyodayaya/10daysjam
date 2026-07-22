@@ -1,12 +1,14 @@
 #pragma once
 #include "Object3d.h"
 #include <memory>
+#include "MathManager.h"
+using namespace MathManager;
 
-class Enemy
+class Player
 {
 public:
 	// 初期化
-	void Initialize();
+	void Initialize(QuaternionTransform transform, const std::string& filePath);
 	// 更新
 	void Update();
 	// 描画
