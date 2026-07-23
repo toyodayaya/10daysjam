@@ -31,7 +31,7 @@ public:
 
 	// setter
 	void SetEvents(std::unique_ptr<BaseEvent> event) { events_.push_back(std::move(event)); }
-
+	
 	// インスタンス
 	static EventManager* GetInstance();
 

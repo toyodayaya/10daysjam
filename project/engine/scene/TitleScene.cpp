@@ -4,7 +4,6 @@
 #include "StageManager.h"
 #include "StageData.h"
 
-
 void TitleScene::Initialize()
 {
 	// スプライトを読み込む
@@ -34,6 +33,9 @@ void TitleScene::Update()
 {
 	// ステージを更新
 	stageData->Update();
+
+	// 全ての当たり判定を走査
+	stageData->CheckAllCollision();
 }
 
 void TitleScene::Draw()

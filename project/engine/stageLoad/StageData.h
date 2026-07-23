@@ -10,6 +10,7 @@
 #include <externals/nlohmannJson/Json.hpp>
 #include "DebugDraw.h"
 #include "DebugDrawCommon.h"
+#include "BaseCharacter.h"
 
 class StageManager;
 
@@ -22,6 +23,8 @@ public:
 		Vector3 center;
 		Vector3 size;
 		int32_t hasCollier;
+		std::string objectType;
+		BaseCharacter* parent;
 	};
 
 	// オブジェクトの生成データ
@@ -69,6 +72,7 @@ public:
 		std::vector<PlayerSpawnData> players;
 		std::vector<EnemySpawnData> enemies;
 		std::vector<EventSpawnData> events;
+		std::vector<ColliderSpawnData> colliders;
 		CameraData cameraData;
 	};
 
@@ -83,6 +87,9 @@ public:
 
 	// 描画
 	void Draw();
+
+	// 全ての当たり判定を走査
+	void CheckAllCollision();
 
 	// 終了
 	void Finalize();
@@ -108,7 +115,7 @@ public:
 	// コライダー読み込みの関数
 	ColliderSpawnData LoadCollider(nlohmann::json& collider);
 	// コライダー生成の関数
-	void CreateCollider(const QuaternionTransform& transform,const ColliderSpawnData& colliderData);
+	void CreateCollider(const ColliderSpawnData& colliderData,BaseCharacter* parent);
 	// イベントデータ読み込みの関数
 	EventSpawnData LoadEvent(nlohmann::json& event);
 	// イベント生成の関数
@@ -127,6 +134,8 @@ private:
 	std::vector<std::unique_ptr<DebugDraw>> debugBoxs_;
 	// プレイヤーデータ
 	std::vector<std::unique_ptr<Player>> players_;
+	// コライダーデータ
+	std::vector<ColliderSpawnData> colliders_;
 	// デフォルトカメラ
 	Camera* camera_ = nullptr;
 	// ポインタ

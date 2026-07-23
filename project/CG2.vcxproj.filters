@@ -94,6 +94,39 @@
     <Filter Include="ヘッダー ファイル\engine\scene">
       <UniqueIdentifier>{16dec66d-851a-42f9-b8c6-035d3b4cea09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\engine\stageLoad">
+      <UniqueIdentifier>{6555a5c8-4c25-45cb-8212-c8c9d62fe16c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application">
+      <UniqueIdentifier>{2c8351ca-1d0d-4fde-8d31-738c925fd9ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\engine\stageLoad">
+      <UniqueIdentifier>{b541bbdf-772a-438e-9609-757fca5decd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\player">
+      <UniqueIdentifier>{66b94fcb-5694-4297-bbe5-4df3e805525c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\enemy">
+      <UniqueIdentifier>{accc2cf9-8c36-41fb-99ed-118f6e3743ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\event">
+      <UniqueIdentifier>{f26ec2a3-d73d-4216-913f-b3b39f2ca4cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\collision">
+      <UniqueIdentifier>{7719541b-7748-411d-beb2-ac6497d473da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\player">
+      <UniqueIdentifier>{6bbbab77-afed-41b2-b301-8ea7803cfba0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\enemy">
+      <UniqueIdentifier>{65182aee-17a1-4b17-9c92-1f33221f0b4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\event">
+      <UniqueIdentifier>{0da049cd-f24e-4009-8e68-172e99c1a34a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\collider">
+      <UniqueIdentifier>{775c9440-c23a-49e2-acd0-c977066f1ceb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -201,31 +234,37 @@
     <ClCompile Include="engine\base\WinAPIManager.cpp">
       <Filter>ソース ファイル\engine\base</Filter>
     </ClCompile>
-    <ClCompile Include="engine\stageLoad\StageManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="engine\stageLoad\StageData.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\engine\stageLoad</Filter>
     </ClCompile>
-    <ClCompile Include="application\player\Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="application\enemy\Enemy.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="engine\stageLoad\StageManager.cpp">
+      <Filter>ソース ファイル\engine\stageLoad</Filter>
     </ClCompile>
     <ClCompile Include="application\event\BaseEvent.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="application\event\EventManager.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\application\event</Filter>
     </ClCompile>
     <ClCompile Include="application\event\ChangePostEffectEvent.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\application\event</Filter>
     </ClCompile>
     <ClCompile Include="application\enemy\BaseEnemy.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\application\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="application\enemy\Enemy.cpp">
+      <Filter>ソース ファイル\application\enemy</Filter>
     </ClCompile>
     <ClCompile Include="application\enemy\EnemyManager.cpp">
+      <Filter>ソース ファイル\application\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="application\event\EventManager.cpp">
+      <Filter>ソース ファイル\application\event</Filter>
+    </ClCompile>
+    <ClCompile Include="application\player\Player.cpp">
+      <Filter>ソース ファイル\application\player</Filter>
+    </ClCompile>
+    <ClCompile Include="application\collider\CollisionManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="application\base\BaseCharacter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -652,31 +691,37 @@
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>ヘッダー ファイル\engine\2d</Filter>
     </ClInclude>
-    <ClInclude Include="engine\stageLoad\StageManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="engine\stageLoad\StageData.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\engine\stageLoad</Filter>
     </ClInclude>
-    <ClInclude Include="application\player\Player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="application\enemy\Enemy.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="application\event\BaseEvent.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="application\event\EventManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="application\event\ChangePostEffectEvent.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="engine\stageLoad\StageManager.h">
+      <Filter>ヘッダー ファイル\engine\stageLoad</Filter>
     </ClInclude>
     <ClInclude Include="application\enemy\BaseEnemy.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\application\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\event\BaseEvent.h">
+      <Filter>ヘッダー ファイル\application\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\event\ChangePostEffectEvent.h">
+      <Filter>ヘッダー ファイル\application\event</Filter>
+    </ClInclude>
+    <ClInclude Include="application\event\EventManager.h">
+      <Filter>ヘッダー ファイル\application\event</Filter>
+    </ClInclude>
+    <ClInclude Include="application\enemy\Enemy.h">
+      <Filter>ヘッダー ファイル\application\enemy</Filter>
     </ClInclude>
     <ClInclude Include="application\enemy\EnemyManager.h">
+      <Filter>ヘッダー ファイル\application\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\player\Player.h">
+      <Filter>ヘッダー ファイル\application\player</Filter>
+    </ClInclude>
+    <ClInclude Include="application\collider\CollisionManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="application\base\BaseCharacter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

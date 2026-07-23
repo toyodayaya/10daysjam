@@ -7,6 +7,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "SrvManager.h"
+#include "BaseCharacter.h"
 
 class DebugDrawCommon;
 class DirectXBasis;
@@ -95,7 +96,7 @@ public:
 	void SetBoxTranslate(const Vector3& translate) { this->transformBox.translate = translate; }
 	void SetCamera(Camera* camera) { this->camera = camera; }
 	void SetMatrix(const Matrix4x4& matrix) { transformationData->World = matrix; }
-	void SetParent(QuaternionTransform parent) { this->parent = parent; }
+	void SetParent(BaseCharacter* parent) { this->parent = parent; }
 
 	// getter
 	const Vector3& GetScale() const { return transform.scale; }
@@ -168,5 +169,5 @@ private:
 	QuaternionTransform transformBox;
 
 	// 親オブジェクト
-	QuaternionTransform parent;
+	BaseCharacter* parent;
 };

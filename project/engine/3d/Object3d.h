@@ -125,5 +125,7 @@ private:
 	// 環境マップ用のテクスチャパス
 	std::string environmentMapTextureFilePath;
 
+	// 当たり判定用のAABB
+	AABB aabb_;
 };
 

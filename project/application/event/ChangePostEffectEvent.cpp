@@ -5,7 +5,7 @@
 #include "MathManager.h"
 using namespace MathManager;
 
-void ChangePostEffectEvent::Initialize(QuaternionTransform transform)
+void ChangePostEffectEvent::Initialize(const QuaternionTransform& transform)
 {
 	debugDraw = std::make_unique<DebugDraw>();
 	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
@@ -80,3 +80,6 @@ void ChangePostEffectEvent::Draw()
 {
 	debugDraw->DrawBox();
 }
+
+void ChangePostEffectEvent::OnCollision()
+{}

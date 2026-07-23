@@ -8,6 +8,7 @@
 #include "ModelManager.h"
 #include "EventManager.h"
 #include "EnemyManager.h"
+#include "CollisionManager.h"
 #include "MathManager.h"
 #include <numbers>
 using namespace MathManager;
@@ -48,6 +49,8 @@ void StageData::Update()
 	{
 		debugBox->UpdateBox();
 	}
+
+	
 }
 
 void StageData::Draw()
@@ -74,6 +77,41 @@ void StageData::Draw()
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
 		debugBox->DrawBox();
+	}
+}
+
+void StageData::CheckAllCollision()
+{
+	// 登録された当たり判定データを走査
+	for (auto& colliders : colliders_)
+	{
+		// 判定用のAABBを作成
+		QuaternionTransform transform = colliders.parent->GetTransform();
+		transform.translate = Vector3Add(colliders.center, transform.translate);
+		AABB colliderAABB = CollisionManager::GetInstance()->MakeAABB(transform.translate, colliders.size);
+
+		for (auto& collidersHit : colliders_)
+		{
+			// 同一オブジェクトもしくは同一タイプの場合はスキップ
+			if (colliders.objectType == collidersHit.objectType)
+			{
+				continue;
+			}
+
+			// 判定用のAABBを作成
+			QuaternionTransform transformHit = collidersHit.parent->GetTransform();
+			transformHit.translate = Vector3Add(collidersHit.center, transformHit.translate);
+			AABB colliderHitAABB = CollisionManager::GetInstance()->MakeAABB(transformHit.translate, collidersHit.size);
+
+			// 判定
+			if (CollisionManager::GetInstance()->IsCollision(colliderAABB, colliderHitAABB))
+			{
+				// オブジェクトのヒット処理
+				colliders.parent->OnCollision();
+				collidersHit.parent->OnCollision();
+			}
+
+		}
 	}
 }
 
@@ -279,7 +317,8 @@ void StageData::CreateObject(const ObjectData& objectData, Object3d* parent)
 	// コライダーがあれば生成、配置
 	if (objectData.collider.hasCollier)
 	{
-		CreateCollider(objectData.transform, objectData.collider);
+		// コライダーを生成
+		//CreateCollider(objectData.transform, objectData.collider,);
 	}
 
 	// 親オブジェクトがあればセット
@@ -329,8 +368,7 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 	// コライダーのパラメータ読み込み
 	if (player.contains("collider"))
 	{
-		nlohmann::json& collider = player["collider"];
-		playerSpawnData.collider = LoadCollider(collider);
+		playerSpawnData.collider = LoadCollider(player);
 	}
 	else
 	{
@@ -351,7 +389,7 @@ void StageData::CreatePlayer(const PlayerSpawnData& playerData)
 	// コライダーがあれば生成、配置
 	if (playerData.collider.hasCollier)
 	{
-		CreateCollider(playerData.transform, playerData.collider);
+		CreateCollider(playerData.collider,player.get());
 	}
 
 	players_.push_back(std::move(player));
@@ -387,9 +425,8 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 	// コライダーのパラメータ読み込み
 	if (enemy.contains("collider"))
 	{
-		nlohmann::json& collider = enemy["collider"];
 		// コライダーデータを読み込む
-		enemySpawnData.collider = LoadCollider(collider);
+		enemySpawnData.collider = LoadCollider(enemy);
 	}
 	else
 	{
@@ -408,7 +445,7 @@ void StageData::CreateEnemy(const EnemySpawnData& enemyData)
 	// コライダーがあれば生成、配置
 	if (enemyData.collider.hasCollier)
 	{
-		CreateCollider(enemyData.transform, enemyData.collider);
+		CreateCollider(enemyData.collider,enemy.get());
 	}
 
 	EnemyManager::GetInstance()->SetEnemies(std::move(enemy));
@@ -419,31 +456,45 @@ StageData::ColliderSpawnData StageData::LoadCollider(nlohmann::json& collider)
 	// データ格納用の変数を宣言
 	ColliderSpawnData colliderData;
 
+	// オブジェクトタイプを記録
+	colliderData.objectType = collider["type"].get<std::string>();
+
+	nlohmann::json& colliders = collider["collider"];
+
 	// コライダーフラグを立てる
 	colliderData.hasCollier = true;
 	// 中心点のデータを格納
-	colliderData.center.x = (float)collider["center"][0];
-	colliderData.center.y = (float)collider["center"][2];
-	colliderData.center.z = (float)collider["center"][1];
+	colliderData.center.x = (float)colliders["center"][0];
+	colliderData.center.y = (float)colliders["center"][2];
+	colliderData.center.z = (float)colliders["center"][1];
 	// サイズデータを格納
-	colliderData.size.x = (float)(collider["size"][0]);
-	colliderData.size.y = (float)(collider["size"][2]);
-	colliderData.size.z = (float)(collider["size"][1]);
+	colliderData.size.x = (float)(colliders["size"][0]);
+	colliderData.size.y = (float)(colliders["size"][2]);
+	colliderData.size.z = (float)(colliders["size"][1]);
+
+	// 配列に格納
+	levelData_.colliders.push_back(colliderData);
 
 	return colliderData;
 }
 
-void StageData::CreateCollider(const QuaternionTransform& transform, const ColliderSpawnData& collider)
+void StageData::CreateCollider(const ColliderSpawnData& collider,BaseCharacter* parent)
 {
+	// デバッグ描画用の箱を初期化、生成
 	std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
 	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
-	debugDraw->SetBoxScale(Vector3Multiply(collider.size, transform.scale));
-	debugDraw->SetBoxTranslate(Vector3Add(collider.center, transform.translate));
+	debugDraw->SetBoxScale(collider.size);
+	debugDraw->SetBoxTranslate(collider.center);
 
 	// 親オブジェクトがあればセット
-	debugDraw->SetParent(transform);
-
+	debugDraw->SetParent(parent);
+	ColliderSpawnData colliders = collider;
+	colliders.parent = parent;
+	
+	// 登録
 	debugBoxs_.push_back(std::move(debugDraw));
+	colliders_.push_back(colliders);
+	
 }
 
 StageData::EventSpawnData StageData::LoadEvent(nlohmann::json& event)
@@ -470,9 +521,8 @@ StageData::EventSpawnData StageData::LoadEvent(nlohmann::json& event)
 	// コライダーのパラメータ読み込み
 	if (event.contains("collider"))
 	{
-		nlohmann::json& collider = event["collider"];
 		// コライダーデータを読み込む
-		eventSpawnData.collider = LoadCollider(collider);
+		eventSpawnData.collider = LoadCollider(event);
 	}
 	else
 	{
@@ -491,7 +541,7 @@ void StageData::CreateEvents(const EventSpawnData& eventData)
 	// コライダーがあれば生成、配置
 	if (eventData.collider.hasCollier)
 	{
-		CreateCollider(eventData.transform, eventData.collider);
+		CreateCollider(eventData.collider,event.get());
 	}
 
 	EventManager::GetInstance()->SetEvents(std::move(event));

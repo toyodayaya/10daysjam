@@ -83,7 +83,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player;$(ProjectDir)application\collider;$(ProjectDir)application\base</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -113,7 +113,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player;$(ProjectDir)application\collider;$(ProjectDir)application\base</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,7 +140,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\math;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\animation;$(ProjectDir)engine\debugDraw;$(ProjectDir)engine\particle;$(ProjectDir)engine\stageLoad;$(ProjectDir)application\event;$(ProjectDir)application\enemy;$(ProjectDir)application\player;$(ProjectDir)application\collider;$(ProjectDir)application\base</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -160,6 +160,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\event\ChangePostEffectEvent.cpp" />
     <ClCompile Include="application\enemy\BaseEnemy.cpp" />
     <ClCompile Include="application\enemy\EnemyManager.cpp" />
+    <ClCompile Include="application\collider\CollisionManager.cpp" />
+    <ClCompile Include="application\base\BaseCharacter.cpp" />
     <ClCompile Include="engine\animation\AnimationCommon.cpp" />
     <ClCompile Include="engine\scene\BaseScene.cpp" />
     <ClCompile Include="engine\audio\Audio.cpp" />
@@ -366,6 +368,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\event\ChangePostEffectEvent.h" />
     <ClInclude Include="application\enemy\BaseEnemy.h" />
     <ClInclude Include="application\enemy\EnemyManager.h" />
+    <ClInclude Include="application\collider\CollisionManager.h" />
+    <ClInclude Include="application\base\BaseCharacter.h" />
     <ClInclude Include="engine\animation\AnimationCommon.h" />
     <ClInclude Include="engine\scene\AbstractSceneFactory.h" />
     <ClInclude Include="engine\scene\BaseScene.h" />
