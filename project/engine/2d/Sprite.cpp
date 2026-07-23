@@ -186,6 +186,9 @@ void Sprite::Update()
 
 void Sprite::Draw()
 {
+	// Spriteの描画準備
+	SpriteCommon::GetInstance()->DrawSettingCommon();
+
 	// VBVを設定
 	dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 	// IBVを設定

@@ -23,7 +23,8 @@ public:
 	// グラフィックスパイプラインの生成
 	void GenerateGraphicsPipeline();
 	// 共通描画設定
-	void DrawSettingCommon();
+	void DrawSettingCommonTriangle();
+	void DrawSettingCommonLine();
 	// ブレンドモード設定
 	void BlendModeSetting();
 	// getter
@@ -46,6 +47,8 @@ private:
 	// グラフィックスパイプラインステート
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineState;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDesc{};
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicPipelineStateLine;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicPipelineStateDescLine{};
 	D3D12_BLEND_DESC blendDesc{};
 	// RasterizerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};

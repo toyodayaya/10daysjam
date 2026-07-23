@@ -82,6 +82,11 @@ public:
 	void DrawLine();
 	void DrawBox();
 
+	// 線を追加する関数
+	void AddLine(const Vector3& start, const Vector3& end);
+	// 線を削除する関数
+	void ClearLine();
+
 	// setter
 	void SetModel(const std::string& filePath);
 	void SetAnimationModel(const std::string& directoryPath, const std::string& filename);
@@ -155,6 +160,13 @@ private:
 	const float kLonEvery = (2.0f * float(M_PI)) / float(kSubdivision);
 	// 緯度分割1つ分の角度
 	const float kLatEvery = float(M_PI) / float(kSubdivision);
+
+	// 線の最大描画本数
+	static const uint32_t kMaxLineCount = 1000;
+	// 線の最大頂点数
+	static const uint32_t kMaxVertexLine = kMaxLineCount * 2;
+	// 線の現在の本数
+	uint32_t lineCount_ = 0;
 
 	// テクスチャ番号
 	uint32_t textureIndex = 0;

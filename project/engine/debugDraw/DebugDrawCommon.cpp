@@ -162,15 +162,25 @@ void DebugDrawCommon::GenerateGraphicsPipeline()
 	graphicPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
+	// 線描画用のパイプラインステートにコピー
+	graphicPipelineStateDescLine = graphicPipelineStateDesc;
+	// 利用するトポロジのタイプを変更
+	graphicPipelineStateDescLine.PrimitiveTopologyType =
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+
 	// 生成
 	HRESULT hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&graphicPipelineStateDesc,
 		IID_PPV_ARGS(&graphicPipelineState));
 	assert(SUCCEEDED(hr));
 
+	hr = dxBasis_->GetDevice()->CreateGraphicsPipelineState(&graphicPipelineStateDescLine,
+		IID_PPV_ARGS(&graphicPipelineStateLine));
+	assert(SUCCEEDED(hr));
+
 
 }
 
-void DebugDrawCommon::DrawSettingCommon()
+void DebugDrawCommon::DrawSettingCommonTriangle()
 {
 	// RootSignatureを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
@@ -180,6 +190,18 @@ void DebugDrawCommon::DrawSettingCommon()
 
 	// 形状を設定
 	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void DebugDrawCommon::DrawSettingCommonLine()
+{
+	// RootSignatureを設定
+	dxBasis_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+
+	// PSOを設定
+	dxBasis_->GetCommandList()->SetPipelineState(graphicPipelineStateLine.Get());
+
+	// 形状を設定
+	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
 }
 
 

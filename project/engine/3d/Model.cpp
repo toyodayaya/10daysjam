@@ -32,7 +32,7 @@ void Model::Initialize(ModelCommon* modelManager, const std::string& directoryPa
 	switch (type_)
 	{
 	case kNone:
-		
+
 		// 頂点データ作成
 		CreateVertexData3d();
 		break;
@@ -75,19 +75,10 @@ void Model::Initialize(ModelCommon* modelManager, const std::string& directoryPa
 		debugSpheres_.push_back(std::move(debugDraw));
 	}
 
-	for (uint32_t i = 0; i < skeleton_.joints.size(); ++i)
-	{
-		if (!skeleton_.joints[i].parent)
-		{
-			continue; // 親がいないルートノードはスキップ
-		}
-
-		std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
-		debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kLine);
-		debugDraw->SetScale(Vector3{ 0.1f,0.1f,0.1f });
-		debugDraw->SetTranslate(Vector3{ 0.0f, 0.0f, 0.0f });
-		debugLines_.push_back(std::move(debugDraw));
-	}
+	debugLines_ = std::make_unique<DebugDraw>();
+	debugLines_->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kLine);
+	debugLines_->SetScale(Vector3{ 0.1f,0.1f,0.1f });
+	debugLines_->SetTranslate(Vector3{ 0.0f, 0.0f, 0.0f });
 
 #endif // _DEBUG
 
@@ -106,53 +97,34 @@ void Model::Update(Matrix4x4 transform)
 
 #ifdef _DEBUG
 
-
+	// 線をリセット
+	debugLines_->ClearLine();
 
 	// デバッグ描画の更新処理
 	for (size_t i = 0; i < skeleton_.joints.size(); ++i)
 	{
-		Matrix4x4 jointWorldMatrix = Multiply(skeleton_.joints[i].skeletonSpaceMatrix,transform);
+		// 始点となるジョイントの位置を計算
+		Matrix4x4 jointWorldMatrix = Multiply(skeleton_.joints[i].skeletonSpaceMatrix, transform);
 		Vector3 jointWorldPos = { jointWorldMatrix.m[3][0], jointWorldMatrix.m[3][1], jointWorldMatrix.m[3][2] };
 		debugSpheres_[i]->SetTranslate(jointWorldPos);
 		debugSpheres_[i]->Update();
-	}
 
-	size_t lineIndex = 0;
-	for (size_t i = 0; i < skeleton_.joints.size(); ++i)
-	{
+		// 親のいない場合はスキップ
 		if (!skeleton_.joints[i].parent) { continue; }
-		if (lineIndex >= debugLines_.size()) { break; }
 
-		// 親と子の各ワールド行列・座標を計算
-		Matrix4x4 childMat = Multiply(skeleton_.joints[i].skeletonSpaceMatrix, transform);
-		Vector3 childPos = { childMat.m[3][0], childMat.m[3][1], childMat.m[3][2] };
+		// 親ジョイントの数を取得
+		int32_t parentIndex = *skeleton_.joints[i].parent;
 
-		uint32_t parentIdx = *skeleton_.joints[i].parent;
-		Matrix4x4 parentMat = Multiply(skeleton_.joints[parentIdx].skeletonSpaceMatrix, transform);
-		Vector3 parentPos = { parentMat.m[3][0], parentMat.m[3][1], parentMat.m[3][2] };
+		Vector3 start = debugSpheres_[i]->GetTranslate();
+		Vector3 end = debugSpheres_[parentIndex]->GetTranslate();
 
-		Vector3 midPos = Vector3Add(parentPos, childPos);
-		midPos.x /= 2.0f; midPos.y /= 2.0f; midPos.z /= 2.0f;
-		debugLines_[lineIndex]->SetTranslate(midPos);
-
-		Vector3 direction = Vector3Subtract(childPos, parentPos); // 親から子へのベクトル
-		float distance = Length(direction);                      // 2点間の距離
-
-		float lineThickness = 0.05f; // 線の太さ
-		debugLines_[lineIndex]->SetScale(Vector3{ lineThickness, distance * 0.5f, lineThickness });
-
-		if (distance > 0.0001f)
-		{
-			Vector3 baseDir = { 0.0f, 1.0f, 0.0f }; // 板ポリの初期方向
-			Quaternion rot = FromToRotation(baseDir, direction);
-
-			// DebugDrawに用意したSetRotateを呼ぶ
-			debugLines_[lineIndex]->SetRotate(rot);
-		}
-
-		debugLines_[lineIndex]->UpdateLine();
-		lineIndex++;
+		//　線を追加
+		debugLines_->AddLine(start, end);
 	}
+
+	// 線を更新
+	debugLines_->UpdateLine();
+
 #endif // _DEBUG
 
 }
@@ -298,7 +270,7 @@ Model::Node Model::ReadNode(aiNode* node)
 		result.children[childIndex] = ReadNode(node->mChildren[childIndex]);
 	}
 
-	
+
 	return result;
 }
 
@@ -742,9 +714,7 @@ void Model::Draw()
 		debugDraw->Draw();
 	}
 
-	for (const std::unique_ptr<DebugDraw>& debugDraw : debugLines_)
-	{
-		debugDraw->DrawLine();
-	}
+	debugLines_->DrawLine();
+
 #endif // _DEBUG
 }

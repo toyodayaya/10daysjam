@@ -171,6 +171,8 @@ void Object3d::Update()
 
 void Object3d::Draw()
 {
+	// 3dモデルの描画準備
+	Object3dCommon::GetInstance()->DrawSettingCommon();
 
 	// wvp用のCBufferの場所を設定
 	dxBasis_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationResource->GetGPUVirtualAddress());

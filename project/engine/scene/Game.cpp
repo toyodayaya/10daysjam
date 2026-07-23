@@ -51,12 +51,6 @@ void Game::Draw()
 	dxBasis->RenderTexturePreDraw(RenderTexture::GetInstance()->GetTexture());
 	srvManager->PreDraw();
 	
-	// 3dモデルの描画準備
-	Object3dCommon::GetInstance()->DrawSettingCommon();
-
-	// Spriteの描画準備
-	SpriteCommon::GetInstance()->DrawSettingCommon();
-
 	// シーンの描画
 	SceneManager::GetInstance()->Draw();
 	

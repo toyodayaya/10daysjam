@@ -92,29 +92,20 @@ void DebugDraw::CreateVertexData()
 
 void DebugDraw::CreateVertexDataLine()
 {
-	modelDataLine.vertices.push_back({ .position = {0.5f,1.0f,0.0f,1.0f},.texcoord = {0.0f,0.0f},.normal = {0.0f,0.0f,1.0f} });
-	modelDataLine.vertices.push_back({ .position = {-0.5f,1.0f,0.0f,1.0f},.texcoord = {1.0f,0.0f},.normal = {0.0f,0.0f,1.0f} });
-	modelDataLine.vertices.push_back({ .position = {0.5f,-1.0f,0.0f,1.0f},.texcoord = {0.0f,1.0f},.normal = {0.0f,0.0f,1.0f} });
-	modelDataLine.vertices.push_back({ .position = {0.5f,-1.0f,0.0f,1.0f},.texcoord = {0.0f,1.0f},.normal = {0.0f,0.0f,1.0f} });
-	modelDataLine.vertices.push_back({ .position = {-0.5f,1.0f,0.0f,1.0f},.texcoord = {1.0f,0.0f},.normal = {0.0f,0.0f,1.0f} });
-	modelDataLine.vertices.push_back({ .position = {-0.5f,-1.0f,0.0f,1.0f},.texcoord = {1.0f,1.0f},.normal = {0.0f,0.0f,1.0f} });
 	modelDataLine.material.textureFilePath = filePath;
 
-	vertexResourceLine = dxBasis_->CreateBufferResources(sizeof(VertexData) * modelDataLine.vertices.size());
+	vertexResourceLine = dxBasis_->CreateBufferResources(sizeof(VertexData) * kMaxVertexLine);
 
 	// リソースの先頭のアドレスから使う
 	vertexBufferViewLine.BufferLocation = vertexResourceLine->GetGPUVirtualAddress();
-	// 使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewLine.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * modelDataLine.vertices.size());
+	// 使用するリソースのサイズは頂点2つ分のサイズ
+	vertexBufferViewLine.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * kMaxVertexLine);
 	// 1頂点あたりのサイズ
 	vertexBufferViewLine.StrideInBytes = sizeof(VertexData);
 
 	// 頂点リソースにデータを書き込む
 	// 書き込むためのアドレスを取得
-	vertexResourceLine->Map(0, nullptr,
-		reinterpret_cast<void**>(&vertexDataLine));
-	// 頂点データにリソースをコピー
-	std::memcpy(vertexDataLine, modelDataLine.vertices.data(), sizeof(VertexData) * modelDataLine.vertices.size());
+	vertexResourceLine->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataLine));
 }
 
 void DebugDraw::CreateVertexDataBox()
@@ -252,7 +243,7 @@ void DebugDraw::Update()
 
 void DebugDraw::UpdateLine()
 {
-	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
+	Matrix4x4 worldMatrix = MakeIdentity4x4();
 	Matrix4x4 worldViewProjectionMatrix;
 
 	if (camera)
@@ -265,18 +256,10 @@ void DebugDraw::UpdateLine()
 		worldViewProjectionMatrix = worldMatrix;
 	}
 
-	if (parent)
-	{
-		// 親オブジェクトのTransformをかける
-		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetTransform().scale, parent->GetTransform().rotate, parent->GetTransform().translate);
-		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
-	}
-
 	transformationDataLine->WVP = worldViewProjectionMatrix;
 	transformationDataLine->World = worldMatrix;
 
 	transformationDataLine->WorldInverseTranspose = Transpose(Inverse(transformationDataLine->World));
-
 }
 
 void DebugDraw::UpdateBox()
@@ -313,7 +296,9 @@ void DebugDraw::UpdateBox()
 void DebugDraw::Draw()
 {
 	// 描画準備
-	debugDraw_->DrawSettingCommon();
+	debugDraw_->DrawSettingCommonTriangle();
+	// 形状を設定
+	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// テクスチャのSRVのDescriptorTableを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(modelData.material.textureFilePath));
 	// wvp用のCBufferの場所を設定
@@ -327,7 +312,7 @@ void DebugDraw::Draw()
 void DebugDraw::DrawLine()
 {
 	// 描画準備
-	debugDraw_->DrawSettingCommon();
+	debugDraw_->DrawSettingCommonLine();
 	// テクスチャのSRVのDescriptorTableを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(modelDataLine.material.textureFilePath));
 	// wvp用のCBufferの場所を設定
@@ -335,13 +320,15 @@ void DebugDraw::DrawLine()
 	// VBVを設定
 	dxBasis_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewLine);
 	// 描画
-	dxBasis_->GetCommandList()->DrawInstanced(UINT(modelDataLine.vertices.size()), 1, 0, 0);
+	dxBasis_->GetCommandList()->DrawInstanced((lineCount_ * 2), 1, 0, 0);
 }
 
 void DebugDraw::DrawBox()
 {
 	// 描画準備
-	debugDraw_->DrawSettingCommon();
+	debugDraw_->DrawSettingCommonTriangle();
+	// 形状を設定
+	dxBasis_->GetCommandList()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// テクスチャのSRVのDescriptorTableを設定
 	dxBasis_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(modelDataBox.material.textureFilePath));
 	// wvp用のCBufferの場所を設定
@@ -354,3 +341,40 @@ void DebugDraw::DrawBox()
 	dxBasis_->GetCommandList()->DrawIndexedInstanced(36, 1, 0, 0, 0);
 }
 
+void DebugDraw::AddLine(const Vector3& start, const Vector3& end)
+{
+	// 最大本数を超えたらスキップ
+	if (lineCount_ >= kMaxLineCount)
+	{
+		return;
+	}
+
+	// 頂点数を記録
+	uint32_t index = lineCount_ * 2;
+
+	// 線の始点を設定
+	vertexDataLine[index].position =
+	{
+		start.x,
+		start.y,
+		start.z,
+		1.0f
+	};
+
+	// 線の終点を設定
+	vertexDataLine[index + 1].position =
+	{
+		end.x,
+		end.y,
+		end.z,
+		1.0f
+	};
+
+	// 現在の本数を加算
+	++lineCount_;
+}
+
+void DebugDraw::ClearLine()
+{
+	lineCount_ = 0;
+}

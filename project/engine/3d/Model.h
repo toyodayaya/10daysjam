@@ -237,7 +237,7 @@ private:
 
 	// デバッグ描画
 	std::vector<std::unique_ptr<DebugDraw>> debugSpheres_;
-	std::vector<std::unique_ptr<DebugDraw>> debugLines_;
+	std::unique_ptr<DebugDraw> debugLines_;
 #endif // _DEBUG
 
 };

@@ -27,6 +27,8 @@ public:
 
 private:
 	// ステージデータ
-	StageData* stageData = nullptr;
+	StageData* stageData_ = nullptr;
+	// 3dオブジェクト
+	std::unique_ptr<Object3d> object3d_;
 
 };
