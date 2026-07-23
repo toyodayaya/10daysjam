@@ -44,13 +44,19 @@ void StageData::Update()
 	// イベントの更新処理
 	EventManager::GetInstance()->Update();
 
+	// レールカメラの更新処理
+	if (levelData_.railPoints.size() != 0)
+	{
+		railCamera_->Update();
+	}
+
 	// デバッグ更新
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
 		debugBox->UpdateBox();
 	}
 
-	
+
 }
 
 void StageData::Draw()
@@ -72,6 +78,12 @@ void StageData::Draw()
 
 	// イベントの描画処理
 	EventManager::GetInstance()->Draw();
+
+	// レールカメラの描画処理
+	if (levelData_.railPoints.size() != 0)
+	{
+		railCamera_->Draw();
+	}
 
 	// デバッグ描画
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
@@ -201,6 +213,37 @@ StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, c
 
 	}
 
+
+	// railsの全オブジェクトを走査
+	for (nlohmann::json& rails : deserialized["rails"])
+	{
+		for (nlohmann::json& point : rails["points"])
+		{
+			// 無効化オプションがあったら
+			if (point.contains("disabled_option"))
+			{
+				// 無効か有効かを判定
+				bool disabled = point["disabled_option"].get<bool>();
+
+				if (disabled)
+				{
+					// 無効ならスキップ
+					continue;
+				}
+			}
+
+			// 種別を取得
+			std::string type = point["type"].get<std::string>();
+
+			// 制御点の読み込み
+			if (type.compare("RailPoint") == 0)
+			{
+				// 制御点データを読み込む
+				levelData.railPoints.push_back(LoadRailPoint(point));
+			}
+		}
+	}
+
 	// レベルデータを返す
 	return levelData;
 
@@ -242,6 +285,12 @@ void StageData::CreateStage(const std::string& fileName)
 	if (&levelData.cameraData)
 	{
 		SetCameraData(levelData.cameraData);
+	}
+
+	// 制御点データをセット
+	if(levelData.railPoints.size() != 0)
+	{
+		SetRailPoint(levelData.railPoints);
 	}
 }
 
@@ -384,12 +433,12 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 void StageData::CreatePlayer(const PlayerSpawnData& playerData)
 {
 	std::unique_ptr<Player> player = std::make_unique<Player>();
-	player->Initialize(playerData.transform,playerData.filePath);
-	
+	player->Initialize(playerData.transform, playerData.filePath);
+
 	// コライダーがあれば生成、配置
 	if (playerData.collider.hasCollier)
 	{
-		CreateCollider(playerData.collider,player.get());
+		CreateCollider(playerData.collider, player.get());
 	}
 
 	players_.push_back(std::move(player));
@@ -440,12 +489,12 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 void StageData::CreateEnemy(const EnemySpawnData& enemyData)
 {
 	std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>();
-	enemy->Initialize(enemyData.transform,enemyData.filePath);
-	
+	enemy->Initialize(enemyData.transform, enemyData.filePath);
+
 	// コライダーがあれば生成、配置
 	if (enemyData.collider.hasCollier)
 	{
-		CreateCollider(enemyData.collider,enemy.get());
+		CreateCollider(enemyData.collider, enemy.get());
 	}
 
 	EnemyManager::GetInstance()->SetEnemies(std::move(enemy));
@@ -478,7 +527,7 @@ StageData::ColliderSpawnData StageData::LoadCollider(nlohmann::json& collider)
 	return colliderData;
 }
 
-void StageData::CreateCollider(const ColliderSpawnData& collider,BaseCharacter* parent)
+void StageData::CreateCollider(const ColliderSpawnData& collider, BaseCharacter* parent)
 {
 	// デバッグ描画用の箱を初期化、生成
 	std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
@@ -490,11 +539,11 @@ void StageData::CreateCollider(const ColliderSpawnData& collider,BaseCharacter* 
 	debugDraw->SetParent(parent);
 	ColliderSpawnData colliders = collider;
 	colliders.parent = parent;
-	
+
 	// 登録
 	debugBoxs_.push_back(std::move(debugDraw));
 	colliders_.push_back(colliders);
-	
+
 }
 
 StageData::EventSpawnData StageData::LoadEvent(nlohmann::json& event)
@@ -537,11 +586,11 @@ void StageData::CreateEvents(const EventSpawnData& eventData)
 {
 	std::unique_ptr<ChangePostEffectEvent> event = std::make_unique<ChangePostEffectEvent>();
 	event->Initialize(eventData.transform);
-	
+
 	// コライダーがあれば生成、配置
 	if (eventData.collider.hasCollier)
 	{
-		CreateCollider(eventData.collider,event.get());
+		CreateCollider(eventData.collider, event.get());
 	}
 
 	EventManager::GetInstance()->SetEvents(std::move(event));
@@ -580,4 +629,39 @@ void StageData::SetCameraData(CameraData& cameraData)
 
 	// カメラデータをセット
 	camera_->SetTransform(cameraData.transform);
+}
+
+StageData::RailPointData StageData::LoadRailPoint(nlohmann::json& railPoint)
+{
+	// データ格納用の変数を宣言
+	RailPointData railPointData;
+
+	// トランスフォームのパラメータ読み込み
+	nlohmann::json& transform = railPoint["transform"];
+	// 平行移動データを格納
+	railPointData.translate.x = (float)transform["translation"][0];
+	railPointData.translate.y = (float)transform["translation"][2];
+	railPointData.translate.z = (float)transform["translation"][1];
+
+	return railPointData;
+}
+
+void StageData::SetRailPoint(const std::vector<RailPointData>& railPointData)
+{
+	// レールカメラを初期化
+	railCamera_ = std::make_unique<RailCameraController>();
+	
+	// レールカメラをセット
+	railCamera_->SetCamera(camera_);
+
+	for (const auto& railPoint : railPointData)
+	{
+		// 制御点データをセット
+		railPoints_.push_back(railPoint.translate);
+	}
+
+	// 制御点をセットし初期化
+	railCamera_->SetRailPoint(railPoints_);
+	railCamera_->Initialize(camera_->GetTransform());
+
 }

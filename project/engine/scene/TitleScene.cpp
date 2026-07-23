@@ -20,6 +20,7 @@ void TitleScene::Initialize()
 	
 	// ステージを読み込む
 	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");
+	StageManager::GetInstance()->LoadJsonData("resources/stages", "2.json");
 	// ステージを設定する
 	stageData_ = StageManager::GetInstance()->FindJsonData("1.json");
 	// ステージを作成する
@@ -52,7 +53,7 @@ void TitleScene::Update()
 void TitleScene::Draw()
 {
 	// アニメーションモデルを描画
-	object3d_->Draw();
+	//object3d_->Draw();
 
 	// ステージを描画
 	stageData_->Draw();

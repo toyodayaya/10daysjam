@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "ChangePostEffectEvent.h"
+#include "RailCameraController.h"
 #include <string>
 #include <vector>
 #include <externals/nlohmannJson/Json.hpp>
@@ -65,6 +66,12 @@ public:
 		QuaternionTransform transform;
 	};
 
+	// 制御点データ
+	struct RailPointData
+	{
+		Vector3 translate;
+	};
+
 	// レベルデータ
 	struct LevelData
 	{
@@ -73,6 +80,7 @@ public:
 		std::vector<EnemySpawnData> enemies;
 		std::vector<EventSpawnData> events;
 		std::vector<ColliderSpawnData> colliders;
+		std::vector<RailPointData> railPoints;
 		CameraData cameraData;
 	};
 
@@ -124,6 +132,10 @@ public:
 	CameraData LoadCameraData(nlohmann::json& camera);
 	// カメラデータセットの関数
 	void SetCameraData(CameraData& cameraData);
+	// 制御点データ読み込みの関数
+	RailPointData LoadRailPoint(nlohmann::json& railPoint);
+	// 制御点データセットの関数
+	void SetRailPoint(const std::vector<RailPointData>& railPointData);
 
 private:
 	// jsonファイルのデータ
@@ -136,6 +148,9 @@ private:
 	std::vector<std::unique_ptr<Player>> players_;
 	// コライダーデータ
 	std::vector<ColliderSpawnData> colliders_;
+	// 制御点データ
+	std::vector<Vector3> railPoints_;
+	std::unique_ptr<RailCameraController> railCamera_;
 	// デフォルトカメラ
 	Camera* camera_ = nullptr;
 	// ポインタ
