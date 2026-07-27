@@ -33,9 +33,8 @@ void TitleScene::Initialize()
 	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 
 	// パーティクル
-	TextureManager::GetInstance()->LoadTexture("resources/sprite/gradationLine.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Cylinder", "resources/sprite/gradationLine.png", ParticleManager::ShapeType::kCylinder);
-	ParticleManager::EmitterSphere emitterSphereCylinder;
+	ParticleManager::EmitterSphere emitterSphereCylinder{};
 	emitterSphereCylinder.translate = { 0.0f,0.0f,0.0f };
 	emitterSphereCylinder.scale = { 1.0f,1.0f,1.0f };
 	emitterSphereCylinder.velocity = { 0.0f,0.0f,0.0f };

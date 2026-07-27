@@ -824,6 +824,10 @@ void ParticleManager::Update()
 	for (auto& [name, group] : particleGroups)
 	{
 		LaunchUpdateCS(group);
+		D3D12_RESOURCE_BARRIER barrier{};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+		barrier.UAV.pResource = group.particleResource.Get();
+		dxBasis_->GetCommandList()->ResourceBarrier(1, &barrier);
 	}
 }
 
