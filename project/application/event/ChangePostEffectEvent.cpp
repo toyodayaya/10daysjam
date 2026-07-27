@@ -1,28 +1,37 @@
 #include "ChangePostEffectEvent.h"
 #include "RenderTexture.h"
 #include "Input.h"
+#ifdef _DEBUG
 #include "DebugDrawCommon.h"
+#endif // _DEBUG
+
 #include "MathManager.h"
 using namespace MathManager;
 
 void ChangePostEffectEvent::Initialize(const QuaternionTransform& transform)
 {
+#ifdef _DEBUG
 	debugDraw = std::make_unique<DebugDraw>();
 	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
 	debugDraw->SetBoxScale(transform.scale);
 	debugDraw->SetBoxRotate(transform.rotate);
 	debugDraw->SetBoxTranslate(transform.translate);
+#endif // _DEBUG
 }
 
 void ChangePostEffectEvent::Finalize()
 {
+#ifdef _DEBUG
 	debugDraw.reset();
+#endif // _DEBUG
 }
 
 void ChangePostEffectEvent::Update()
 {
+#ifdef _DEBUG
 	// デバッグ描画の更新処理
 	debugDraw->UpdateBox();
+#endif // _DEBUG
 
 	if (Input::GetInstance()->TriggerKey(DIK_0))
 	{
@@ -78,7 +87,9 @@ void ChangePostEffectEvent::Update()
 
 void ChangePostEffectEvent::Draw()
 {
+#ifdef _DEBUG
 	debugDraw->DrawBox();
+#endif // _DEBUG
 }
 
 void ChangePostEffectEvent::OnCollision()

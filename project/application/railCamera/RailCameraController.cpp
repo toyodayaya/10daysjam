@@ -1,11 +1,14 @@
 #include "RailCameraController.h"
+#ifdef _DEBUG
 #include "DebugDrawCommon.h"
+#endif // _DEBUG
 
 void RailCameraController::Initialize(const QuaternionTransform& transform)
 {
 	// 引数で受け取ってメンバ変数として記録
 	transform_ = transform;
 
+#ifdef _DEBUG
 	// デバッグ描画を初期化
 	debugLine_ = std::make_unique<DebugDraw>();
 	debugLine_->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kLine);
@@ -20,6 +23,7 @@ void RailCameraController::Initialize(const QuaternionTransform& transform)
 		}
 	}
 	
+#endif // _DEBUG
 }
 
 void RailCameraController::Update()
@@ -30,12 +34,18 @@ void RailCameraController::Update()
 	// カメラに反映
 	camera_->SetTranslate(transform_.translate);
 
+#ifdef _DEBUG
 	// デバッグ描画の更新
 	debugLine_->UpdateLine();
+
+#endif // _DEBUG
 	
 }
 
 void RailCameraController::Draw()
 {
+
+#ifdef _DEBUG
 	debugLine_->DrawLine();
+#endif // _DEBUG
 }

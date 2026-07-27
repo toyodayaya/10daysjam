@@ -37,7 +37,9 @@
 #include "ParticleManager.h"
 #include "Audio.h"
 #include "RenderTexture.h"
+#ifdef _DEBUG
 #include "DebugDrawCommon.h"
+#endif // _DEBUG
 #include "AnimationCommon.h"
 #include "StageManager.h"
 #include "EventManager.h"

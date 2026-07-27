@@ -1,7 +1,11 @@
 #pragma once
 #include <vector>
 #include "Camera.h"
+
+#ifdef _DEBUG
 #include "DebugDraw.h"
+#endif // _DEBUG
+
 #include "MathManager.h"
 using namespace MathManager;
 
@@ -28,7 +32,9 @@ private:
 	// カメラの制御点
 	std::vector<Vector3> railPoints_;
 
+#ifdef _DEBUG
 	// デバッグ描画
 	std::unique_ptr<DebugDraw> debugLine_;
+#endif // _DEBUG
 };
 

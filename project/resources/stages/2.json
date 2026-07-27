@@ -52,11 +52,11 @@
             "points": [
                 {
                     "type": "RailPoint",
-                    "name": "RailPoint",
+                    "name": "RailPoint.001",
                     "transform": {
                         "translation": [
                             0.0,
-                            0.0,
+                            4.384313583374023,
                             0.0
                         ],
                         "rotation": [
@@ -74,34 +74,12 @@
                 },
                 {
                     "type": "RailPoint",
-                    "name": "RailPoint.001",
+                    "name": "RailPoint",
                     "transform": {
                         "translation": [
                             0.0,
-                            2.806110143661499,
-                            0.9586441516876221
-                        ],
-                        "rotation": [
                             0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "scaling": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    }
-                },
-                {
-                    "type": "RailPoint",
-                    "name": "RailPoint.002",
-                    "transform": {
-                        "translation": [
-                            0.0,
-                            5.919454097747803,
-                            2.657853126525879
+                            0.0
                         ],
                         "rotation": [
                             0.0,

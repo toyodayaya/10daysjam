@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 #include <externals/nlohmannJson/Json.hpp>
+#ifdef _DEBUG
 #include "DebugDraw.h"
 #include "DebugDrawCommon.h"
+#endif // _DEBUG
 #include "BaseCharacter.h"
 
 class StageManager;
@@ -142,8 +144,10 @@ private:
 	LevelData levelData_;
 	// オブジェクトデータ
 	std::vector<std::unique_ptr<Object3d>> object3ds;
+#ifdef _DEBUG
 	// デバッグ描画データ
 	std::vector<std::unique_ptr<DebugDraw>> debugBoxs_;
+#endif // _DEBUG
 	// プレイヤーデータ
 	std::vector<std::unique_ptr<Player>> players_;
 	// コライダーデータ

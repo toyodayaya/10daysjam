@@ -43,8 +43,10 @@ void Framework::Initialize()
 	AnimationCommon::GetInstance()->SetDefaultCamera(camera.get());
 
 	// デバッグ描画共通部の初期化
+#ifdef _DEBUG
 	DebugDrawCommon::GetInstance()->Initialize(dxBasis.get());
 	DebugDrawCommon::GetInstance()->SetDefaultCamera(camera.get());
+#endif // _DEBUG
 
 	// 3Dモデルマネージャーの初期化
 	ModelManager::GetInstance()->Initialize(dxBasis.get(),srvManager);
@@ -110,8 +112,10 @@ void Framework::Finalize()
 	
 	// 3Dモデルマネージャーの終了
 	ModelManager::GetInstance()->Finalize();
+#ifdef _DEBUG
 	// デバッグ描画共通部の終了
 	DebugDrawCommon::GetInstance()->Finalize();
+#endif // _DEBUG
 	// アニメーションの終了
 	AnimationCommon::GetInstance()->Finalize();
 	// Skybox共通部の終了

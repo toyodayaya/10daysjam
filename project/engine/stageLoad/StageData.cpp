@@ -50,12 +50,13 @@ void StageData::Update()
 		railCamera_->Update();
 	}
 
+#ifdef _DEBUG
 	// デバッグ更新
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
 		debugBox->UpdateBox();
 	}
-
+#endif // _DEBUG
 
 }
 
@@ -84,12 +85,13 @@ void StageData::Draw()
 	{
 		railCamera_->Draw();
 	}
-
+#ifdef _DEBUG
 	// デバッグ描画
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
 		debugBox->DrawBox();
 	}
+#endif // _DEBUG
 }
 
 void StageData::CheckAllCollision()
@@ -288,7 +290,7 @@ void StageData::CreateStage(const std::string& fileName)
 	}
 
 	// 制御点データをセット
-	if(levelData.railPoints.size() != 0)
+	if (levelData.railPoints.size() != 0)
 	{
 		SetRailPoint(levelData.railPoints);
 	}
@@ -529,6 +531,7 @@ StageData::ColliderSpawnData StageData::LoadCollider(nlohmann::json& collider)
 
 void StageData::CreateCollider(const ColliderSpawnData& collider, BaseCharacter* parent)
 {
+#ifdef _DEBUG
 	// デバッグ描画用の箱を初期化、生成
 	std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
 	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
@@ -537,11 +540,12 @@ void StageData::CreateCollider(const ColliderSpawnData& collider, BaseCharacter*
 
 	// 親オブジェクトがあればセット
 	debugDraw->SetParent(parent);
-	ColliderSpawnData colliders = collider;
-	colliders.parent = parent;
 
 	// 登録
 	debugBoxs_.push_back(std::move(debugDraw));
+#endif // _DEBUG
+	ColliderSpawnData colliders = collider;
+	colliders.parent = parent;
 	colliders_.push_back(colliders);
 
 }
@@ -650,7 +654,7 @@ void StageData::SetRailPoint(const std::vector<RailPointData>& railPointData)
 {
 	// レールカメラを初期化
 	railCamera_ = std::make_unique<RailCameraController>();
-	
+
 	// レールカメラをセット
 	railCamera_->SetCamera(camera_);
 
