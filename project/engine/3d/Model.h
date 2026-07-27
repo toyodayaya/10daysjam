@@ -198,6 +198,7 @@ public:
 	void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
 	// getter
 	ModelData GetModelData() { return modelData_; }
+	Skeleton GetSkeleton() { return skeleton_; }
 
 private:
 	ModelCommon* modelManager = nullptr;
@@ -232,6 +233,7 @@ private:
 
 	// アニメーションタイプ
 	AnimationType type_ = kNone;
+
 
 #ifdef _DEBUG
 

@@ -31,4 +31,7 @@ private:
 	// 3dオブジェクト
 	std::unique_ptr<Object3d> object3d_;
 
+	// パーティクルエミッターのポインタ
+	std::unique_ptr <ParticleEmitter> emitterCylinder;
+
 };

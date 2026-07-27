@@ -89,6 +89,7 @@ public:
 	const Quaternion& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
 	const QuaternionTransform& GetTransform() const { return transform; }
+	Model* GetModel() const { return model; }
 
 private:
 	// ポインタ
