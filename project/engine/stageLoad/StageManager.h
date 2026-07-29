@@ -6,6 +6,18 @@
 
 class StageManager
 {
+public:
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class StageManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit StageManager(ConstructorKey) {}
+
 private:
 	// レベルデータ
 	std::map<std::string, std::unique_ptr<StageData>> stageDatas;
@@ -13,14 +25,14 @@ private:
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;
 
-public:
+	// インスタンス
+	friend std::default_delete<StageManager>;
 	static std::unique_ptr<StageManager> instance;
 
-	StageManager() = default;
 	~StageManager() = default;
 	StageManager(StageManager&) = delete;
 	StageManager& operator = (StageManager&) = delete;
-
+public:
 	// シングルトンインスタンスの取得
 	static StageManager* GetInstance();
 	// 終了

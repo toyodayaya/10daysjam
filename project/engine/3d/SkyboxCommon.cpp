@@ -9,7 +9,7 @@ SkyboxCommon* SkyboxCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<SkyboxCommon>();
+		instance = std::make_unique<SkyboxCommon>(ConstructorKey());
 	}
 
 	return instance.get();

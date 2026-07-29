@@ -10,14 +10,25 @@
 class Input
 {
 public:
-	// コンストラクタ
-	Input() = default;
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class Input;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit Input(ConstructorKey) {}
+
+private:
 	// デストラクタ
 	~Input() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	Input(const Input&) = delete;
 	Input& operator=(const Input&) = delete;
 	// インスタンス
+	friend std::default_delete<Input>;
 	static std::unique_ptr<Input> instance;
 
 public:

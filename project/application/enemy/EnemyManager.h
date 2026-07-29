@@ -6,17 +6,28 @@
 class EnemyManager
 {
 public:
-	// コンストラクタ
-	EnemyManager() = default;
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class EnemyManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit EnemyManager(ConstructorKey) {}
+	
+private:
 	// デストラクタ
 	~EnemyManager() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	EnemyManager(const EnemyManager&) = delete;
 	EnemyManager& operator=(const EnemyManager&) = delete;
 	// インスタンス
+	friend std::default_delete<EnemyManager>;
 	static std::unique_ptr<EnemyManager> instance;
 
-private:
+
 	// 登録済みの敵を記録する配列
 	std::vector<std::unique_ptr<BaseEnemy>> enemies_;
 

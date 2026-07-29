@@ -5,14 +5,26 @@
 class DebugDrawCommon
 {
 public:
-	// コンストラクタ
-	DebugDrawCommon() = default;
+	
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class DebugDrawCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit DebugDrawCommon(ConstructorKey) {}
+	
+private:
 	// デストラクタ
 	~DebugDrawCommon() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	DebugDrawCommon(const DebugDrawCommon&) = delete;
 	DebugDrawCommon& operator=(const DebugDrawCommon&) = delete;
 	// インスタンス
+	friend std::default_delete<DebugDrawCommon>;
 	static std::unique_ptr<DebugDrawCommon> instance;
 
 public:

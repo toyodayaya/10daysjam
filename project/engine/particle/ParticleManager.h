@@ -329,11 +329,25 @@ public:
 	DirectXBasis* GetDxBasis() const { return dxBasis_; }
 	SrvManager* GetSrvManager() const { return srvManager_; }
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class ParticleManager;
+	};
 
-	ParticleManager() = default;
+	// PassKeyを受け取るコンストラクタ
+	explicit ParticleManager(ConstructorKey) {}
+
+private:
+	// デストラクタ
 	~ParticleManager() = default;
+	// コピーコンストラクタとコピー代入演算子を削除
 	ParticleManager(ParticleManager&) = delete;
 	ParticleManager& operator=(ParticleManager&) = delete;
+	// インスタンス
+	friend std::default_delete<ParticleManager>;
 	static std::unique_ptr<ParticleManager> instance;
 
 };

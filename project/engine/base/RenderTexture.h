@@ -6,14 +6,26 @@
 class RenderTexture
 {
 public:
-	// コンストラクタ
-	RenderTexture() = default;
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class RenderTexture;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit RenderTexture(ConstructorKey) {}
+
+private:
+
 	// デストラクタ
 	~RenderTexture() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	RenderTexture(const RenderTexture&) = delete;
 	RenderTexture& operator=(const RenderTexture&) = delete;
 	// インスタンス
+	friend std::default_delete<RenderTexture>;
 	static std::unique_ptr<RenderTexture> instance;
 
 public:

@@ -6,17 +6,28 @@
 class EventManager
 {
 public:
-	// コンストラクタ
-	EventManager() = default;
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class EventManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit EventManager(ConstructorKey) {}
+	
+	
+private:
 	// デストラクタ
 	~EventManager() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	EventManager(const EventManager&) = delete;
 	EventManager& operator=(const EventManager&) = delete;
 	// インスタンス
+	friend std::default_delete<EventManager>;
 	static std::unique_ptr<EventManager> instance;
-	
-private:
+
 	// 登録済みイベントを記録する配列
 	std::vector<std::unique_ptr<BaseEvent>> events_;
 

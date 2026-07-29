@@ -10,6 +10,18 @@
 
 class TextureManager
 {
+public:
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class TextureManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit TextureManager(ConstructorKey) {}
+
 private:
 
 	// テクスチャ1枚分のデータ
@@ -47,20 +59,24 @@ private:
 	// SRVインデックスの開始番号
 	static uint32_t kSRVIndexTop;
 
-public:
+	// インスタンス
+	friend std::default_delete<TextureManager>;
 	static std::unique_ptr<TextureManager> instance;
 
-	TextureManager() = default;
+	// デストラクタ
 	~TextureManager() = default;
+	// コピーコンストラクタとコピー代入演算子を削除
 	TextureManager(TextureManager&) = delete;
 	TextureManager& operator=(TextureManager&) = delete;
+public:
+
 
 	// シングルトンインスタンスの取得
 	static TextureManager* GetInstance();
 	// 終了
 	void Finalize();
 	// 初期化
-	void Initialize(DirectXBasis* dxBasis,SrvManager* srvManager);
+	void Initialize(DirectXBasis* dxBasis, SrvManager* srvManager);
 
 	// LoadTexture関数
 	void LoadTexture(const std::string& filePath);
@@ -76,7 +92,7 @@ public:
 
 	// テクスチャ番号からGPUハンドルを取得する
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU(const std::string& filePath);
-	D3D12_GPU_DESCRIPTOR_HANDLE GetRenderSRVHandleGPU(const std::string& filePath) 
+	D3D12_GPU_DESCRIPTOR_HANDLE GetRenderSRVHandleGPU(const std::string& filePath)
 	{
 		return renderTextureDatas[filePath].srvHandleGPU;
 	}

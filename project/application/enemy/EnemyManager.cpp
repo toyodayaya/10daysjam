@@ -8,7 +8,7 @@ EnemyManager* EnemyManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<EnemyManager>();
+		instance = std::make_unique<EnemyManager>(ConstructorKey());
 	}
 	return instance.get();
 }

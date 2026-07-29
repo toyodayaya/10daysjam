@@ -7,11 +7,16 @@
 
 class ParticleEmitter
 {
-public:
+private:
+	// インスタンス
+	friend std::default_delete<ParticleEmitter>;
 	static std::unique_ptr<ParticleEmitter> instance;
 
+	// コンストラクタ
 	ParticleEmitter(const std::string name,const ParticleManager::EmitterSphere& emitterSphere);
+	// デストラクタ
 	~ParticleEmitter() = default;
+	// コピーコンストラクタとコピー代入演算子を削除
 	ParticleEmitter(ParticleEmitter&) = delete;
 	ParticleEmitter& operator=(ParticleEmitter&) = delete;
 

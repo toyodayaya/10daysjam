@@ -6,7 +6,7 @@ CollisionManager* CollisionManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<CollisionManager>();
+		instance = std::make_unique<CollisionManager>(ConstructorKey());
 	}
 	return instance.get();
 }

@@ -6,14 +6,26 @@
 class SceneManager
 {
 public:
-	// コンストラクタ
-	SceneManager() = default;
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class SceneManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit SceneManager(ConstructorKey) {}
+
+private:
+
 	// デストラクタ
 	~SceneManager() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	SceneManager(const SceneManager&) = delete;
 	SceneManager& operator=(const SceneManager&) = delete;
 	// インスタンス
+	friend std::default_delete<SceneManager>;
 	static std::unique_ptr<SceneManager> instance;
 
 public:

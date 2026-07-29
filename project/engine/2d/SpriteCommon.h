@@ -46,8 +46,19 @@ public:
 	// 終了
 	void Finalize();
 
-	// コンストラクタ
-	SpriteCommon() = default;
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class SpriteCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit SpriteCommon(ConstructorKey) {}
+
+private:
+
 	// デストラクタ
 	~SpriteCommon() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
@@ -55,6 +66,7 @@ public:
 	SpriteCommon& operator=(const SpriteCommon&) = delete;
 
 	// インスタンス
+	friend std::default_delete<SpriteCommon>;
 	static std::unique_ptr<SpriteCommon> instance;
 	
 private:

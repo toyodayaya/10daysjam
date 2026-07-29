@@ -5,11 +5,10 @@ const uint32_t SrvManager::kMaxSRVCount = 512;
 std::unique_ptr<SrvManager> SrvManager::instance = nullptr;
 
 SrvManager* SrvManager::GetInstance()
-{
-	
+{	
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<SrvManager>();
+		instance = std::make_unique<SrvManager>(ConstructorKey());
 	}
 	return instance.get();
 }

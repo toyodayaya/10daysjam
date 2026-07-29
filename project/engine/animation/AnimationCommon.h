@@ -8,14 +8,25 @@
 class AnimationCommon
 {
 public:
-	// コンストラクタ
-	AnimationCommon() = default;
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class AnimationCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit AnimationCommon(ConstructorKey){}
+
+private:
 	// デストラクタ
 	~AnimationCommon() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	AnimationCommon(const AnimationCommon&) = delete;
 	AnimationCommon& operator=(const AnimationCommon&) = delete;
 	// インスタンス
+	friend std::default_delete<AnimationCommon>;
 	static std::unique_ptr<AnimationCommon> instance;
 
 private:

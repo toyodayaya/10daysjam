@@ -8,7 +8,7 @@ EventManager* EventManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<EventManager>();
+		instance = std::make_unique<EventManager>(ConstructorKey());
 	}
 	return instance.get();
 }

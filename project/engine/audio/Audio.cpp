@@ -22,7 +22,7 @@ Audio* Audio::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<Audio>();
+		instance = std::make_unique<Audio>(ConstructorKey());
 	}
 
 	return instance.get();

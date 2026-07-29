@@ -8,7 +8,7 @@ DebugDrawCommon* DebugDrawCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<DebugDrawCommon>();
+		instance = std::make_unique<DebugDrawCommon>(ConstructorKey());
 	}
 
 	return instance.get();

@@ -10,7 +10,30 @@
 
 class ModelManager
 {
+public:
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class ModelManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit ModelManager(ConstructorKey) {}
+
 private:
+	// インスタンス
+	friend std::default_delete<ModelManager>;
+	static std::unique_ptr<ModelManager> instance;
+
+	// デフォルトデストラクタ
+	~ModelManager() = default;
+	// コピーコンストラクタとコピー代入演算子を削除
+	ModelManager(ModelManager&) = delete;
+	ModelManager& operator = (ModelManager&) = delete;
+
+
 	// モデルデータ
 	std::map<std::string, std::unique_ptr<Model>> models;
 
@@ -18,13 +41,7 @@ private:
 	std::unique_ptr <ModelCommon> modelCommon;
 
 public:
-	static std::unique_ptr<ModelManager> instance;
-
-	ModelManager() = default;
-	~ModelManager() = default;
-	ModelManager(ModelManager&) = delete;
-	ModelManager& operator = (ModelManager&) = delete;
-
+	
 	// シングルトンインスタンスの取得
 	static ModelManager* GetInstance();
 	// 終了

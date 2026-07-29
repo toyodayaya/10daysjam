@@ -8,7 +8,7 @@ Object3dCommon* Object3dCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<Object3dCommon>();
+		instance = std::make_unique<Object3dCommon>(ConstructorKey());
 	}
 
 	return instance.get();

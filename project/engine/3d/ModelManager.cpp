@@ -7,7 +7,7 @@ ModelManager* ModelManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<ModelManager>();
+		instance = std::make_unique<ModelManager>(ConstructorKey());
 	}
 
 	return instance.get();

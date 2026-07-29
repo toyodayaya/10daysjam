@@ -7,7 +7,7 @@ SpriteCommon* SpriteCommon::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<SpriteCommon>();
+		instance = std::make_unique<SpriteCommon>(ConstructorKey());
 	}
 
 	return instance.get();

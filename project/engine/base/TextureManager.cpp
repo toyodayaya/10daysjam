@@ -16,7 +16,7 @@ TextureManager* TextureManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<TextureManager>();
+		instance = std::make_unique<TextureManager>(ConstructorKey());
 	}
 
 	return instance.get();

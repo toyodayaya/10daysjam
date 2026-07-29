@@ -5,8 +5,20 @@
 
 class Object3dCommon
 {
+public:
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class Object3dCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit Object3dCommon(ConstructorKey) {}
+
 private:
-	
+
 	enum BlendMode
 	{
 		// ブレンドなし
@@ -44,20 +56,19 @@ public:
 	Camera* GetDefaultCamera() const { return defaultCamera_; }
 	// setter
 	void SetDefaultCamera(Camera* camera) { this->defaultCamera_ = camera; }
-
 	// インスタンス
 	static Object3dCommon* GetInstance();
 	// 終了
 	void Finalize();
 
-	// コンストラクタ
-	Object3dCommon() = default;
+private:
 	// デストラクタ
 	~Object3dCommon() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	Object3dCommon(const Object3dCommon&) = delete;
 	Object3dCommon& operator=(const Object3dCommon&) = delete;
 	// インスタンス
+	friend std::default_delete<Object3dCommon>;
 	static std::unique_ptr<Object3dCommon> instance;
 
 private:
@@ -83,6 +94,6 @@ private:
 
 	// デフォルトカメラ
 	Camera* defaultCamera_ = nullptr;
-	
+
 };
 

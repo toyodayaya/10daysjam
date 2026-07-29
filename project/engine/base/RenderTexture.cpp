@@ -11,7 +11,7 @@ RenderTexture* RenderTexture::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<RenderTexture>();
+		instance = std::make_unique<RenderTexture>(ConstructorKey());
 	}
 
 	return instance.get();

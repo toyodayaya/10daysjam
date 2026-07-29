@@ -45,7 +45,27 @@ public:
 	// 終了処理
 	void Finalize();
 
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class SrvManager;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit SrvManager(ConstructorKey) {}
+
 private:
+
+	// デストラクタ
+	~SrvManager() = default;
+	// コピーコンストラクタとコピー代入演算子を削除
+	SrvManager(const SrvManager&) = delete;
+	SrvManager& operator=(const SrvManager&) = delete;
+
+	// インスタンス
+	friend std::default_delete<SrvManager>;
 	static std::unique_ptr<SrvManager> instance;
 
 	DirectXBasis* dxBasis_ = nullptr;

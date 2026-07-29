@@ -10,7 +10,7 @@ Input* Input::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<Input>();
+		instance = std::make_unique<Input>(ConstructorKey());
 	}
 	return instance.get();
 }

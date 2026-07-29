@@ -9,7 +9,7 @@ StageManager* StageManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<StageManager>();
+		instance = std::make_unique<StageManager>(ConstructorKey());
 	}
 
 	return instance.get();

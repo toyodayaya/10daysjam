@@ -7,7 +7,7 @@ SceneManager* SceneManager::GetInstance()
 {
 	if (instance == nullptr)
 	{
-		instance = std::make_unique<SceneManager>();
+		instance = std::make_unique<SceneManager>(ConstructorKey());
 	}
 	return instance.get();
 }

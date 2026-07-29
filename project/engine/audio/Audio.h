@@ -10,6 +10,25 @@
 
 class Audio final
 {
+public:
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class Audio;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit Audio(ConstructorKey) {}
+
+private:
+	// デストラクタ
+	~Audio() = default;
+	// コピーコンストラクタを無効化
+	Audio(const Audio&) = delete;
+	// コピー代入演算子を無効化
+	Audio& operator=(const Audio&) = delete;
 	
 public:
 	struct SoundData
@@ -66,14 +85,6 @@ public:
 	// getter
 	Microsoft::WRL::ComPtr<IXAudio2> GetXAudio2() const { return xAudio2; }
 
-	// コンストラクタ
-	Audio() = default;
-	// デストラクタ
-	~Audio() = default;
-	// コピーコンストラクタを無効化
-	Audio(const Audio&) = delete;
-	// コピー代入演算子を無効化
-	Audio& operator=(const Audio&) = delete;
 
 	// インスタンス
 	static Audio* GetInstance();
@@ -86,6 +97,7 @@ private:
 	std::set<IXAudio2SourceVoice*> activeVoices;
 
 	// シングルトンインスタンス
+	friend std::default_delete<Audio>;
 	static std::unique_ptr<Audio> instance;
 
 };

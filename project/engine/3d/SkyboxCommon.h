@@ -5,14 +5,25 @@
 class SkyboxCommon
 {
 public:
-	// コンストラクタ
-	SkyboxCommon() = default;
+	// コンストラクタに渡すための鍵
+	class ConstructorKey
+	{
+	private:
+		ConstructorKey() = default;
+		friend class SkyboxCommon;
+	};
+
+	// PassKeyを受け取るコンストラクタ
+	explicit SkyboxCommon(ConstructorKey) {}
+private:
+
 	// デストラクタ
 	~SkyboxCommon() = default;
 	// コピーコンストラクタとコピー代入演算子を削除
 	SkyboxCommon(const SkyboxCommon&) = delete;
 	SkyboxCommon& operator=(const SkyboxCommon&) = delete;
 	// インスタンス
+	friend std::default_delete<SkyboxCommon>;
 	static std::unique_ptr<SkyboxCommon> instance;
 
 public:
