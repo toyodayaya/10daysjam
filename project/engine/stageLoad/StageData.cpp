@@ -75,7 +75,7 @@ void StageData::Draw()
 	}
 
 	// 敵の描画処理
-	//EnemyManager::GetInstance()->Draw();
+	EnemyManager::GetInstance()->Draw();
 
 	// イベントの描画処理
 	EventManager::GetInstance()->Draw();
@@ -286,7 +286,7 @@ void StageData::CreateStage(const std::string& fileName)
 	// カメラデータをセット
 	if (&levelData.cameraData)
 	{
-		//SetCameraData(levelData.cameraData);
+		SetCameraData(levelData.cameraData);
 	}
 
 	// 制御点データをセット

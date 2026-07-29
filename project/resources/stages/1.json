@@ -50,7 +50,7 @@
             "name": "PlayerSpawn",
             "transform": {
                 "translation": [
-                    4.160466194152832,
+                    4.052608013153076,
                     0.0,
                     0.0
                 ],
@@ -67,42 +67,6 @@
                 ]
             },
             "file_name": "player.obj",
-            "collider": {
-                "type": "BOX",
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "size": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "type": "EnemySpawn",
-            "name": "EnemySpawn",
-            "transform": {
-                "translation": [
-                    0.0,
-                    -3.912716865539551,
-                    0.0
-                ],
-                "rotation": [
-                    -0.3694571852684021,
-                    -0.7673999071121216,
-                    0.056037500500679016,
-                    0.5210168957710266
-                ],
-                "scaling": [
-                    0.9999999403953552,
-                    1.0,
-                    1.0
-                ]
-            },
-            "file_name": "enemy.obj",
             "collider": {
                 "type": "BOX",
                 "center": [
@@ -137,20 +101,31 @@
                     1.0,
                     1.0
                 ]
-            },
-            "collider": {
-                "type": "BOX",
-                "center": [
+            }
+        },
+        {
+            "type": "EnemySpawn",
+            "name": "EnemySpawn",
+            "transform": {
+                "translation": [
                     0.0,
-                    0.0,
+                    -3.6850507259368896,
                     0.0
                 ],
-                "size": [
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
                     1.0,
                     1.0,
                     1.0
                 ]
-            }
+            },
+            "file_name": "enemy.obj"
         }
-    ]
+    ],
+    "rails": []
 }

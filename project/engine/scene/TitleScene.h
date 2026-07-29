@@ -9,7 +9,6 @@
 #include "Input.h"
 #include "SceneManager.h"
 #include <memory>
-#include "ParticleEmitter.h"
 #include <random>
 #include "StageData.h"
 
@@ -28,10 +27,5 @@ public:
 private:
 	// ステージデータ
 	StageData* stageData_ = nullptr;
-	// 3dオブジェクト
-	std::unique_ptr<Object3d> object3d_;
-
-	// パーティクルエミッターのポインタ
-	std::unique_ptr <ParticleEmitter> emitterCylinder;
 
 };
