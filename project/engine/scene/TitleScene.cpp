@@ -21,6 +21,8 @@ void TitleScene::Initialize()
 	stageData_ = StageManager::GetInstance()->FindJsonData("1.json");
 	// ステージを作成する
 	stageData_->CreateStage("1.json");
+
+	// お試しプッシュ
 }
 
 void TitleScene::Finalize()
