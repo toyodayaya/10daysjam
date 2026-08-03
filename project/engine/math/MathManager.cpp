@@ -170,20 +170,20 @@ namespace MathManager
 	{
 		Matrix4x4 ret = {};
 		float cot = 1.0f / tanf(fovY / 2.0f);
-		ret.m[0][0] = (1.0f / aspectRatio) * cot; 
-		ret.m[0][1] = 0.0f; ret.m[0][2] = 0.0f; 
+		ret.m[0][0] = (1.0f / aspectRatio) * cot;
+		ret.m[0][1] = 0.0f; ret.m[0][2] = 0.0f;
 		ret.m[0][3] = 0.0f;
-		ret.m[1][0] = 0.0f; 
-		ret.m[1][1] = cot; 
-		ret.m[1][2] = 0.0f; 
+		ret.m[1][0] = 0.0f;
+		ret.m[1][1] = cot;
+		ret.m[1][2] = 0.0f;
 		ret.m[1][3] = 0.0f;
 		ret.m[2][0] = 0.0f;
-		ret.m[2][1] = 0.0f; 
-		ret.m[2][2] = farClip / (farClip - nearClip); 
+		ret.m[2][1] = 0.0f;
+		ret.m[2][2] = farClip / (farClip - nearClip);
 		ret.m[2][3] = 1.0f;
-		ret.m[3][0] = 0.0f; 
-		ret.m[3][1] = 0.0f; 
-		ret.m[3][2] = (-1.0f * nearClip) * farClip / (farClip - nearClip); 
+		ret.m[3][0] = 0.0f;
+		ret.m[3][1] = 0.0f;
+		ret.m[3][2] = (-1.0f * nearClip) * farClip / (farClip - nearClip);
 		ret.m[3][3] = 0.0f;
 
 		return ret;
@@ -314,6 +314,41 @@ namespace MathManager
 		return ret;
 	}
 
+
+	Vector3 Normalize(const Vector3& v)
+	{
+		Vector3 ret;
+		float length = Length(v);
+
+		if (length != 0)
+		{
+			ret.x = v.x / length;
+			ret.y = v.y / length;
+			ret.z = v.z / length;
+		}
+		else
+		{
+			ret.x = 0;
+			ret.y = 0;
+			ret.z = 0;
+		}
+
+		return ret;
+	}
+
+	Quaternion QuaternionNormalize(const Quaternion& q)
+	{
+		float len = std::sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+		if (len == 0.0f) return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+		Quaternion ret;
+		ret.x = q.x / len;
+		ret.y = q.y / len;
+		ret.z = q.z / len;
+		ret.w = q.w / len;
+		return ret;
+	}
+
 	float Length(const Vector3& v)
 	{
 		float ret;
@@ -376,7 +411,7 @@ namespace MathManager
 			dot = -dot;
 		}
 
-			if (dot > 0.9995f)
+		if (dot > 0.9995f)
 		{
 			// 0除算を避けるため、通常の線形補間（Lerp）を行う
 			Quaternion ret{};
@@ -394,7 +429,6 @@ namespace MathManager
 			return ret;
 		}
 
-		// --- ここから下は dot <= 0.9995f の時だけ実行されるため、安全が保証されます ---
 		float theta = std::acosf(dot);
 
 		float scale0 = std::sinf((1.0f - t) * theta) / std::sinf(theta);
@@ -409,54 +443,6 @@ namespace MathManager
 		return ret;
 	}
 
-	Quaternion MakeQuaternionAxisAngle(const Vector3& axis, float radian)
-	{
-		Vector3 normAxis = Normalize(axis);
-		float sinHalf = std::sinf(radian / 2.0f);
-		float cosHalf = std::cosf(radian / 2.0f);
-
-		Quaternion ret;
-		ret.x = normAxis.x * sinHalf;
-		ret.y = normAxis.y * sinHalf;
-		ret.z = normAxis.z * sinHalf;
-		ret.w = cosHalf;
-		return ret;
-	}
-
-	Quaternion FromToRotation(const Vector3& from, const Vector3& to)
-	{
-		Vector3 f = Normalize(from);
-		Vector3 t = Normalize(to);
-
-		float dot = Dot(f, t);
-
-		// ほぼ同じ方向を向いている場合
-		if (dot > 0.9999f)
-		{
-			return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
-		}
-
-		// 完全に真逆（180度）を向いている場合
-		if (dot < -0.9999f)
-		{
-			// Y軸に平行ならX軸を、それ以外ならY軸を基準に外積用の補助軸にする
-			Vector3 axis = std::abs(f.y) < 0.9f ? Vector3{ 0.0f, 1.0f, 0.0f } : Vector3{ 1.0f, 0.0f, 0.0f };
-			Vector3 rotateAxis = Normalize(Cross(f, axis));
-			return MakeQuaternionAxisAngle(rotateAxis, float(M_PI));
-		}
-
-		// 通常時の回転クォータニオンの算出
-		Vector3 cross = Cross(f, t);
-
-		Quaternion q;
-		q.x = cross.x;
-		q.y = cross.y;
-		q.z = cross.z;
-		q.w = dot + std::sqrtf(LengthSquared(f) * LengthSquared(t));
-
-		return QuaternionNormalize(q);
-	}
-
 	Quaternion MakeRotateXQuaternion(float rad)
 	{
 		Quaternion q;
@@ -469,38 +455,79 @@ namespace MathManager
 		return q;
 	}
 
-	Vector3 Normalize(const Vector3& v)
+	Vector3 CatmullRomInterpolation(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t)
 	{
+		const float s = 0.5f;
+
+		float t2 = t * t;
+		float t3 = t2 * t;
+
+		Vector3 e3 = Vector3Add(Vector3Subtract(Vector3Add(FloatMultiply(p0, -1.0f), FloatMultiply(p1, 3)), FloatMultiply(p2, 3)), p3);
+		Vector3 e2 = Vector3Subtract(Vector3Add(Vector3Subtract(FloatMultiply(p0, 2.0f), FloatMultiply(p1, 5.0f)), FloatMultiply(p2, 4.0f)), p3);
+		Vector3 e1 = Vector3Add(FloatMultiply(p0, -1.0f), p2);
+		Vector3 e0 = FloatMultiply(p1, 2.0f);
+
 		Vector3 ret;
-		float length = Length(v);
-
-		if (length != 0)
-		{
-			ret.x = v.x / length;
-			ret.y = v.y / length;
-			ret.z = v.z / length;
-		}
-		else
-		{
-			ret.x = 0;
-			ret.y = 0;
-			ret.z = 0;
-		}
-
+		ret = FloatMultiply(Vector3Add(Vector3Add(Vector3Add(FloatMultiply(e3, t3), FloatMultiply(e2, t2)), FloatMultiply(e1, t)), e0), s);
 		return ret;
+
 	}
 
-	Quaternion QuaternionNormalize(const Quaternion& q)
+	Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t)
 	{
-		float len = std::sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
-		if (len == 0.0f) return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+		// 制御点が足りない場合は停止
+		assert(points.size() >= 4 && "制御点は4点以上必要です");
 
-		Quaternion ret;
-		ret.x = q.x / len;
-		ret.y = q.y / len;
-		ret.z = q.z / len;
-		ret.w = q.w / len;
-		return ret;
+		// 区間数を設定
+		size_t division = points.size() - 1;
+		// 1区間の長さ
+		float areaWidth = 1.0f / division;
+
+		// 区間番号
+		size_t index = static_cast<size_t>(t / areaWidth);
+		// 区間番号を範囲内に収める
+		index = std::min(index, division - 1);
+
+		// 区間の始点を0.0f、終点を1.0fとした時の現在位置
+		float t_2 = std::fmod(t, areaWidth) * division;
+		// tが1.0fなら、最後の区間の終点にする
+		if (t >= 1.0f)
+		{
+			t_2 = 1.0f;
+		}
+
+		// 範囲内に収める
+		t_2 = std::clamp(t_2, 0.0f, 1.0f);
+
+		// 4点分のインデックス
+		size_t index0 = index - 1;
+		size_t index1 = index;
+		size_t index2 = index + 1;
+		size_t index3 = index + 2;
+
+		// 最初の区間のp0はp1を適用
+		if (index == 0)
+		{
+			index0 = index1;
+		}
+
+		// 最後の区間のp3はp2を適用
+		if (index == points.size() - 2)
+		{
+			index3 = index2;
+		}
+
+		// 4点の座標
+		const Vector3& p0 = points[index0];
+		const Vector3& p1 = points[index1];
+		const Vector3& p2 = points[index2];
+		const Vector3& p3 = points[index3];
+
+		// 4点を指定してcatmull-rom補間を計算
+		return CatmullRomInterpolation(p0, p1, p2, p3, t_2);
+
+
 	}
+
 
 }

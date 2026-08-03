@@ -28,9 +28,9 @@
             "name": "Camera",
             "transform": {
                 "translation": [
-                    7.358891487121582,
-                    -6.925790786743164,
-                    4.958309173583984
+                    11.011285781860352,
+                    -5.394769668579102,
+                    7.346144199371338
                 ],
                 "rotation": [
                     0.483536034822464,
@@ -44,88 +44,124 @@
                     1.0
                 ]
             }
-        },
-        {
-            "type": "PlayerSpawn",
-            "name": "PlayerSpawn",
-            "transform": {
-                "translation": [
-                    4.052608013153076,
-                    0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "file_name": "player.obj",
-            "collider": {
-                "type": "BOX",
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "size": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "type": "EventSpawn",
-            "name": "EventSpawn",
-            "transform": {
-                "translation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "type": "EnemySpawn",
-            "name": "EnemySpawn",
-            "transform": {
-                "translation": [
-                    0.0,
-                    -3.6850507259368896,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "file_name": "enemy.obj"
         }
     ],
-    "rails": []
+    "rails": [
+        {
+            "name": "Rail",
+            "points": [
+                {
+                    "type": "RailPoint",
+                    "name": "RailPoint",
+                    "transform": {
+                        "translation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "scaling": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "type": "RailPoint",
+                    "name": "RailPoint.001",
+                    "transform": {
+                        "translation": [
+                            0.0,
+                            3.140713691711426,
+                            1.4315541982650757
+                        ],
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "scaling": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "type": "RailPoint",
+                    "name": "RailPoint.002",
+                    "transform": {
+                        "translation": [
+                            0.0,
+                            5.147845268249512,
+                            4.001407146453857
+                        ],
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "scaling": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "type": "RailPoint",
+                    "name": "RailPoint.003",
+                    "transform": {
+                        "translation": [
+                            0.0,
+                            8.8270845413208,
+                            3.1630544662475586
+                        ],
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "scaling": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "type": "RailPoint",
+                    "name": "RailPoint.004",
+                    "transform": {
+                        "translation": [
+                            0.0,
+                            10.087289810180664,
+                            5.322884559631348
+                        ],
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "scaling": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "disabled_option": false
+                }
+            ]
+        }
+    ]
 }

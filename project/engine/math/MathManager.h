@@ -1,5 +1,6 @@
 #pragma once
 #include <assimp/scene.h>
+#include <vector>
 
 // 構造体の宣言
 struct Vector2
@@ -133,12 +134,12 @@ namespace MathManager
 	Vector3 Lerp(const Vector3& start, const Vector3& end, float t);
 	Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
 
-	// 軸と回転角(ラジアン)からクォータニオンを作成
-	Quaternion MakeQuaternionAxisAngle(const Vector3& axis, float radian);
-	// 2つのベクトルから回転クォータニオンを作成
-	Quaternion FromToRotation(const Vector3& from, const Vector3& to);
-
 	// Blenderのカメラ角対応用
 	Quaternion MakeRotateXQuaternion(float rad);
+
+	// catmull-rom補間関数
+	Vector3 CatmullRomInterpolation(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
+	// catmull-rom曲線での座標計算
+	Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t);
 
 }

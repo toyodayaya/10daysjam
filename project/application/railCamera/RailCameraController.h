@@ -34,6 +34,7 @@ private:
 
 #ifdef _DEBUG
 	// デバッグ描画
+	std::vector<std::unique_ptr<DebugDraw>> debugPoint_;
 	std::unique_ptr<DebugDraw> debugLine_;
 #endif // _DEBUG
 };
