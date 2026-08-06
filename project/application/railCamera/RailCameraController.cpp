@@ -64,21 +64,14 @@ void RailCameraController::Update()
 	Vector3 forward = Vector3Subtract(target,pos);
 	forward = Normalize(forward);
 	// Y軸周り角度
-	transform_.rotate.y = std::atan2(forward.x, forward.z);
-	float horizontalLength =
-		std::sqrt(
-			forward.x * forward.x +
-			forward.z * forward.z
-		);
+	float yaw = std::atan2(forward.x, forward.z);
+	transform_.rotate.y = yaw;
+	// Y軸周りの回転行列
+	Matrix4x4 rotate = MakeRotateYMatrix(yaw);
+	Vector3 velocityZ = TransformNormal(forward, rotate);
+	// X軸周り角度
+	transform_.rotate.x = std::atan2(-velocityZ.y, velocityZ.z);
 
-	// X軸回転（Pitch）
-	transform_.rotate.x =
-		-std::atan2(
-			forward.y,
-			horizontalLength
-		);
-
-	transform_.rotate.z = 0.0f;
 	// カメラに反映
 	camera_->SetTransform(transform_);
 
