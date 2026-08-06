@@ -231,9 +231,6 @@ private:
 	// SRV
 	D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
 
-
-	const float kDeltaTime = 1.0f / 60.0f;
-
 	// 効果範囲
 	AccelerationField accelerationField;
 

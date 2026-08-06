@@ -7,7 +7,7 @@ class BaseCharacter
 public:
 	// getter
 	QuaternionTransform GetTransform() { return transform_; }
-
+	
 	// 更新
 	virtual void Update() = 0;
 	// 描画

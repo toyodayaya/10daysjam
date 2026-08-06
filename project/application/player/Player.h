@@ -7,7 +7,7 @@ class Player : public BaseCharacter
 {
 public:
 	// 初期化
-	void Initialize(const QuaternionTransform& transform, const std::string& filePath);
+	void Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailcamera);
 	// 更新
 	void Update() override;
 	// 描画

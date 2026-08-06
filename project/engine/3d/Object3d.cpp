@@ -36,6 +36,9 @@ void Object3d::Initialize(Object3dCommon* object3dManager)
 	// Transform変数を作る
 	cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+	// オフセットを初期化
+	offset_ = { 0.0f,0.0f,0.0f };
 }
 
 void Object3d::CreateTransformMatrixData3d()
@@ -118,6 +121,7 @@ void Object3d::SetModel(const std::string& filePath)
 
 void Object3d::Update()
 {
+	transform.translate = Vector3Add(transform.translate, offset_);
 	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 
@@ -133,6 +137,13 @@ void Object3d::Update()
 	if (camera)
 	{
 		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
+
+		if (isRailCamera_)
+		{
+			Matrix4x4 cameraMatrix = camera->GetWorldMatrix();
+			worldMatrix = Multiply(worldMatrix, cameraMatrix);
+		}
+
 		worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 	}
 	else

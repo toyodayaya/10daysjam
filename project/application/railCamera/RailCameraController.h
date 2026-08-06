@@ -32,6 +32,10 @@ private:
 	// カメラの制御点
 	std::vector<Vector3> railPoints_;
 
+	// 線形補間用の変数
+	float t = 0.0f;
+	const float offset_ = 0.001f;
+
 #ifdef _DEBUG
 	// デバッグ描画
 	std::vector<std::unique_ptr<DebugDraw>> debugPoint_;

@@ -83,6 +83,8 @@ public:
 	void SetCamera(Camera* camera) { this->camera = camera; }
 	void SetEnvironmentMapTextureFilePath(const std::string& filePath) { environmentMapTextureFilePath = filePath; }
 	void SetParent(Object3d* parent) { this->parent = parent; }
+	void SetIsRailCamera(bool isRailCamera) { this->isRailCamera_ = isRailCamera; }
+	void SetOffset(const Vector3& offset) { this->offset_ = offset; }
 
 	// getter
 	const Vector3& GetScale() const { return transform.scale; }
@@ -128,5 +130,10 @@ private:
 
 	// 当たり判定用のAABB
 	AABB aabb_;
+
+	// レールカメラかどうか判定するフラグ
+	bool isRailCamera_;
+	// レールカメラ時のオフセット
+	Vector3 offset_;
 };
 

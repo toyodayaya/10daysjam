@@ -3,7 +3,7 @@
 #include "ModelManager.h"
 #include "StageManager.h"
 #include "StageData.h"
-#include "Object3dCommon.h"
+#include "SkyboxCommon.h"
 
 void TitleScene::Initialize()
 {
@@ -13,6 +13,8 @@ void TitleScene::Initialize()
 	// objファイルからモデルを読み込む
 	ModelManager::GetInstance()->LoadModel("resources/player", "player.obj", Model::AnimationType::kNone);
 	ModelManager::GetInstance()->LoadModel("resources/enemy", "enemy.obj", Model::AnimationType::kNone);
+	// テクスチャの読み込み
+	TextureManager::GetInstance()->LoadTexture("resources/model/rostock_laage_airport_4k.dds");
 	
 	// ステージを読み込む
 	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");
@@ -22,7 +24,9 @@ void TitleScene::Initialize()
 	// ステージを作成する
 	stageData_->CreateStage("1.json");
 
-	// お試しプッシュ
+	// Skyboxの初期化
+	skybox = std::make_unique<Skybox>();
+	skybox->Initialize(SkyboxCommon::GetInstance(), "resources/model/rostock_laage_airport_4k.dds");
 }
 
 void TitleScene::Finalize()
@@ -37,10 +41,16 @@ void TitleScene::Update()
 
 	// 全ての当たり判定を走査
 	stageData_->CheckAllCollision();
+
+	// Skyboxの更新処理
+	skybox->Update();
 }
 
 void TitleScene::Draw()
 {
 	// ステージを描画
 	stageData_->Draw();
+
+	// Skyboxの描画
+	skybox->Draw();
 }

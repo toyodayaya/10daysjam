@@ -529,5 +529,43 @@ namespace MathManager
 
 	}
 
+	Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m)
+	{
+		Vector3 ret;
+		ret = {
+			v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0],
+			v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1],
+			v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]
+		};
+		return ret;
+	}
+
+	Quaternion QTransformNormal(const Quaternion& q, const Matrix4x4& m)
+	{
+		Quaternion ret;
+		ret = {
+			q.x * m.m[0][0] + q.y * m.m[1][0] + q.z * m.m[2][0],
+			q.x * m.m[0][1] + q.y * m.m[1][1] + q.z * m.m[2][1],
+			q.x * m.m[0][2] + q.y * m.m[1][2] + q.z * m.m[2][2],
+			0.0f
+		};
+		return ret;
+	}
+
+	Vector3 RotateVector(const Vector3& v, const Quaternion& q)
+	{
+		// ベクトルを純粋四元数に変換
+		Quaternion p(v.x, v.y, v.z, 0.0f);
+
+		// q*を作成
+		Quaternion q_conj(-q.x, -q.y, -q.z, q.w);
+
+		// q * p * q* を計算
+		Quaternion result = QuaternionMultiply(QuaternionMultiply(q, p), q_conj);
+
+		// 実数部を捨ててベクトル部分を返す
+		return Vector3(result.x, result.y, result.z);
+	}
+
 
 }

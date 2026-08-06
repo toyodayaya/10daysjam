@@ -435,7 +435,7 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 void StageData::CreatePlayer(const PlayerSpawnData& playerData)
 {
 	std::unique_ptr<Player> player = std::make_unique<Player>();
-	player->Initialize(playerData.transform, playerData.filePath);
+	player->Initialize(playerData.transform, playerData.filePath,true);
 
 	// コライダーがあれば生成、配置
 	if (playerData.collider.hasCollier)

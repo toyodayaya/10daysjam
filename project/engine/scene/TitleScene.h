@@ -1,15 +1,7 @@
-
 #pragma once
-#include "Audio.h"
-#include "Sprite.h"
 #include "Skybox.h"
-#include "Object3d.h"
-#include <numbers>
 #include "BaseScene.h"
-#include "Input.h"
-#include "SceneManager.h"
 #include <memory>
-#include <random>
 #include "StageData.h"
 
 class TitleScene : public BaseScene
@@ -27,5 +19,7 @@ public:
 private:
 	// ステージデータ
 	StageData* stageData_ = nullptr;
+	// skybox
+	std::unique_ptr<Skybox> skybox;
 
 };

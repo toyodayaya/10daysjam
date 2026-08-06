@@ -6,7 +6,7 @@
 #include "ImGuiManager.h"
 #include "Input.h"
 
-void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath)
+void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailCamera)
 {
 	// オブジェクトの初期化
 	object3d = std::make_unique<Object3d>();
@@ -14,6 +14,8 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	object3d->SetModel(filePath);
 	object3d->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 	object3d->SetTransform(transform);
+	object3d->SetIsRailCamera(isRailCamera);
+	object3d->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
 	transform_ = transform;
 	isHit_ = false;
 }

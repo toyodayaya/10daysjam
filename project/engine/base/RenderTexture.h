@@ -133,7 +133,6 @@ private:
 	// 経過時間
 	Microsoft::WRL::ComPtr <ID3D12Resource> materialTimeResource_;
 	MaterialTime* timeData_ = nullptr;
-	const float kDeltaTime = 1.0f / 60.0f;
 
 	// 各シェーダーのPSO
 	// normal

@@ -2,6 +2,8 @@
 #ifdef _DEBUG
 #include "DebugDrawCommon.h"
 #endif // _DEBUG
+#include "MathManager.h"
+using namespace MathManager;
 
 void RailCameraController::Initialize(const QuaternionTransform& transform)
 {
@@ -51,11 +53,34 @@ void RailCameraController::Initialize(const QuaternionTransform& transform)
 
 void RailCameraController::Update()
 {
-	// カメラを移動
-	//transform_.translate.x += 1.0f;
+	// カメラの座標を求める
+	t += 0.001f;
+	Vector3 pos = CatmullRomPosition(railPoints_, t);
+	transform_.translate = pos;
 
+	// カメラの角度を求める
+	float targetT = t + offset_;
+	Vector3 target = CatmullRomPosition(railPoints_, targetT);
+	Vector3 forward = Vector3Subtract(target,pos);
+	forward = Normalize(forward);
+	// Y軸周り角度
+	transform_.rotate.y = std::atan2(forward.x, forward.z);
+	float horizontalLength =
+		std::sqrt(
+			forward.x * forward.x +
+			forward.z * forward.z
+		);
+
+	// X軸回転（Pitch）
+	transform_.rotate.x =
+		-std::atan2(
+			forward.y,
+			horizontalLength
+		);
+
+	transform_.rotate.z = 0.0f;
 	// カメラに反映
-	camera_->SetTranslate(transform_.translate);
+	camera_->SetTransform(transform_);
 
 #ifdef _DEBUG
 	// デバッグ描画の更新

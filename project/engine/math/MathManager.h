@@ -142,4 +142,13 @@ namespace MathManager
 	// catmull-rom曲線での座標計算
 	Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t);
 
+	// ベクトル変換
+	Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
+	Quaternion QTransformNormal(const Quaternion& q, const Matrix4x4& m);
+
+	// ベクトルをQuaternionで回転させる
+	Vector3 RotateVector(const Vector3& v, const Quaternion& q);
+
+	const float kDeltaTime = 1.0f / 60.0f;
+
 }
