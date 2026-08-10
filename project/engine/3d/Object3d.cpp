@@ -121,7 +121,10 @@ void Object3d::SetModel(const std::string& filePath)
 
 void Object3d::Update()
 {
-	transform.translate = Vector3Add(transform.translate, offset_);
+	if (isRailCamera_)
+	{
+		transform.translate = Vector3Add(transform.translate, offset_);
+	}
 	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 

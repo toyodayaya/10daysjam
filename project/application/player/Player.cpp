@@ -5,6 +5,7 @@
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 #include "Input.h"
+#include "BulletManager.h"
 
 void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailCamera)
 {
@@ -22,6 +23,11 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 
 void Player::Update()
 {
+	// キー入力で弾を生成
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE))
+	{
+		CreateBullet();
+	}
 
 	// キー入力でプレイヤーを移動させる
 	if (Input::GetInstance()->PushKey(DIK_A))
@@ -64,4 +70,12 @@ void Player::Finalize()
 void Player::OnCollision()
 {
 	isHit_ = true;
+}
+
+void Player::CreateBullet()
+{
+	// 生成と初期化
+	std::unique_ptr<Bullet> bullet = std::make_unique<Bullet>();
+	bullet->Initialize(transform_, filePath);
+	BulletManager::GetInstance()->SetBullets(std::move(bullet));
 }

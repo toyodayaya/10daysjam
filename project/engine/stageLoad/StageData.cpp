@@ -8,6 +8,7 @@
 #include "ModelManager.h"
 #include "EventManager.h"
 #include "EnemyManager.h"
+#include "BulletManager.h"
 #include "CollisionManager.h"
 #include "MathManager.h"
 #include <numbers>
@@ -40,6 +41,9 @@ void StageData::Update()
 
 	// 敵の更新処理
 	EnemyManager::GetInstance()->Update();
+
+	// 弾の更新処理
+	BulletManager::GetInstance()->Update();
 
 	// イベントの更新処理
 	EventManager::GetInstance()->Update();
@@ -77,6 +81,9 @@ void StageData::Draw()
 	// 敵の描画処理
 	EnemyManager::GetInstance()->Draw();
 
+	// 弾の描画処理
+	BulletManager::GetInstance()->Draw();
+
 	// イベントの描画処理
 	EventManager::GetInstance()->Draw();
 
@@ -97,14 +104,14 @@ void StageData::Draw()
 void StageData::CheckAllCollision()
 {
 	// 登録された当たり判定データを走査
-	for (auto& colliders : colliders_)
+	for (auto& colliders : CollisionManager::GetInstance()->GetColliders())
 	{
 		// 判定用のAABBを作成
 		QuaternionTransform transform = colliders.parent->GetTransform();
 		transform.translate = Vector3Add(colliders.center, transform.translate);
 		AABB colliderAABB = CollisionManager::GetInstance()->MakeAABB(transform.translate, colliders.size);
 
-		for (auto& collidersHit : colliders_)
+		for (auto& collidersHit : CollisionManager::GetInstance()->GetColliders())
 		{
 			// 同一オブジェクトもしくは同一タイプの場合はスキップ
 			if (colliders.objectType == collidersHit.objectType)
@@ -427,6 +434,8 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 		playerSpawnData.collider.hasCollier = false;
 	}
 
+	playerSpawnData.hasBullet = true;
+
 	return playerSpawnData;
 }
 
@@ -435,7 +444,7 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 void StageData::CreatePlayer(const PlayerSpawnData& playerData)
 {
 	std::unique_ptr<Player> player = std::make_unique<Player>();
-	player->Initialize(playerData.transform, playerData.filePath,true);
+	player->Initialize(playerData.transform, playerData.filePath, true);
 
 	// コライダーがあれば生成、配置
 	if (playerData.collider.hasCollier)
@@ -546,8 +555,7 @@ void StageData::CreateCollider(const ColliderSpawnData& collider, BaseCharacter*
 #endif // _DEBUG
 	ColliderSpawnData colliders = collider;
 	colliders.parent = parent;
-	colliders_.push_back(colliders);
-
+	CollisionManager::GetInstance()->SetColliders(colliders);
 }
 
 StageData::EventSpawnData StageData::LoadEvent(nlohmann::json& event)

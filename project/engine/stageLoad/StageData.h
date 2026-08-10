@@ -4,6 +4,7 @@
 #include "Object3d.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "Bullet.h"
 #include "ChangePostEffectEvent.h"
 #include "RailCameraController.h"
 #include <string>
@@ -20,6 +21,7 @@ class StageManager;
 class StageData
 {
 public:
+
 	// コライダーの生成データ
 	struct ColliderSpawnData
 	{
@@ -45,6 +47,7 @@ public:
 		QuaternionTransform transform;
 		std::string filePath;
 		ColliderSpawnData collider;
+		bool hasBullet;
 	};
 
 	// 敵の生成データ
@@ -54,6 +57,7 @@ public:
 		std::string filePath;
 		ColliderSpawnData collider;
 	};
+
 
 	// イベントの生成データ
 	struct EventSpawnData
@@ -86,11 +90,11 @@ public:
 		CameraData cameraData;
 	};
 
-	
+
 public:
-	
+
 	// 初期化
-	void Initialize(const std::string& directoryPath, const std::string& filePath,StageManager* stageManager);
+	void Initialize(const std::string& directoryPath, const std::string& filePath, StageManager* stageManager);
 
 	// 更新
 	void Update();
@@ -125,7 +129,7 @@ public:
 	// コライダー読み込みの関数
 	ColliderSpawnData LoadCollider(nlohmann::json& collider);
 	// コライダー生成の関数
-	void CreateCollider(const ColliderSpawnData& colliderData,BaseCharacter* parent);
+	void CreateCollider(const ColliderSpawnData& colliderData, BaseCharacter* parent);
 	// イベントデータ読み込みの関数
 	EventSpawnData LoadEvent(nlohmann::json& event);
 	// イベント生成の関数
@@ -151,7 +155,6 @@ private:
 	// プレイヤーデータ
 	std::vector<std::unique_ptr<Player>> players_;
 	// コライダーデータ
-	std::vector<ColliderSpawnData> colliders_;
 	// 制御点データ
 	std::vector<Vector3> railPoints_;
 	std::unique_ptr<RailCameraController> railCamera_;

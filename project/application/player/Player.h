@@ -2,6 +2,7 @@
 #include "Object3d.h"
 #include <memory>
 #include "BaseCharacter.h"
+#include "Bullet.h"
 
 class Player : public BaseCharacter
 {
@@ -18,6 +19,9 @@ public:
 	// 衝突応答
 	void OnCollision() override;
 
+	// 弾の生成処理
+	void CreateBullet();
+
 	// getter
 	Object3d* GetObject3d() { return object3d.get(); }
 
@@ -26,5 +30,7 @@ private:
 	std::unique_ptr<Object3d> object3d;
 	// 当たり判定フラグ
 	bool isHit_;
+	// ファイル名
+	std::string filePath = "cube.obj";
 };
 
