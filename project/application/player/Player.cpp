@@ -34,6 +34,25 @@ void Player::Update()
 	{
 		transform_.translate.x -= 0.1f;
 	}
+	else if (Input::GetInstance()->PushKey(DIK_D))
+	{
+		transform_.translate.x += 0.1f;
+	}
+	else if (Input::GetInstance()->PushKey(DIK_S))
+	{
+		transform_.translate.y -= 0.1f;
+	}
+	else if (Input::GetInstance()->PushKey(DIK_W))
+	{
+		transform_.translate.y += 0.1f;
+	}
+
+	// 範囲を超えない処理
+	transform_.translate.x = max(transform_.translate.x, -kMoveLimitX_);
+	transform_.translate.x = std::min(transform_.translate.x, +kMoveLimitX_);
+	transform_.translate.y = max(transform_.translate.y, -kMoveLimitY_);
+	transform_.translate.y = std::min(transform_.translate.y, +kMoveLimitY_);
+
 
 	object3d->SetTranslate(transform_.translate);
 
@@ -74,8 +93,13 @@ void Player::OnCollision()
 
 void Player::CreateBullet()
 {
+	// 速度を算出
+	Vector3 velocity(0.0f, 0.0f, kBulletSpeed_);
+	Matrix4x4 world = MakeAffineMatrixQuat(transform_.scale, transform_.rotate, transform_.translate);
+	velocity = TransformNormal(velocity, world);
+
 	// 生成と初期化
 	std::unique_ptr<Bullet> bullet = std::make_unique<Bullet>();
-	bullet->Initialize(transform_, filePath);
+	bullet->Initialize(transform_, filePath,velocity);
 	BulletManager::GetInstance()->SetBullets(std::move(bullet));
 }

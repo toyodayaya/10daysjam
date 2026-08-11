@@ -15,6 +15,17 @@ BulletManager* BulletManager::GetInstance()
 
 void BulletManager::Update()
 {
+	// デスフラグが立った弾を削除
+	bullets_.erase(std::remove_if(bullets_.begin(), bullets_.end(), []
+	(const std::unique_ptr<BaseBullet>& bullet)
+		{
+			return bullet->IsDead();
+		}
+	),
+		bullets_.end()
+	);
+
+
 	// 登録された敵を更新
 	for (const std::unique_ptr<BaseBullet>& bullet : bullets_)
 	{

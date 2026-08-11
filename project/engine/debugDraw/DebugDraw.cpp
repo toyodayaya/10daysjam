@@ -40,6 +40,8 @@ void DebugDraw::Initialize(DebugDrawCommon* debugDrawCommon, std::string texture
 
 	// 単位行列を書き込んでおく
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+	// オフセットを初期化
+	offset_ = { 0.0f,0.0f,0.0f };
 }
 
 void DebugDraw::CreateVertexData()
@@ -207,12 +209,23 @@ void DebugDraw::CreateCameraResource()
 
 void DebugDraw::Update()
 {
+	if (isRailCamera_)
+	{
+		transform.translate = Vector3Add(transform.translate, offset_);
+	}
 	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 
 	if (camera)
 	{
 		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
+
+		if (isRailCamera_)
+		{
+			Matrix4x4 cameraMatrix = camera->GetWorldMatrix();
+			worldMatrix = Multiply(worldMatrix, cameraMatrix);
+		}
+
 		worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 	}
 	else
@@ -243,12 +256,23 @@ void DebugDraw::Update()
 
 void DebugDraw::UpdateLine()
 {
+	if (isRailCamera_)
+	{
+		transform.translate = Vector3Add(transform.translate, offset_);
+	}
 	Matrix4x4 worldMatrix = MakeIdentity4x4();
 	Matrix4x4 worldViewProjectionMatrix;
 
 	if (camera)
 	{
 		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
+
+		if (isRailCamera_)
+		{
+			Matrix4x4 cameraMatrix = camera->GetWorldMatrix();
+			worldMatrix = Multiply(worldMatrix, cameraMatrix);
+		}
+
 		worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 	}
 	else
@@ -264,6 +288,10 @@ void DebugDraw::UpdateLine()
 
 void DebugDraw::UpdateBox()
 {
+	if (isRailCamera_)
+	{
+		transformBox.translate = Vector3Add(transformBox.translate, offset_);
+	}
 	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transformBox.scale, transformBox.rotate, transformBox.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 
@@ -277,6 +305,13 @@ void DebugDraw::UpdateBox()
 	if (camera)
 	{
 		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
+
+		if (isRailCamera_)
+		{
+			Matrix4x4 cameraMatrix = camera->GetWorldMatrix();
+			worldMatrix = Multiply(worldMatrix, cameraMatrix);
+		}
+
 		worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 	}
 	else

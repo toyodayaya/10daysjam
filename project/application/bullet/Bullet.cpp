@@ -7,7 +7,7 @@
 #include "DebugDrawCommon.h"
 #endif // _DEBUG
 
-void Bullet::Initialize(const QuaternionTransform& transform, const std::string& filePath)
+void Bullet::Initialize(const QuaternionTransform& transform, const std::string& filePath, const Vector3& velocity)
 {
 	// 3Dオブジェクトを初期化
 	object3d_ = std::make_unique<Object3d>();
@@ -16,14 +16,19 @@ void Bullet::Initialize(const QuaternionTransform& transform, const std::string&
 	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 	object3d_->SetTransform(transform);
 	object3d_->SetIsRailCamera(true);
-	object3d_->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
+	object3d_->SetOffset(Vector3(0.0f, 0.0f, 10.0f));
+	velocity_ = velocity;
+	transform_ = transform;
 	// コライダーを生成
 #ifdef _DEBUG
 // デバッグ描画用の箱を初期化、生成
-	std::unique_ptr<DebugDraw> debugDraw = std::make_unique<DebugDraw>();
+	debugDraw = std::make_unique<DebugDraw>();
 	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
 	debugDraw->SetBoxScale(transform.scale);
 	debugDraw->SetBoxTranslate(transform.translate);
+	debugDraw->SetRotate(transform.rotate);
+	debugDraw->SetIsRailCamera(true);
+	debugDraw->SetOffset(Vector3(0.0f, 0.0f, 10.0f));
 
 #endif // _DEBUG
 	StageData::ColliderSpawnData colliders;
@@ -38,12 +43,33 @@ void Bullet::Finalize()
 
 void Bullet::Update()
 {
+	// 生存時間を更新
+	currentTime_ += kDeltaTime;
+
+	// 生存時間を過ぎたら削除
+	if (currentTime_ >= kLifeTime_)
+	{
+		isDead_ = true;
+	}
+
+	// 座標を更新
+	transform_.translate = Vector3Add(transform_.translate, velocity_);
+	object3d_->SetTranslate(transform_.translate);
 	object3d_->Update();
+
+#ifdef _DEBUG
+	debugDraw->SetBoxTranslate(transform_.translate);
+	debugDraw->UpdateBox();
+#endif // _DEBUG
+
 }
 
 void Bullet::Draw()
 {
 	object3d_->Draw();
+#ifdef _DEBUG
+	debugDraw->DrawBox();
+#endif // _DEBUG
 }
 
 void Bullet::OnCollision()

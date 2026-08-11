@@ -32,5 +32,10 @@ private:
 	bool isHit_;
 	// ファイル名
 	std::string filePath = "cube.obj";
+	// 弾の速度
+	const float kBulletSpeed_ = 1.0f;
+	// 移動限界
+	const float kMoveLimitX_ = 2.0f;
+	const float kMoveLimitY_ = 2.0f;
 };
 

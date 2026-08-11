@@ -102,6 +102,8 @@ public:
 	void SetCamera(Camera* camera) { this->camera = camera; }
 	void SetMatrix(const Matrix4x4& matrix) { transformationData->World = matrix; }
 	void SetParent(BaseCharacter* parent) { this->parent = parent; }
+	void SetIsRailCamera(bool isRailCamera) { this->isRailCamera_ = isRailCamera; }
+	void SetOffset(const Vector3& offset) { this->offset_ = offset; }
 
 	// getter
 	const Vector3& GetScale() const { return transform.scale; }
@@ -182,4 +184,8 @@ private:
 
 	// 親オブジェクト
 	BaseCharacter* parent;
+	// レールカメラかどうか判定するフラグ
+	bool isRailCamera_;
+	// レールカメラ時のオフセット
+	Vector3 offset_;
 };
