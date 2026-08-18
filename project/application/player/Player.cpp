@@ -1,5 +1,7 @@
 #include "Player.h"
 #include "Object3dCommon.h"
+#include "SpriteCommon.h"
+#include "TextureManager.h"
 #include "ModelManager.h"
 #include "Model.h"
 #include "TextureManager.h"
@@ -19,6 +21,23 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	object3d->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
 	transform_ = transform;
 	isHit_ = false;
+
+	// 3Dレティクルオブジェクトの初期化
+	reticle_ = std::make_unique<Object3d>();
+	reticle_->Initialize(Object3dCommon::GetInstance());
+	reticle_->SetModel(filePath_);
+	reticle_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
+	reticle_->SetTransform(transform);
+	reticle_->SetIsRailCamera(isRailCamera);
+	reticle_->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
+	reticleTransform_ = transform_;
+
+	// 3Dレティクルスプライトの初期化
+	TextureManager::GetInstance()->LoadTexture("resources/sprite/circle.png");
+	reticleSprite_ = std::make_unique<Sprite>();
+	reticleSprite_->Initialize(SpriteCommon::GetInstance(), spriteFilePath_);
+	reticleSprite_->SetAnchorPoint(Vector2{ 0.5f,0.5f });
+	reticleSprite_->SetSize(Vector2{ 64.0f,64.0f });
 }
 
 void Player::Update()
@@ -59,6 +78,9 @@ void Player::Update()
 	// 3Dオブジェクトを更新
 	object3d->Update();
 
+	// 3Dレティクルを更新
+	UpdateReticle();
+
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
 	QuaternionTransform transform = object3d->GetTransform();
@@ -81,6 +103,7 @@ void Player::Draw()
 	}
 
 	object3d->Draw();
+	reticleSprite_->Draw();
 }
 
 void Player::Finalize()
@@ -94,12 +117,46 @@ void Player::OnCollision()
 void Player::CreateBullet()
 {
 	// 速度を算出
-	Vector3 velocity(0.0f, 0.0f, kBulletSpeed_);
-	Matrix4x4 world = MakeAffineMatrixQuat(transform_.scale, transform_.rotate, transform_.translate);
-	velocity = TransformNormal(velocity, world);
+	Vector3 velocity = Vector3Subtract(reticleTransform_.translate, transform_.translate);
+	velocity = FloatMultiply(Normalize(velocity), kBulletSpeed_);
 
 	// 生成と初期化
 	std::unique_ptr<Bullet> bullet = std::make_unique<Bullet>();
-	bullet->Initialize(transform_, filePath,velocity);
+	bullet->Initialize(transform_, filePath_, velocity);
 	BulletManager::GetInstance()->SetBullets(std::move(bullet));
+}
+
+void Player::UpdateReticle()
+{
+	// 自機のワールド行列の回転を適用
+	Matrix4x4 world = MakeAffineMatrixQuat(transform_.scale, transform_.rotate, transform_.translate);
+	offset_ = TransformNormal(offset_, world);
+	// ベクトルの長さを整える
+	offset_ = FloatMultiply(Normalize(offset_), kDistance_);
+	// 3Dレティクルの位置を決定
+	reticleTransform_.translate = Vector3Add(transform_.translate, offset_);
+	reticle_->SetTransform(reticleTransform_);
+
+	// 3Dオブジェクトの更新
+	reticle_->Update();
+
+	// スプライトのレティクルに座標設定
+	Vector3 translate = Project(Vector3{0.0f,0.0f,0.0f}, 0.0f, 0.0f, 1280.0f, 720.0f, reticle_->GetWorldViewProjection());
+	spriteTranslate_ = { translate.x,translate.y };
+
+	reticleSprite_->SetPosition(spriteTranslate_);
+
+	// スプライトの更新
+	reticleSprite_->Update();
+#ifdef USE_IMGUI
+	ImGui::Begin("Reticle");
+	ImGui::DragFloat2("pos", &translate.x);
+	ImGui::DragFloat2("pos", &spriteTranslate_.x);
+	ImGui::DragFloat3("pos", &reticleTransform_.translate.x);
+
+
+	ImGui::End();
+
+#endif // USE_IMGUI
+
 }

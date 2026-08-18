@@ -200,6 +200,16 @@ namespace MathManager
 		return ret;
 	}
 
+	Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth)
+	{
+		Matrix4x4 ret;
+		ret.m[0][0] = width / 2.0f; ret.m[0][1] = 0.0f; ret.m[0][2] = 0.0f; ret.m[0][3] = 0.0f;
+		ret.m[1][0] = 0.0f; ret.m[1][1] = -1.0f * (height / 2); ret.m[1][2] = 0.0f; ret.m[1][3] = 0.0f;
+		ret.m[2][0] = 0.0f; ret.m[2][1] = 0.0f; ret.m[2][2] = maxDepth - minDepth; ret.m[2][3] = 0.0f;
+		ret.m[3][0] = left + (width / 2.0f); ret.m[3][1] = top + (height / 2.0f); ret.m[3][2] = minDepth; ret.m[3][3] = 1.0f;
+		return ret;
+	}
+
 
 	Matrix4x4 Transpose(const Matrix4x4& m)
 	{
@@ -565,6 +575,24 @@ namespace MathManager
 
 		// 実数部を捨ててベクトル部分を返す
 		return Vector3(result.x, result.y, result.z);
+	}
+
+	Vector3 Project(const Vector3& worldPos, float viewportX, float viewportY, 
+		float viewportWidth, float viewportHeight, const Matrix4x4& viewProjection)
+	{
+		Vector3 ret;
+
+		// ビューポート行列
+		Matrix4x4 matViewport = MakeViewportMatrix(viewportX, viewportY, viewportWidth, viewportHeight, 0, 1);
+
+		// ビュー行列とプロジェクション行列、ビューポート行列を合成する
+		Matrix4x4 matViewProjectionMatrix = Multiply(viewProjection, matViewport);
+
+		// ワールド→スクリーン座標変換
+		ret = Transform(worldPos, matViewProjectionMatrix);
+
+		return ret;
+
 	}
 
 

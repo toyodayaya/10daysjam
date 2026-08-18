@@ -72,7 +72,7 @@ void Sprite::CreateMaterialData()
 	// 赤色に設定
 	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	// Lightingするのでtrueに設定
-	materialData->enableLighting = true;
+	materialData->enableLighting = false;
 	// UVTransform行列を単位行列で初期化
 	materialData->uvTransform = MakeIdentity4x4();
 	// 光沢度

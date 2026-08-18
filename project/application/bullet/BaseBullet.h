@@ -1,6 +1,10 @@
 #pragma once
 #include "Object3d.h"
 #include "BaseCharacter.h"
+#ifdef _DEBUG
+#include "DebugDraw.h"
+#include "DebugDrawCommon.h"
+#endif // _DEBUG
 
 class BaseBullet : public BaseCharacter
 {
@@ -22,6 +26,9 @@ protected:
 	const float kLifeTime_ = 5;
 	// デスフラグ
 	bool isDead_ = false;
+#ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;
+#endif // _DEBUG
+
 };
 

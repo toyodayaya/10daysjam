@@ -1,5 +1,6 @@
 #pragma once
 #include "Object3d.h"
+#include "Sprite.h"
 #include <memory>
 #include "BaseCharacter.h"
 #include "Bullet.h"
@@ -22,6 +23,9 @@ public:
 	// 弾の生成処理
 	void CreateBullet();
 
+	// 3Dレティクルの更新処理
+	void UpdateReticle();
+
 	// getter
 	Object3d* GetObject3d() { return object3d.get(); }
 
@@ -31,11 +35,24 @@ private:
 	// 当たり判定フラグ
 	bool isHit_;
 	// ファイル名
-	std::string filePath = "cube.obj";
+	std::string filePath_ = "cube.obj";
+	std::string spriteFilePath_ = "resources/sprite/circle.png";
 	// 弾の速度
 	const float kBulletSpeed_ = 1.0f;
 	// 移動限界
-	const float kMoveLimitX_ = 2.0f;
-	const float kMoveLimitY_ = 2.0f;
+	const float kMoveLimitX_ = 7.0f;
+	const float kMoveLimitY_ = 4.0f;
+	// 3Dレティクルオブジェクト
+	std::unique_ptr<Object3d> reticle_;
+	// 3Dレティクルのワールドトランスフォーム
+	QuaternionTransform reticleTransform_;
+	// 自機から3Dレティクルまでの距離
+	const float kDistance_ = 5.0f;
+	// 自機から3Dレティクルへのオフセット
+	Vector3 offset_ = { 0.0f,0.0f,5.0f };
+	// 3Dレティクル用のスプライト
+	std::unique_ptr<Sprite> reticleSprite_;
+	// スプライトの座標
+	Vector2 spriteTranslate_;
 };
 

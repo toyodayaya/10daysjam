@@ -92,7 +92,9 @@ public:
 	const Vector3& GetTranslate() const { return transform.translate; }
 	const QuaternionTransform& GetTransform() const { return transform; }
 	Model* GetModel() const { return model; }
-
+	Camera* GetCamera() const { return camera; }
+	const Matrix4x4& GetWorldViewProjection() const { return worldViewProjectionMatrix; }
+	const Matrix4x4& GetViewProjection() const { return viewProjectionMatrix; }
 private:
 	// ポインタ
 	Object3dCommon* object3dManager = nullptr;
@@ -135,5 +137,9 @@ private:
 	bool isRailCamera_;
 	// レールカメラ時のオフセット
 	Vector3 offset_;
+
+	Matrix4x4 worldViewProjectionMatrix;
+	Matrix4x4 viewProjectionMatrix;
+
 };
 

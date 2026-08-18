@@ -89,10 +89,13 @@ namespace MathManager
 	// 正射影行列
 	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
 
+	// ビューポート変換行列
+	Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
+
 	// 逆行列
 	Matrix4x4 Inverse(const Matrix4x4& m);
 
-	// 5.転置行列
+	// 転置行列
 	Matrix4x4 Transpose(const Matrix4x4& m);
 
 	// Vector3の掛け算
@@ -148,6 +151,10 @@ namespace MathManager
 
 	// ベクトルをQuaternionで回転させる
 	Vector3 RotateVector(const Vector3& v, const Quaternion& q);
+
+	// ワールドスクリーン変換関数
+	Vector3 Project(const Vector3& worldPos, float viewportX, float viewportY, 
+		float viewportWidth, float viewportHeight, const Matrix4x4& viewProjection);
 
 	const float kDeltaTime = 1.0f / 60.0f;
 

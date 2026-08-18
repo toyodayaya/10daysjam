@@ -126,7 +126,6 @@ void Object3d::Update()
 		transform.translate = Vector3Add(transform.translate, offset_);
 	}
 	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
-	Matrix4x4 worldViewProjectionMatrix;
 
 	// モデルを更新
 	model->Update(worldMatrix);
@@ -139,7 +138,7 @@ void Object3d::Update()
 
 	if (camera)
 	{
-		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
+		viewProjectionMatrix = camera->GetViewProjectionMatrix();
 
 		if (isRailCamera_)
 		{
