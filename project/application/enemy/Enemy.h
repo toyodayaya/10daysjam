@@ -15,7 +15,12 @@ public:
 	// 衝突応答
 	void OnCollision() override;
 
+	// getter
+	Vector3 GetTranslate() { return translate; }
+
+
 private:
-	
+	// 座標
+	Vector3 translate;
 };
 

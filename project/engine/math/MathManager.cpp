@@ -595,5 +595,16 @@ namespace MathManager
 
 	}
 
+	float Distance(const Vector2& v1, const Vector2& v2)
+	{
+		float ret;
+		
+		float targetX = v1.x - v2.x;
+		float targetY = v1.y - v2.y;
+		ret = sqrtf(targetX * targetX + targetY * targetY);
+
+		return ret;
+	}
+
 
 }

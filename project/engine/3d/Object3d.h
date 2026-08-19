@@ -62,7 +62,7 @@ public:
 	void Update();
 	// 描画
 	void Draw();
-	
+
 	// 座標変換行列データ作成
 	void CreateTransformMatrixData3d();
 	// 平行光源データ作成
@@ -95,17 +95,25 @@ public:
 	Camera* GetCamera() const { return camera; }
 	const Matrix4x4& GetWorldViewProjection() const { return worldViewProjectionMatrix; }
 	const Matrix4x4& GetViewProjection() const { return viewProjectionMatrix; }
+	Vector3 GetWorldTranslate(){ return {
+			worldMatrix.m[3][0],
+			worldMatrix.m[3][1],
+			worldMatrix.m[3][2]
+		};
+	}
+	const Matrix4x4& GetViewMatrix() const { return camera->GetViewMatrix(); }
+
 private:
 	// ポインタ
 	Object3dCommon* object3dManager = nullptr;
 	DirectXBasis* dxBasis_;
 	Model* model = nullptr;
 	Camera* camera = nullptr;
-	
+
 	// WVP用のリソースを作る
 	Microsoft::WRL::ComPtr <ID3D12Resource> transformationResource;
 	// データを書き込む
-    TransformationMatrix* transformationData = nullptr;
+	TransformationMatrix* transformationData = nullptr;
 	// 平行光源リソース
 	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResource;
 	// データを書き込む
@@ -140,6 +148,6 @@ private:
 
 	Matrix4x4 worldViewProjectionMatrix;
 	Matrix4x4 viewProjectionMatrix;
-
+	Matrix4x4 worldMatrix;
 };
 

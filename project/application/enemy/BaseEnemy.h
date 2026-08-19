@@ -8,6 +8,9 @@ public:
 	// 初期化
 	virtual void Initialize(const QuaternionTransform& transform, const std::string& filePath) = 0;
 
+	// getter
+	Object3d* GetObject3d() { return object3d_.get(); }
+
 protected:
 	// モデルオブジェクト
 	std::unique_ptr<Object3d> object3d_;

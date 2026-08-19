@@ -32,6 +32,8 @@ void StageData::Update()
 	{
 		object3d->Update();
 	}
+	// 敵の更新処理
+	EnemyManager::GetInstance()->Update();
 
 	// プレイヤーの更新処理
 	for (const std::unique_ptr<Player>& player : players_)
@@ -39,8 +41,6 @@ void StageData::Update()
 		player->Update();
 	}
 
-	// 敵の更新処理
-	EnemyManager::GetInstance()->Update();
 
 	// 弾の更新処理
 	BulletManager::GetInstance()->Update();

@@ -5,9 +5,10 @@
 #ifdef _DEBUG
 #include "DebugDraw.h"
 #include "DebugDrawCommon.h"
+
 #endif // _DEBUG
 
-void Bullet::Initialize(const QuaternionTransform& transform, const std::string& filePath, const Vector3& velocity)
+void Bullet::Initialize(const QuaternionTransform& transform, const std::string& filePath, const Vector3& velocity, bool isRailCamera)
 {
 	// 3Dオブジェクトを初期化
 	object3d_ = std::make_unique<Object3d>();
@@ -15,7 +16,7 @@ void Bullet::Initialize(const QuaternionTransform& transform, const std::string&
 	object3d_->SetModel(filePath);
 	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 	object3d_->SetTransform(transform);
-	object3d_->SetIsRailCamera(true);
+	object3d_->SetIsRailCamera(isRailCamera);
 	object3d_->SetOffset(Vector3(0.0f, 0.0f, 10.0f));
 	velocity_ = velocity;
 	transform_ = transform;
@@ -27,7 +28,7 @@ void Bullet::Initialize(const QuaternionTransform& transform, const std::string&
 	debugDraw->SetBoxScale(transform.scale);
 	debugDraw->SetBoxTranslate(transform.translate);
 	debugDraw->SetRotate(transform.rotate);
-	debugDraw->SetIsRailCamera(true);
+	debugDraw->SetIsRailCamera(isRailCamera);
 	debugDraw->SetOffset(Vector3(0.0f, 0.0f, 10.0f));
 
 #endif // _DEBUG
@@ -69,7 +70,10 @@ void Bullet::Draw()
 	object3d_->Draw();
 #ifdef _DEBUG
 	debugDraw->DrawBox();
+
 #endif // _DEBUG
+
+
 }
 
 void Bullet::OnCollision()

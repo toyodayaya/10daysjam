@@ -42,6 +42,8 @@ public:
 
 	// setter
 	void SetEnemies(std::unique_ptr<BaseEnemy> enemy) { enemies_.push_back(std::move(enemy)); }
+	// getter
+	const std::vector<std::unique_ptr<BaseEnemy>>& GetEnemies() { return enemies_; }
 
 	// インスタンス
 	static EnemyManager* GetInstance();

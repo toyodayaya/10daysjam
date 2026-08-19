@@ -4,6 +4,7 @@
 #include <memory>
 #include "BaseCharacter.h"
 #include "Bullet.h"
+#include "LockOn.h"
 
 class Player : public BaseCharacter
 {
@@ -50,9 +51,12 @@ private:
 	const float kDistance_ = 5.0f;
 	// 自機から3Dレティクルへのオフセット
 	Vector3 offset_ = { 0.0f,0.0f,5.0f };
-	// 3Dレティクル用のスプライト
-	std::unique_ptr<Sprite> reticleSprite_;
-	// スプライトの座標
-	Vector2 spriteTranslate_;
+	// ロックオンのポインタ
+	std::unique_ptr<LockOn> lockOn_;
+
+	Vector3 velocity;
+	Vector3 targetPosition;
+	bool isRailCamera;
+
 };
 

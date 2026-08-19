@@ -10,7 +10,7 @@ class BaseBullet : public BaseCharacter
 {
 public:
 	// 初期化
-	virtual void Initialize(const QuaternionTransform& transform, const std::string& filePath,const Vector3& velocity) = 0;
+	virtual void Initialize(const QuaternionTransform& transform, const std::string& filePath,const Vector3& velocity, bool isRailCamera) = 0;
 	// getter
 	bool IsDead() { return isDead_; }
 

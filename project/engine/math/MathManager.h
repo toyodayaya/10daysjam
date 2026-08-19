@@ -156,6 +156,9 @@ namespace MathManager
 	Vector3 Project(const Vector3& worldPos, float viewportX, float viewportY, 
 		float viewportWidth, float viewportHeight, const Matrix4x4& viewProjection);
 
+	// スクリーン座標同士の距離を算出
+	float Distance(const Vector2& v1,const Vector2& v2);
+
 	const float kDeltaTime = 1.0f / 60.0f;
 
 }

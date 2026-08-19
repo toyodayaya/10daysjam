@@ -9,6 +9,7 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	object3d_->SetModel(filePath);
 	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 	object3d_->SetTransform(transform);
+	translate = transform.translate;
 }
 
 void Enemy::Finalize()

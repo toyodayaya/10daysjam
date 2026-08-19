@@ -125,7 +125,7 @@ void Object3d::Update()
 	{
 		transform.translate = Vector3Add(transform.translate, offset_);
 	}
-	Matrix4x4 worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
+	worldMatrix = MakeAffineMatrixQuat(transform.scale, transform.rotate, transform.translate);
 
 	// モデルを更新
 	model->Update(worldMatrix);

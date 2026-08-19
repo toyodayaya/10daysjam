@@ -1,7 +1,5 @@
 #include "Player.h"
 #include "Object3dCommon.h"
-#include "SpriteCommon.h"
-#include "TextureManager.h"
 #include "ModelManager.h"
 #include "Model.h"
 #include "TextureManager.h"
@@ -32,12 +30,9 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	reticle_->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
 	reticleTransform_ = transform_;
 
-	// 3Dレティクルスプライトの初期化
-	TextureManager::GetInstance()->LoadTexture("resources/sprite/circle.png");
-	reticleSprite_ = std::make_unique<Sprite>();
-	reticleSprite_->Initialize(SpriteCommon::GetInstance(), spriteFilePath_);
-	reticleSprite_->SetAnchorPoint(Vector2{ 0.5f,0.5f });
-	reticleSprite_->SetSize(Vector2{ 64.0f,64.0f });
+	// ロックオンマークを初期化
+	lockOn_ = std::make_unique<LockOn>();
+	lockOn_->Initialize();
 }
 
 void Player::Update()
@@ -81,12 +76,17 @@ void Player::Update()
 	// 3Dレティクルを更新
 	UpdateReticle();
 
+	// ロックオンマークを更新
+	lockOn_->Update();
+
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
 	QuaternionTransform transform = object3d->GetTransform();
 	ImGui::DragFloat3("pos", &transform.translate.x);
 	ImGui::DragFloat3("scale", &transform.scale.x);
 	ImGui::DragFloat4("rotate", &transform.rotate.x);
+	ImGui::DragFloat3("velocity", &velocity.x);
+	ImGui::DragFloat3("target", &targetPosition.x);
 
 	ImGui::End();
 
@@ -97,13 +97,13 @@ void Player::Update()
 void Player::Draw()
 {
 	// 当たっていたら非表示にする
-	if (isHit_)
+	/*if (isHit_)
 	{
 		return;
-	}
+	}*/
 
 	object3d->Draw();
-	reticleSprite_->Draw();
+	lockOn_->Draw();
 }
 
 void Player::Finalize()
@@ -116,14 +116,30 @@ void Player::OnCollision()
 
 void Player::CreateBullet()
 {
+	
+	if (lockOn_->GetTarget())
+	{
+		targetPosition = lockOn_->GetTarget()->GetObject3d()->GetWorldTranslate();
+	}
+	else
+	{
+		targetPosition = reticleTransform_.translate;
+	}
+
+	velocity = Vector3Subtract(targetPosition,transform_.translate);
+
+	velocity = Normalize(velocity);
+
+	isRailCamera = true;
+
 	// 速度を算出
-	Vector3 velocity = Vector3Subtract(reticleTransform_.translate, transform_.translate);
-	velocity = FloatMultiply(Normalize(velocity), kBulletSpeed_);
+	velocity = FloatMultiply(velocity, kBulletSpeed_);
 
 	// 生成と初期化
 	std::unique_ptr<Bullet> bullet = std::make_unique<Bullet>();
-	bullet->Initialize(transform_, filePath_, velocity);
+	bullet->Initialize(transform_, filePath_, velocity,isRailCamera);
 	BulletManager::GetInstance()->SetBullets(std::move(bullet));
+
 }
 
 void Player::UpdateReticle()
@@ -141,22 +157,6 @@ void Player::UpdateReticle()
 	reticle_->Update();
 
 	// スプライトのレティクルに座標設定
-	Vector3 translate = Project(Vector3{0.0f,0.0f,0.0f}, 0.0f, 0.0f, 1280.0f, 720.0f, reticle_->GetWorldViewProjection());
-	spriteTranslate_ = { translate.x,translate.y };
-
-	reticleSprite_->SetPosition(spriteTranslate_);
-
-	// スプライトの更新
-	reticleSprite_->Update();
-#ifdef USE_IMGUI
-	ImGui::Begin("Reticle");
-	ImGui::DragFloat2("pos", &translate.x);
-	ImGui::DragFloat2("pos", &spriteTranslate_.x);
-	ImGui::DragFloat3("pos", &reticleTransform_.translate.x);
-
-
-	ImGui::End();
-
-#endif // USE_IMGUI
+	lockOn_->LockOnTarget(reticle_);
 
 }
