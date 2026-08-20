@@ -102,6 +102,8 @@ public:
 		};
 	}
 	const Matrix4x4& GetViewMatrix() const { return camera->GetViewMatrix(); }
+	const Vector3& GetOffset() const { return offset_; }
+	const bool& IsRailCamera() const { return isRailCamera_; }
 
 private:
 	// ポインタ

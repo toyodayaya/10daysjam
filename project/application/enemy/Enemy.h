@@ -16,11 +16,10 @@ public:
 	void OnCollision() override;
 
 	// getter
-	Vector3 GetTranslate() { return translate; }
+	Vector3 GetTranslate() { return transform_.translate; }
 
 
 private:
-	// 座標
-	Vector3 translate;
+
 };
 

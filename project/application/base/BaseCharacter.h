@@ -1,12 +1,18 @@
 #pragma once
+#include <memory>
 #include "MathManager.h"
 using namespace MathManager;
+
+class Object3d;
 
 class BaseCharacter
 {
 public:
 	// getter
 	QuaternionTransform GetTransform() { return transform_; }
+	bool IsDead() { return isDead_; }
+	Object3d* GetObject3d() { return object3d_.get(); }
+
 	
 	// 更新
 	virtual void Update() = 0;
@@ -23,5 +29,9 @@ public:
 
 protected:
 	QuaternionTransform transform_;
+	// デスフラグ
+	bool isDead_ = false;
+	// 3dオブジェクト
+	std::unique_ptr<Object3d> object3d_;
 };
 

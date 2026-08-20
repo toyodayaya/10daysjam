@@ -7,7 +7,7 @@
             "transform": {
                 "translation": [
                     4.076245307922363,
-                    1.0054539442062378,
+                    11.306800842285156,
                     5.903861999511719
                 ],
                 "rotation": [
@@ -29,7 +29,7 @@
             "transform": {
                 "translation": [
                     0.0,
-                    -3.9825940132141113,
+                    -5.415197849273682,
                     0.0
                 ],
                 "rotation": [
@@ -51,7 +51,7 @@
             "transform": {
                 "translation": [
                     0.0,
-                    0.0,
+                    -1.7401202917099,
                     0.0
                 ],
                 "rotation": [
@@ -66,15 +66,28 @@
                     1.0
                 ]
             },
-            "file_name": "player.obj"
+            "file_name": "player.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         },
         {
             "type": "EnemySpawn",
             "name": "EnemySpawn",
             "transform": {
                 "translation": [
-                    5.373508930206299,
-                    9.691479682922363,
+                    2.5247466564178467,
+                    19.74399185180664,
                     0.0
                 ],
                 "rotation": [
@@ -89,16 +102,29 @@
                     1.0
                 ]
             },
-            "file_name": "enemy.obj"
+            "file_name": "enemy.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         },
         {
             "type": "EnemySpawn",
             "name": "EnemySpawn.001",
             "transform": {
                 "translation": [
-                    -7.668158531188965,
-                    10.333442687988281,
-                    0.048569440841674805
+                    -4.583085060119629,
+                    18.019243240356445,
+                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -112,16 +138,29 @@
                     1.0
                 ]
             },
-            "file_name": "enemy.obj"
+            "file_name": "enemy.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         },
         {
             "type": "EnemySpawn",
             "name": "EnemySpawn.002",
             "transform": {
                 "translation": [
-                    -0.6767435669898987,
-                    9.798656463623047,
-                    -1.6235555410385132
+                    1.9659565687179565,
+                    8.84407901763916,
+                    -0.020090341567993164
                 ],
                 "rotation": [
                     0.0,
@@ -135,53 +174,20 @@
                     1.0
                 ]
             },
-            "file_name": "enemy.obj"
-        },
-        {
-            "type": "EnemySpawn",
-            "name": "EnemySpawn.003",
-            "transform": {
-                "translation": [
+            "file_name": "enemy.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
                     0.0,
-                    34.774169921875,
+                    0.0,
                     0.0
                 ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "scaling": [
+                "size": [
                     1.0,
                     1.0,
                     1.0
                 ]
-            },
-            "file_name": "enemy.obj"
-        },
-        {
-            "type": "EnemySpawn",
-            "name": "EnemySpawn.004",
-            "transform": {
-                "translation": [
-                    -5.4500885009765625,
-                    22.764225006103516,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "file_name": "enemy.obj"
+            }
         }
     ],
     "rails": [
@@ -193,8 +199,8 @@
                     "name": "RailPoint",
                     "transform": {
                         "translation": [
-                            0.0,
-                            0.0,
+                            -1.089972734451294,
+                            2.179882287979126,
                             0.0
                         ],
                         "rotation": [
@@ -215,8 +221,8 @@
                     "name": "RailPoint.001",
                     "transform": {
                         "translation": [
-                            0.0,
-                            2.7213447093963623,
+                            0.5109109282493591,
+                            6.094357013702393,
                             0.0
                         ],
                         "rotation": [
@@ -237,9 +243,9 @@
                     "name": "RailPoint.002",
                     "transform": {
                         "translation": [
-                            -1.6581010818481445,
-                            6.821137428283691,
-                            -0.4971339702606201
+                            -0.5244333744049072,
+                            9.380233764648438,
+                            0.0
                         ],
                         "rotation": [
                             0.0,
@@ -259,8 +265,8 @@
                     "name": "RailPoint.003",
                     "transform": {
                         "translation": [
-                            0.0,
-                            11.967316627502441,
+                            0.7958595752716064,
+                            11.964709281921387,
                             0.0
                         ],
                         "rotation": [
@@ -281,8 +287,30 @@
                     "name": "RailPoint.004",
                     "transform": {
                         "translation": [
+                            -0.6310430765151978,
+                            16.656204223632812,
+                            0.0
+                        ],
+                        "rotation": [
                             0.0,
-                            18.94438362121582,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "scaling": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "type": "RailPoint",
+                    "name": "RailPoint.005",
+                    "transform": {
+                        "translation": [
+                            0.0,
+                            21.5375919342041,
                             0.0
                         ],
                         "rotation": [

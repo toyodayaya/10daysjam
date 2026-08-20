@@ -15,6 +15,16 @@ EnemyManager* EnemyManager::GetInstance()
 
 void EnemyManager::Update()
 {
+	// デスフラグが立った弾を削除
+	enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(), []
+	(const std::unique_ptr<BaseEnemy>& enemy)
+		{
+			return enemy->IsDead();
+		}
+	),
+		enemies_.end()
+	);
+
 	// 登録された敵を更新
 	for (const std::unique_ptr<BaseEnemy>& enemy : enemies_)
 	{

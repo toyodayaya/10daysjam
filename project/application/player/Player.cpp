@@ -10,13 +10,13 @@
 void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailCamera)
 {
 	// オブジェクトの初期化
-	object3d = std::make_unique<Object3d>();
-	object3d->Initialize(Object3dCommon::GetInstance());
-	object3d->SetModel(filePath);
-	object3d->SetEnvironmentMapTextureFilePath("resources/human/white.png");
-	object3d->SetTransform(transform);
-	object3d->SetIsRailCamera(isRailCamera);
-	object3d->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Initialize(Object3dCommon::GetInstance());
+	object3d_->SetModel(filePath);
+	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
+	object3d_->SetTransform(transform);
+	object3d_->SetIsRailCamera(isRailCamera);
+	object3d_->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
 	transform_ = transform;
 	isHit_ = false;
 
@@ -68,10 +68,10 @@ void Player::Update()
 	transform_.translate.y = std::min(transform_.translate.y, +kMoveLimitY_);
 
 
-	object3d->SetTranslate(transform_.translate);
+	object3d_->SetTranslate(transform_.translate);
 
 	// 3Dオブジェクトを更新
-	object3d->Update();
+	object3d_->Update();
 
 	// 3Dレティクルを更新
 	UpdateReticle();
@@ -81,7 +81,7 @@ void Player::Update()
 
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
-	QuaternionTransform transform = object3d->GetTransform();
+	QuaternionTransform transform = object3d_->GetTransform();
 	ImGui::DragFloat3("pos", &transform.translate.x);
 	ImGui::DragFloat3("scale", &transform.scale.x);
 	ImGui::DragFloat4("rotate", &transform.rotate.x);
@@ -97,12 +97,12 @@ void Player::Update()
 void Player::Draw()
 {
 	// 当たっていたら非表示にする
-	/*if (isHit_)
+	if (isHit_)
 	{
 		return;
-	}*/
+	}
 
-	object3d->Draw();
+	object3d_->Draw();
 	lockOn_->Draw();
 }
 

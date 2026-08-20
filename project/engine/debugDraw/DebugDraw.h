@@ -109,7 +109,7 @@ public:
 	const Vector3& GetScale() const { return transform.scale; }
 	const Quaternion& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
-
+	BaseCharacter* GetParent() { return parent; }
 	
 	
 private:

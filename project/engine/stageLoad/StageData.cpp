@@ -55,9 +55,16 @@ void StageData::Update()
 	}
 
 #ifdef _DEBUG
+	
 	// デバッグ更新
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
+		if (debugBox->GetParent()->IsDead())
+		{
+			return;
+		}
+
+
 		debugBox->UpdateBox();
 	}
 #endif // _DEBUG
@@ -96,6 +103,10 @@ void StageData::Draw()
 	// デバッグ描画
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
+		if (debugBox->GetParent()->IsDead())
+		{
+			return;
+		}
 		debugBox->DrawBox();
 	}
 #endif // _DEBUG
@@ -106,6 +117,12 @@ void StageData::CheckAllCollision()
 	// 登録された当たり判定データを走査
 	for (auto& colliders : CollisionManager::GetInstance()->GetColliders())
 	{
+		// デスフラグが立っていたらスキップ
+		if (colliders.parent->IsDead())
+		{
+			continue;
+		}
+
 		// 判定用のAABBを作成
 		QuaternionTransform transform = colliders.parent->GetTransform();
 		transform.translate = Vector3Add(colliders.center, transform.translate);
@@ -115,6 +132,12 @@ void StageData::CheckAllCollision()
 		{
 			// 同一オブジェクトもしくは同一タイプの場合はスキップ
 			if (colliders.objectType == collidersHit.objectType)
+			{
+				continue;
+			}
+
+			// デスフラグが立っていたらスキップ
+			if (colliders.parent->IsDead())
 			{
 				continue;
 			}
@@ -546,6 +569,7 @@ void StageData::CreateCollider(const ColliderSpawnData& collider, BaseCharacter*
 	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
 	debugDraw->SetBoxScale(collider.size);
 	debugDraw->SetBoxTranslate(collider.center);
+	debugDraw->SetIsRailCamera(parent->GetObject3d()->IsRailCamera());
 
 	// 親オブジェクトがあればセット
 	debugDraw->SetParent(parent);

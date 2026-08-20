@@ -288,6 +288,7 @@ void DebugDraw::UpdateLine()
 
 void DebugDraw::UpdateBox()
 {
+	
 	if (isRailCamera_)
 	{
 		transformBox.translate = Vector3Add(transformBox.translate, offset_);
@@ -298,7 +299,7 @@ void DebugDraw::UpdateBox()
 	if (parent)
 	{
 		// 親オブジェクトのTransformをかける
-		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetTransform().scale, parent->GetTransform().rotate, parent->GetTransform().translate);
+		Matrix4x4 parentWorldMatrix = MakeAffineMatrixQuat(parent->GetObject3d()->GetTransform().scale, parent->GetObject3d()->GetTransform().rotate, parent->GetObject3d()->GetTransform().translate);
 		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
 	}
 

@@ -27,12 +27,9 @@ public:
 	// 3Dレティクルの更新処理
 	void UpdateReticle();
 
-	// getter
-	Object3d* GetObject3d() { return object3d.get(); }
-
+	
 private:
-	// 3dオブジェクト
-	std::unique_ptr<Object3d> object3d;
+	
 	// 当たり判定フラグ
 	bool isHit_;
 	// ファイル名

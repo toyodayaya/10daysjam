@@ -33,9 +33,10 @@ void Bullet::Initialize(const QuaternionTransform& transform, const std::string&
 
 #endif // _DEBUG
 	StageData::ColliderSpawnData colliders;
-	colliders.center = transform.translate;
+	colliders.center = Vector3{ 0.0f,0.0f,0.0f };
 	colliders.size = transform.scale;
 	colliders.parent = this;
+	colliders.objectType = "PlayerSpawn";
 	CollisionManager::GetInstance()->SetColliders(colliders);
 }
 
@@ -77,4 +78,6 @@ void Bullet::Draw()
 }
 
 void Bullet::OnCollision()
-{}
+{
+	isDead_ = true;
+}
