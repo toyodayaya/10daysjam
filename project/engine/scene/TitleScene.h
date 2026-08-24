@@ -1,5 +1,5 @@
 #pragma once
-#include "Skybox.h"
+#include "Skydome.h"
 #include "BaseScene.h"
 #include <memory>
 #include "StageData.h"
@@ -20,6 +20,7 @@ private:
 	// ステージデータ
 	StageData* stageData_ = nullptr;
 	// skybox
-	std::unique_ptr<Skybox> skybox;
+	std::unique_ptr<Skydome> skydome;
+	QuaternionTransform skydomeTransform;
 
 };
