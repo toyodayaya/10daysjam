@@ -6,6 +6,7 @@
 #include "ImGuiManager.h"
 #include "Input.h"
 #include "BulletManager.h"
+#include "SceneManager.h"
 
 void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailCamera)
 {
@@ -111,7 +112,7 @@ void Player::Finalize()
 
 void Player::OnCollision()
 {
-	isHit_ = true;
+	SceneManager::GetInstance()->ChangeScene("GamePlayScene");
 }
 
 void Player::CreateBullet()

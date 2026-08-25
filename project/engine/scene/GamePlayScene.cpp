@@ -14,22 +14,22 @@ using namespace MathManager;
 void GamePlayScene::Initialize()
 {
 	// 音声読み込み
-	soundData1 = Audio::GetInstance()->SoundLoadFile("resources/fanfare.mp3");
+	//soundData1 = Audio::GetInstance()->SoundLoadFile("resources/fanfare.mp3");
 
-	// スプライトの初期化
-	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
-	TextureManager::GetInstance()->LoadTexture("resources/circle.png");
-	for (uint32_t i = 0; i < 5; ++i)
-	{
-		std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();
-		sprite->Initialize(SpriteCommon::GetInstance(), "resources/uvChecker.png");
-		sprites.push_back(std::move(sprite));
-	}
+	//// スプライトの初期化
+	//TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+	//TextureManager::GetInstance()->LoadTexture("resources/circle.png");
+	//for (uint32_t i = 0; i < 5; ++i)
+	//{
+	//	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();
+	//	sprite->Initialize(SpriteCommon::GetInstance(), "resources/uvChecker.png");
+	//	sprites.push_back(std::move(sprite));
+	//}
 
-	// objファイルからモデルを読み込む
-	ModelManager::GetInstance()->LoadModel("resources/model", "plane.obj", Model::AnimationType::kNone);
-	ModelManager::GetInstance()->LoadModel("resources/model", "axis.obj", Model::AnimationType::kNone);
-	ModelManager::GetInstance()->LoadModel("resources/model", "fence.obj", Model::AnimationType::kNone);
+	//// objファイルからモデルを読み込む
+	//ModelManager::GetInstance()->LoadModel("resources/model", "plane.obj", Model::AnimationType::kNone);
+	//ModelManager::GetInstance()->LoadModel("resources/model", "axis.obj", Model::AnimationType::kNone);
+	//ModelManager::GetInstance()->LoadModel("resources/model", "fence.obj", Model::AnimationType::kNone);
 
 	//// 3Dオブジェクトの初期化
 	//for (uint32_t i = 0; i < 1; ++i)
@@ -61,13 +61,13 @@ void GamePlayScene::Initialize()
 	//emitter = std::make_unique <ParticleEmitter>("Particle", transform,velocity,color,lifeTime,currentTime,0.5f,2);*/
 
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
+	//Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
 }
 
 void GamePlayScene::Finalize()
 {
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
-	Audio::GetInstance()->SoundUnload(&soundData1);
+	/*Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
+	Audio::GetInstance()->SoundUnload(&soundData1);*/
 }
 
 void GamePlayScene::Update()
@@ -80,13 +80,13 @@ void GamePlayScene::Update()
 	}*/
 
 	// スプライトの更新処理
-	for (const std::unique_ptr <Sprite>& sprite : sprites)
-	{
-		sprite->Update();
-	}
+	//for (const std::unique_ptr <Sprite>& sprite : sprites)
+	//{
+	//	sprite->Update();
+	//}
 
-	// パーティクルの更新処理
-	emitter->Update();
+	//// パーティクルの更新処理
+	//emitter->Update();
 }
 
 void GamePlayScene::Draw()
@@ -101,11 +101,11 @@ void GamePlayScene::Draw()
 
 
 	// Spriteの描画
-	for (const std::unique_ptr <Sprite>& sprite : sprites)
-	{
-		//sprite->Draw();
-	}
+	//for (const std::unique_ptr <Sprite>& sprite : sprites)
+	//{
+	//	//sprite->Draw();
+	//}
 
-	// パーティクルの描画
-	ParticleManager::GetInstance()->Draw();
+	//// パーティクルの描画
+	//ParticleManager::GetInstance()->Draw();
 }

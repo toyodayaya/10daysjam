@@ -159,8 +159,44 @@
             "transform": {
                 "translation": [
                     1.9659565687179565,
-                    8.84407901763916,
+                    12.476332664489746,
                     -0.020090341567993164
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "enemy.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "type": "EnemySpawn",
+            "name": "EnemySpawn.003",
+            "transform": {
+                "translation": [
+                    0.0,
+                    29.432674407958984,
+                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -311,6 +347,28 @@
                         "translation": [
                             0.0,
                             21.5375919342041,
+                            0.0
+                        ],
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "scaling": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "type": "RailPoint",
+                    "name": "RailPoint.006",
+                    "transform": {
+                        "translation": [
+                            0.0,
+                            34.409576416015625,
                             0.0
                         ],
                         "rotation": [

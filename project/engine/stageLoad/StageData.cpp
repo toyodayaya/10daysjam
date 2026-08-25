@@ -124,9 +124,9 @@ void StageData::CheckAllCollision()
 		}
 
 		// 判定用のAABBを作成
-		QuaternionTransform transform = colliders.parent->GetTransform();
-		transform.translate = Vector3Add(colliders.center, transform.translate);
-		AABB colliderAABB = CollisionManager::GetInstance()->MakeAABB(transform.translate, colliders.size);
+		Vector3 translate = colliders.parent->GetObject3d()->GetWorldTranslate();
+		translate = Vector3Add(colliders.center, translate);
+		AABB colliderAABB = CollisionManager::GetInstance()->MakeAABB(translate, colliders.size);
 
 		for (auto& collidersHit : CollisionManager::GetInstance()->GetColliders())
 		{
@@ -137,15 +137,15 @@ void StageData::CheckAllCollision()
 			}
 
 			// デスフラグが立っていたらスキップ
-			if (colliders.parent->IsDead())
+			if (colliders.parent->IsDead() || collidersHit.parent->IsDead())
 			{
 				continue;
 			}
 
 			// 判定用のAABBを作成
-			QuaternionTransform transformHit = collidersHit.parent->GetTransform();
-			transformHit.translate = Vector3Add(collidersHit.center, transformHit.translate);
-			AABB colliderHitAABB = CollisionManager::GetInstance()->MakeAABB(transformHit.translate, collidersHit.size);
+			Vector3 translateHit = collidersHit.parent->GetObject3d()->GetTranslate();
+			translateHit = Vector3Add(collidersHit.center, translateHit);
+			AABB colliderHitAABB = CollisionManager::GetInstance()->MakeAABB(translateHit, collidersHit.size);
 
 			// 判定
 			if (CollisionManager::GetInstance()->IsCollision(colliderAABB, colliderHitAABB))
