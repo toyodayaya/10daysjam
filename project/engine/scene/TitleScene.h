@@ -1,8 +1,5 @@
 #pragma once
-#include "Skydome.h"
 #include "BaseScene.h"
-#include <memory>
-#include "StageData.h"
 
 class TitleScene : public BaseScene
 {
@@ -17,10 +14,5 @@ public:
 	void Draw() override;
 
 private:
-	// ステージデータ
-	StageData* stageData_ = nullptr;
-	// skybox
-	std::unique_ptr<Skydome> skydome;
-	QuaternionTransform skydomeTransform;
 
 };

@@ -9,6 +9,7 @@ void RailCameraController::Initialize(const QuaternionTransform& transform)
 {
 	// 引数で受け取ってメンバ変数として記録
 	transform_ = transform;
+	t = 0.0f;
 
 #ifdef _DEBUG
 	// デバッグ描画を初期化
@@ -74,6 +75,7 @@ void RailCameraController::Update()
 
 	// カメラに反映
 	camera_->SetTransform(transform_);
+	camera_->Update();
 
 #ifdef _DEBUG
 	// デバッグ描画の更新

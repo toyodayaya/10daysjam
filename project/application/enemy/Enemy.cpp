@@ -10,10 +10,13 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 	object3d_->SetTransform(transform);
 	transform_ = transform;
+	isDead_ = false;
 }
 
 void Enemy::Finalize()
-{}
+{
+	
+}
 
 void Enemy::Update()
 {

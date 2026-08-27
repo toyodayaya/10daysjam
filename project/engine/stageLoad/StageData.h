@@ -108,6 +108,9 @@ public:
 	// 終了
 	void Finalize();
 
+	// ステージをクリア
+	void ClearStage();
+
 	// Jsonファイル読み込み
 	LevelData LoadJsonFile(const std::string& directoryPath, const std::string& fileName);
 

@@ -38,10 +38,14 @@ void Bullet::Initialize(const QuaternionTransform& transform, const std::string&
 	colliders.parent = this;
 	colliders.objectType = "PlayerSpawn";
 	CollisionManager::GetInstance()->SetColliders(colliders);
+
+	isDead_ = false;
 }
 
 void Bullet::Finalize()
-{}
+{
+
+}
 
 void Bullet::Update()
 {

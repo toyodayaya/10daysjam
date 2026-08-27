@@ -13,6 +13,7 @@
 #include "MathManager.h"
 #include <numbers>
 using namespace MathManager;
+#include "Logger.h"
 
 void StageData::Initialize(const std::string& directoryPath, const std::string& filePath, StageManager* stageManager)
 {
@@ -27,11 +28,18 @@ void StageData::Initialize(const std::string& directoryPath, const std::string& 
 
 void StageData::Update()
 {
+	// レールカメラの更新処理
+	if (levelData_.railPoints.size() != 0)
+	{
+		railCamera_->Update();
+	}
+
 	// 3Dモデルの更新処理
 	for (const std::unique_ptr<Object3d>& object3d : object3ds)
 	{
 		object3d->Update();
 	}
+
 	// 敵の更新処理
 	EnemyManager::GetInstance()->Update();
 
@@ -48,14 +56,9 @@ void StageData::Update()
 	// イベントの更新処理
 	EventManager::GetInstance()->Update();
 
-	// レールカメラの更新処理
-	if (levelData_.railPoints.size() != 0)
-	{
-		railCamera_->Update();
-	}
 
 #ifdef _DEBUG
-	
+
 	// デバッグ更新
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
@@ -105,8 +108,9 @@ void StageData::Draw()
 	{
 		if (debugBox->GetParent()->IsDead())
 		{
-			return;
+			continue;
 		}
+
 		debugBox->DrawBox();
 	}
 #endif // _DEBUG
@@ -128,6 +132,7 @@ void StageData::CheckAllCollision()
 		translate = Vector3Add(colliders.center, translate);
 		AABB colliderAABB = CollisionManager::GetInstance()->MakeAABB(translate, colliders.size);
 
+
 		for (auto& collidersHit : CollisionManager::GetInstance()->GetColliders())
 		{
 			// 同一オブジェクトもしくは同一タイプの場合はスキップ
@@ -143,7 +148,7 @@ void StageData::CheckAllCollision()
 			}
 
 			// 判定用のAABBを作成
-			Vector3 translateHit = collidersHit.parent->GetObject3d()->GetTranslate();
+			Vector3 translateHit = collidersHit.parent->GetObject3d()->GetWorldTranslate();
 			translateHit = Vector3Add(collidersHit.center, translateHit);
 			AABB colliderHitAABB = CollisionManager::GetInstance()->MakeAABB(translateHit, collidersHit.size);
 
@@ -157,6 +162,23 @@ void StageData::CheckAllCollision()
 
 		}
 	}
+}
+
+void StageData::ClearStage()
+{
+#ifdef _DEBUG
+	debugBoxs_.clear();
+#endif // DEBUG
+
+	object3ds.clear();
+	CollisionManager::GetInstance()->Finalize();
+	players_.clear();
+	EnemyManager::GetInstance()->Finalize();
+	BulletManager::GetInstance()->Finalize();
+	EventManager::GetInstance()->Finalize();
+	railPoints_.clear();
+
+
 }
 
 StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, const std::string& fileName)
@@ -283,6 +305,7 @@ StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, c
 
 void StageData::CreateStage(const std::string& fileName)
 {
+
 	// レベルデータ格納用の変数を宣言
 	LevelData levelData;
 
@@ -467,6 +490,13 @@ StageData::PlayerSpawnData StageData::LoadPlayer(nlohmann::json& player)
 void StageData::CreatePlayer(const PlayerSpawnData& playerData)
 {
 	std::unique_ptr<Player> player = std::make_unique<Player>();
+	Logger::Log(std::format(
+		"[CreatePlayer] player = {}, pos = ({}, {}, {})",
+		static_cast<void*>(player.get()),
+		playerData.transform.translate.x,
+		playerData.transform.translate.y,
+		playerData.transform.translate.z
+	));
 	player->Initialize(playerData.transform, playerData.filePath, true);
 
 	// コライダーがあれば生成、配置
@@ -523,6 +553,13 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 void StageData::CreateEnemy(const EnemySpawnData& enemyData)
 {
 	std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>();
+	Logger::Log(std::format(
+		"[CreateEnemy] enemy = {}, pos = ({}, {}, {})",
+		static_cast<void*>(enemy.get()),
+		enemyData.transform.translate.x,
+		enemyData.transform.translate.y,
+		enemyData.transform.translate.z
+	));
 	enemy->Initialize(enemyData.transform, enemyData.filePath);
 
 	// コライダーがあれば生成、配置

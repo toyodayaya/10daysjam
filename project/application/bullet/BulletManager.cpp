@@ -45,10 +45,7 @@ void BulletManager::Draw()
 void BulletManager::Finalize()
 {
 	// 登録された敵を終了
-	for (const std::unique_ptr<BaseBullet>& bullet : bullets_)
-	{
-		bullet->Finalize();
-	}
+	bullets_.clear();
 
 	// インスタンスを解放
 	instance.reset();

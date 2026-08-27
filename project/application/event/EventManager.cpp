@@ -34,10 +34,7 @@ void EventManager::Draw()
 void EventManager::Finalize()
 {
 	// 登録されたイベントを解放
-	for (const std::unique_ptr<BaseEvent>& event : events_)
-	{
-		event->Finalize();
-	}
+	events_.clear();
 
 	// インスタンスを解放
 	instance.reset();

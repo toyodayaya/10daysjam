@@ -44,5 +44,7 @@ public:
 	void SetColliders(StageData::ColliderSpawnData collider) { colliders_.push_back(collider); }
 	// インスタンス
 	static CollisionManager* GetInstance();
+	// 終了
+	void Finalize();
 };
 

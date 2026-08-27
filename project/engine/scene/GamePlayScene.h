@@ -1,12 +1,8 @@
 #pragma once
-#include "Audio.h"
-#include "Sprite.h"
-#include "Object3d.h"
-#include "ParticleEmitter.h"
-#include <numbers>
+#include "Skydome.h"
 #include "BaseScene.h"
 #include <memory>
-#include <random>
+#include "StageData.h"
 
 class GamePlayScene : public BaseScene
 {
@@ -21,19 +17,11 @@ public:
 	void Draw() override;
 
 private:
-	// サウンドデータ
-	Audio::SoundData soundData1;
+	// ステージデータ
+	StageData* stageData_ = nullptr;
+	// skybox
+	std::unique_ptr<Skydome> skydome;
+	QuaternionTransform skydomeTransform;
 
-	// スプライト
-	std::vector<std::unique_ptr<Sprite>> sprites;
-	// スプライト切り替えフラグ
-	bool useMonsterBall = true;
-
-	// 3dオブジェクト
-	std::vector< std::unique_ptr<Object3d>> object3ds;
-
-	// パーティクルエミッターのポインタ
-	std::unique_ptr <ParticleEmitter> emitter;
-	Vector3 randomTranslate;
 
 };

@@ -5,6 +5,7 @@
 #include "ImGuiManager.h"
 #include <numbers>
 #include "TextureManager.h"
+#include "Logger.h"
 
 using namespace MathManager;
 

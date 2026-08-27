@@ -11,6 +11,12 @@ CollisionManager* CollisionManager::GetInstance()
 	return instance.get();
 }
 
+void CollisionManager::Finalize()
+{
+	colliders_.clear();
+	instance.reset();
+}
+
 bool CollisionManager::IsCollision(const AABB& aabb, const AABB& aabbHit)
 {
 	if (aabb.min.x <= aabbHit.max.x && aabb.max.x >= aabbHit.min.x &&

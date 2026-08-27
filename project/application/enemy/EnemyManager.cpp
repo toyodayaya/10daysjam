@@ -44,10 +44,7 @@ void EnemyManager::Draw()
 void EnemyManager::Finalize()
 {
 	// 登録された敵を終了
-	for (const std::unique_ptr<BaseEnemy>& enemy : enemies_)
-	{
-		enemy->Finalize();
-	}
+	enemies_.clear();
 
 	// インスタンスを解放
 	instance.reset();

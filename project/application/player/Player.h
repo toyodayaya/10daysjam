@@ -55,5 +55,7 @@ private:
 	Vector3 targetPosition;
 	bool isRailCamera;
 
+	// HP
+	int hp_ = 2;
 };
 

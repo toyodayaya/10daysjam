@@ -1,111 +1,69 @@
-
 #include "GamePlayScene.h"
 #include "TextureManager.h"
 #include "ModelManager.h"
-#include "Object3dCommon.h"
-#include "SpriteCommon.h"
-#include "ParticleManager.h"
-#include "MathManager.h"
-#include "ParticleEmitter.h"
-#include <random>
-
-using namespace MathManager;
+#include "StageManager.h"
+#include "StageData.h"
+#include "SkyboxCommon.h"
+#include "Input.h"
+#include "SceneManager.h"
 
 void GamePlayScene::Initialize()
 {
-	// 音声読み込み
-	//soundData1 = Audio::GetInstance()->SoundLoadFile("resources/fanfare.mp3");
+	// スプライトを読み込む
+	TextureManager::GetInstance()->LoadTexture("resources/human/white.png");
+	ModelManager::GetInstance()->LoadModel("resources/skydome", "skydome.obj", Model::AnimationType::kNone);
 
-	//// スプライトの初期化
-	//TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
-	//TextureManager::GetInstance()->LoadTexture("resources/circle.png");
-	//for (uint32_t i = 0; i < 5; ++i)
-	//{
-	//	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();
-	//	sprite->Initialize(SpriteCommon::GetInstance(), "resources/uvChecker.png");
-	//	sprites.push_back(std::move(sprite));
-	//}
+	// objファイルからモデルを読み込む
+	ModelManager::GetInstance()->LoadModel("resources/player", "player.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/enemy", "enemy.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/cube", "cube.obj", Model::AnimationType::kNone);
+	// テクスチャの読み込み
+	TextureManager::GetInstance()->LoadTexture("resources/model/rostock_laage_airport_4k.dds");
 
-	//// objファイルからモデルを読み込む
-	//ModelManager::GetInstance()->LoadModel("resources/model", "plane.obj", Model::AnimationType::kNone);
-	//ModelManager::GetInstance()->LoadModel("resources/model", "axis.obj", Model::AnimationType::kNone);
-	//ModelManager::GetInstance()->LoadModel("resources/model", "fence.obj", Model::AnimationType::kNone);
+	// ステージを読み込む
+	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");
+	StageManager::GetInstance()->LoadJsonData("resources/stages", "2.json");
+	// ステージを設定する
+	stageData_ = StageManager::GetInstance()->FindJsonData("1.json");
+	// ステージを作成する
+	stageData_->CreateStage("1.json");
 
-	//// 3Dオブジェクトの初期化
-	//for (uint32_t i = 0; i < 1; ++i)
-	//{
-	//	std::unique_ptr<Object3d> object3d = std::make_unique<Object3d>();
-	//	object3d->Initialize(Object3dCommon::GetInstance());
-	//	object3d->SetModel("fence.obj");
-	//	Vector3 pos = object3d->GetTranslate();
-	//	pos.x += (1.0f * (i + 1));
-	//	object3d->SetTranslate(pos);
-	//	object3ds.push_back(std::move(object3d));
-	//}
-
-	
-
-	// パーティクルグループの作成
-	//ParticleManager::GetInstance()->CreateParticleGroup("Particle", "resources/circle.png", ParticleEmitter::Type::kNormal);
-
-	// パーティクルエミッターの宣言
-	///*EulerTransform transform;
-	//transform.translate = { 1.0f,1.0f,1.0f };
-	//transform.rotate = { 0.0f,0.0f,0.0f };
-	//transform.scale = { 1.0f,1.0f,1.0f };
-	//transform.translate = Vector3Add(transform.translate, randomTranslate);
-	//Vector3 velocity = { 0.0f,0.0f,0.0f };
-	//Vector4 color = { 0.0f,0.0f,0.0f,0.0f };
-	//float lifeTime = 0.0f;
-	//float currentTime = 0;
-	//emitter = std::make_unique <ParticleEmitter>("Particle", transform,velocity,color,lifeTime,currentTime,0.5f,2);*/
-
-	// 音声再生
-	//Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
+	// Skyboxの初期化
+	skydomeTransform.translate = { 0.0f,0.0f,0.0f };
+	skydomeTransform.scale = { 1.0f,1.0f,1.0f };
+	skydomeTransform.rotate = { 0.0f,0.0f,0.0f,1.0f };
+	skydome = std::make_unique<Skydome>();
+	skydome->Initialize(skydomeTransform, "skydome.obj");
 }
 
 void GamePlayScene::Finalize()
 {
-	/*Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), soundData1);
-	Audio::GetInstance()->SoundUnload(&soundData1);*/
+	stageData_->ClearStage();
+	stageData_ = nullptr;
 }
 
 void GamePlayScene::Update()
 {
-	// 3Dモデルの更新処理
-	/*for (const std::unique_ptr<Object3d>& object3d : object3ds)
+	// ステージを更新
+	stageData_->Update();
+
+	// 全ての当たり判定を走査
+	stageData_->CheckAllCollision();
+
+	// skydomeの更新処理
+	skydome->Update();
+
+	if (Input::GetInstance()->TriggerKey(DIK_E))
 	{
-		object3d->Update();
-
-	}*/
-
-	// スプライトの更新処理
-	//for (const std::unique_ptr <Sprite>& sprite : sprites)
-	//{
-	//	sprite->Update();
-	//}
-
-	//// パーティクルの更新処理
-	//emitter->Update();
+		SceneManager::GetInstance()->ChangeScene("TitleScene");
+	}
 }
 
 void GamePlayScene::Draw()
 {
+	// ステージを描画
+	stageData_->Draw();
 
-	// 3dモデルの描画
-	//for (const std::unique_ptr <Object3d>& object3d : object3ds)
-	//{
-	//	//object3d->Draw();
-
-	//}
-
-
-	// Spriteの描画
-	//for (const std::unique_ptr <Sprite>& sprite : sprites)
-	//{
-	//	//sprite->Draw();
-	//}
-
-	//// パーティクルの描画
-	//ParticleManager::GetInstance()->Draw();
+	// skydomeの描画
+	skydome->Draw();
 }

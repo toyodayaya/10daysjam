@@ -34,6 +34,8 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	// ロックオンマークを初期化
 	lockOn_ = std::make_unique<LockOn>();
 	lockOn_->Initialize();
+
+	isDead_ = false;
 }
 
 void Player::Update()
@@ -82,10 +84,8 @@ void Player::Update()
 
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
-	QuaternionTransform transform = object3d_->GetTransform();
-	ImGui::DragFloat3("pos", &transform.translate.x);
-	ImGui::DragFloat3("scale", &transform.scale.x);
-	ImGui::DragFloat4("rotate", &transform.rotate.x);
+	Vector3 transform = object3d_->GetWorldTranslate();
+	ImGui::DragFloat3("pos", &transform.x);
 	ImGui::DragFloat3("velocity", &velocity.x);
 	ImGui::DragFloat3("target", &targetPosition.x);
 
@@ -93,6 +93,10 @@ void Player::Update()
 
 #endif // USE_IMGUI
 
+	if (isDead_)
+	{
+		SceneManager::GetInstance()->ChangeScene("TitleScene");
+	}
 }
 
 void Player::Draw()
@@ -112,7 +116,7 @@ void Player::Finalize()
 
 void Player::OnCollision()
 {
-	SceneManager::GetInstance()->ChangeScene("GamePlayScene");
+	isDead_ = true;
 }
 
 void Player::CreateBullet()
