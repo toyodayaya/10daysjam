@@ -18,7 +18,7 @@ public:
 	// 描画
 	void Draw() override;
 	// 衝突応答
-	void OnCollision() override;
+	void OnCollision(std::string hitObjectType) override;
 
 private:
 #ifdef _DEBUG
