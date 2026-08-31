@@ -155,9 +155,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="application\bullet\BaseBullet.cpp" />
-    <ClCompile Include="application\bullet\Bullet.cpp" />
-    <ClCompile Include="application\bullet\BulletManager.cpp" />
     <ClCompile Include="application\enemy\Enemy.cpp" />
     <ClCompile Include="application\event\BaseEvent.cpp" />
     <ClCompile Include="application\event\ChangePostEffectEvent.cpp" />
@@ -182,7 +179,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\stageLoad\StageManager.cpp" />
     <ClCompile Include="engine\stageLoad\StageData.cpp" />
     <ClCompile Include="application\event\EventManager.cpp" />
-    <ClCompile Include="application\lockOn\LockOn.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
@@ -208,7 +204,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\3d\Skybox.cpp" />
     <ClCompile Include="engine\base\RenderTexture.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
-    <ClCompile Include="application\railCamera\RailCameraController.cpp" />
     <ClCompile Include="application\skydome\Skydome.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -369,9 +364,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\bullet\BaseBullet.h" />
-    <ClInclude Include="application\bullet\Bullet.h" />
-    <ClInclude Include="application\bullet\BulletManager.h" />
     <ClInclude Include="application\enemy\Enemy.h" />
     <ClInclude Include="application\event\BaseEvent.h" />
     <ClInclude Include="application\event\ChangePostEffectEvent.h" />
@@ -496,8 +488,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\stageLoad\StageManager.h" />
     <ClInclude Include="engine\stageLoad\StageData.h" />
     <ClInclude Include="application\player\Player.h" />
-    <ClInclude Include="application\railCamera\RailCameraController.h" />
-    <ClInclude Include="application\lockOn\LockOn.h" />
     <ClInclude Include="application\skydome\Skydome.h" />
   </ItemGroup>
   <ItemGroup>

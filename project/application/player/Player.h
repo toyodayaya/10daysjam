@@ -3,8 +3,6 @@
 #include "Sprite.h"
 #include <memory>
 #include "BaseCharacter.h"
-#include "Bullet.h"
-#include "LockOn.h"
 
 class Player : public BaseCharacter
 {
@@ -20,42 +18,15 @@ public:
 
 	// 衝突応答
 	void OnCollision() override;
-
-	// 弾の生成処理
-	void CreateBullet();
-
-	// 3Dレティクルの更新処理
-	void UpdateReticle();
-
-	// コミットのテスト
-	
 private:
 	
 	// 当たり判定フラグ
 	bool isHit_;
-	// ファイル名
-	std::string filePath_ = "cube.obj";
-	std::string spriteFilePath_ = "resources/sprite/circle.png";
-	// 弾の速度
-	const float kBulletSpeed_ = 1.0f;
+	
 	// 移動限界
 	const float kMoveLimitX_ = 7.0f;
 	const float kMoveLimitY_ = 4.0f;
-	// 3Dレティクルオブジェクト
-	std::unique_ptr<Object3d> reticle_;
-	// 3Dレティクルのワールドトランスフォーム
-	QuaternionTransform reticleTransform_;
-	// 自機から3Dレティクルまでの距離
-	const float kDistance_ = 5.0f;
-	// 自機から3Dレティクルへのオフセット
-	Vector3 offset_ = { 0.0f,0.0f,5.0f };
-	// ロックオンのポインタ
-	std::unique_ptr<LockOn> lockOn_;
-
-	Vector3 velocity;
-	Vector3 targetPosition;
-	bool isRailCamera;
-
+	
 	// HP
 	int hp_ = 2;
 };

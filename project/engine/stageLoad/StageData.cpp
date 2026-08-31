@@ -8,7 +8,6 @@
 #include "ModelManager.h"
 #include "EventManager.h"
 #include "EnemyManager.h"
-#include "BulletManager.h"
 #include "CollisionManager.h"
 #include "MathManager.h"
 #include <numbers>
@@ -28,12 +27,6 @@ void StageData::Initialize(const std::string& directoryPath, const std::string& 
 
 void StageData::Update()
 {
-	// レールカメラの更新処理
-	if (levelData_.railPoints.size() != 0)
-	{
-		railCamera_->Update();
-	}
-
 	// 3Dモデルの更新処理
 	for (const std::unique_ptr<Object3d>& object3d : object3ds)
 	{
@@ -48,10 +41,6 @@ void StageData::Update()
 	{
 		player->Update();
 	}
-
-
-	// 弾の更新処理
-	BulletManager::GetInstance()->Update();
 
 	// イベントの更新処理
 	EventManager::GetInstance()->Update();
@@ -91,17 +80,9 @@ void StageData::Draw()
 	// 敵の描画処理
 	EnemyManager::GetInstance()->Draw();
 
-	// 弾の描画処理
-	BulletManager::GetInstance()->Draw();
-
 	// イベントの描画処理
 	EventManager::GetInstance()->Draw();
 
-	// レールカメラの描画処理
-	if (levelData_.railPoints.size() != 0)
-	{
-		railCamera_->Draw();
-	}
 #ifdef _DEBUG
 	// デバッグ描画
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
@@ -174,11 +155,7 @@ void StageData::ClearStage()
 	CollisionManager::GetInstance()->Finalize();
 	players_.clear();
 	EnemyManager::GetInstance()->Finalize();
-	BulletManager::GetInstance()->Finalize();
 	EventManager::GetInstance()->Finalize();
-	railPoints_.clear();
-
-
 }
 
 StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, const std::string& fileName)
@@ -267,37 +244,6 @@ StageData::LevelData StageData::LoadJsonFile(const std::string& directoryPath, c
 
 	}
 
-
-	// railsの全オブジェクトを走査
-	for (nlohmann::json& rails : deserialized["rails"])
-	{
-		for (nlohmann::json& point : rails["points"])
-		{
-			// 無効化オプションがあったら
-			if (point.contains("disabled_option"))
-			{
-				// 無効か有効かを判定
-				bool disabled = point["disabled_option"].get<bool>();
-
-				if (disabled)
-				{
-					// 無効ならスキップ
-					continue;
-				}
-			}
-
-			// 種別を取得
-			std::string type = point["type"].get<std::string>();
-
-			// 制御点の読み込み
-			if (type.compare("RailPoint") == 0)
-			{
-				// 制御点データを読み込む
-				levelData.railPoints.push_back(LoadRailPoint(point));
-			}
-		}
-	}
-
 	// レベルデータを返す
 	return levelData;
 
@@ -340,12 +286,6 @@ void StageData::CreateStage(const std::string& fileName)
 	if (&levelData.cameraData)
 	{
 		SetCameraData(levelData.cameraData);
-	}
-
-	// 制御点データをセット
-	if (levelData.railPoints.size() != 0)
-	{
-		SetRailPoint(levelData.railPoints);
 	}
 }
 
@@ -702,39 +642,4 @@ void StageData::SetCameraData(CameraData& cameraData)
 
 	// カメラデータをセット
 	camera_->SetTransform(cameraData.transform);
-}
-
-StageData::RailPointData StageData::LoadRailPoint(nlohmann::json& railPoint)
-{
-	// データ格納用の変数を宣言
-	RailPointData railPointData;
-
-	// トランスフォームのパラメータ読み込み
-	nlohmann::json& transform = railPoint["transform"];
-	// 平行移動データを格納
-	railPointData.translate.x = (float)transform["translation"][0];
-	railPointData.translate.y = (float)transform["translation"][2];
-	railPointData.translate.z = (float)transform["translation"][1];
-
-	return railPointData;
-}
-
-void StageData::SetRailPoint(const std::vector<RailPointData>& railPointData)
-{
-	// レールカメラを初期化
-	railCamera_ = std::make_unique<RailCameraController>();
-
-	// レールカメラをセット
-	railCamera_->SetCamera(camera_);
-
-	for (const auto& railPoint : railPointData)
-	{
-		// 制御点データをセット
-		railPoints_.push_back(railPoint.translate);
-	}
-
-	// 制御点をセットし初期化
-	railCamera_->SetRailPoint(railPoints_);
-	railCamera_->Initialize(camera_->GetTransform());
-
 }

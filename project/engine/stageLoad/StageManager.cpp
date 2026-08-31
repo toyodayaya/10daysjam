@@ -2,7 +2,6 @@
 #include "StageData.h"
 #include "EventManager.h"
 #include "EnemyManager.h"
-#include "BulletManager.h"
 
 std::unique_ptr<StageManager> StageManager::instance = nullptr;
 
@@ -22,8 +21,6 @@ void StageManager::Finalize()
 	EventManager::GetInstance()->Finalize();
 	// 敵マネージャーの終了
 	EnemyManager::GetInstance()->Finalize();
-	// 弾マネージャーの終了
-	BulletManager::GetInstance()->Finalize();
 
 	instance.reset();
 }

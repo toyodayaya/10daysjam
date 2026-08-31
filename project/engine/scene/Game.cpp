@@ -18,7 +18,7 @@ void Game::Initialize()
 	sceneFactory = std::make_unique <SceneFactory>();
 	SceneManager::GetInstance()->SetSceneFactory(std::move(sceneFactory));
 	// シーンマネージャーに最初のシーンをセット
-	SceneManager::GetInstance()->ChangeScene("TitleScene");
+	SceneManager::GetInstance()->ChangeScene("GamePlayScene");
 }
 
 void Game::Update()
