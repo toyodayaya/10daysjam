@@ -18,7 +18,7 @@ public:
 	void Finalize() override;
 
 	// 衝突応答
-	void OnCollision() override;
+	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 
 	// 移動処理
 	void Move();
