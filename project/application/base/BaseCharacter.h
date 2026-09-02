@@ -15,6 +15,8 @@ public:
 
 	// HP加算関数
 	virtual void AddHP(const float& hp) = 0;
+	// 最大HPを設定
+	virtual void SetMaxHP(const float& hp) = 0;
 
 	
 	// 更新

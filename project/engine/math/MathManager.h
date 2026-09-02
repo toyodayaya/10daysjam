@@ -136,6 +136,7 @@ namespace MathManager
 	// 線形補間
 	Vector3 Lerp(const Vector3& start, const Vector3& end, float t);
 	Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
+	float Flerp(const float& start, const float& end, float t);
 
 	// Blenderのカメラ角対応用
 	Quaternion MakeRotateXQuaternion(float rad);

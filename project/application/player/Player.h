@@ -37,6 +37,8 @@ public:
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
+	// 最大HPを設定
+	void SetMaxHP(const float& hp) override;
 
 private:
 	

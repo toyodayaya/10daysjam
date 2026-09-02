@@ -24,12 +24,21 @@ public:
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
+	// 最大HPを設定
+	void SetMaxHP(const float& hp) override;
 
 private:
 	// 灯台の明るさ
-	float intencity = 0.0f;
+	float intencity = 10.0f;
 	// 灯台の明るさの減衰率
-	float decay = 100.0f;
+	float decay = 10.0f;
+	// 灯台の明るさの限界値
+	float maxIntencity = 10.0f;
+
+	// 接触フラグ
+	bool isHit_ = false;
+	// 線形補間用の変数
+	float t = 0.0f;
 
 #ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;

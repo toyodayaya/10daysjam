@@ -35,3 +35,6 @@ void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 
 void Enemy::AddHP(const float& hp)
 {}
+
+void Enemy::SetMaxHP(const float& hp)
+{}

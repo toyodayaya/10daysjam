@@ -175,3 +175,6 @@ void Player::Respawn() {
 
 void Player::AddHP(const float& hp)
 {}
+
+void Player::SetMaxHP(const float& hp)
+{}
