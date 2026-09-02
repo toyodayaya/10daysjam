@@ -1,16 +1,18 @@
 #pragma once
 #include "BaseEvent.h"
 #include "EventManager.h"
-
+#include "Object3dCommon.h"
+#include "Object3d.h"
+#include <memory>
 #ifdef _DEBUG
 #include "DebugDraw.h"
 #endif // _DEBUG
 
-class ChangePostEffectEvent : public BaseEvent
+class LightHouse : public BaseEvent
 {
 public:
 	// 初期化
-	void Initialize(const QuaternionTransform& transform) override;
+	void Initialize(const QuaternionTransform& transform, const std::string& filePath);
 	// 終了
 	void Finalize() override;
 	// 更新

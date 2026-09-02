@@ -4,7 +4,7 @@
 #include "Object3d.h"
 #include "Player.h"
 #include "Enemy.h"
-#include "ChangePostEffectEvent.h"
+#include "LightHouse.h"
 #include <string>
 #include <vector>
 #include <externals/nlohmannJson/Json.hpp>
@@ -61,6 +61,7 @@ public:
 	struct EventSpawnData
 	{
 		QuaternionTransform transform;
+		std::string filePath;
 		ColliderSpawnData collider;
 	};
 
