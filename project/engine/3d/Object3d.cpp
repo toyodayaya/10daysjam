@@ -163,23 +163,6 @@ void Object3d::Update()
 	{
 		cameraData_->worldPosition = camera->GetTranslate();
 	}
-	
-#ifdef USE_IMGUI
-	ImGui::Begin("SpotLight");
-	ImGui::DragFloat3("pos", &spotLightData->position.x);
-	ImGui::SliderFloat("intensity", &spotLightData->intensity, 0.0f, 10.0f);
-	ImGui::SliderFloat("cosFalloffStart", &spotLightData->cosFalloffStart, 0.0f, 2.0f);
-	ImGui::SliderFloat("cosAngle", &spotLightData->cosAngle, -1.0f, 1.0f);
-
-	if (spotLightData->cosFalloffStart < spotLightData->cosAngle)
-	{
-		spotLightData->cosAngle = spotLightData->cosFalloffStart;
-	}
-
-	ImGui::End();
-
-#endif // USE_IMGUI
-
 
 }
 

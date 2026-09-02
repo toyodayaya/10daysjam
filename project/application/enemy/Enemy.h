@@ -17,7 +17,8 @@ public:
 
 	// getter
 	Vector3 GetTranslate() { return transform_.translate; }
-
+	// HP加算関数
+	void AddHP(const float& hp) override;
 
 private:
 

@@ -85,6 +85,9 @@ public:
 	void SetParent(Object3d* parent) { this->parent = parent; }
 	void SetIsRailCamera(bool isRailCamera) { this->isRailCamera_ = isRailCamera; }
 	void SetOffset(const Vector3& offset) { this->offset_ = offset; }
+	void SetPointLightPos(const Vector3& pos) { this->pointLightData->position = pos; }
+	void SetPointLightIntencity(const float& intencity) { this->pointLightData->intensity = intencity; }
+	void SetPointLightDecay(const float& decay) { this->pointLightData->decay = decay; }
 
 	// getter
 	const Vector3& GetScale() const { return transform.scale; }

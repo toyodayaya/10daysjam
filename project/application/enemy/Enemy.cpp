@@ -32,3 +32,6 @@ void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
 	isDead_ = true;
 }
+
+void Enemy::AddHP(const float& hp)
+{}
