@@ -16,6 +16,7 @@ void GamePlayScene::Initialize()
 	// objファイルからモデルを読み込む
 	ModelManager::GetInstance()->LoadModel("resources/player", "player.obj", Model::AnimationType::kNone);
 	ModelManager::GetInstance()->LoadModel("resources/enemy", "enemy.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/cube", "cube.obj", Model::AnimationType::kNone);
 
 	// ステージを読み込む
 	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");

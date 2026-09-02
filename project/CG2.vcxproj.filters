@@ -243,9 +243,6 @@
     <ClCompile Include="application\event\BaseEvent.cpp">
       <Filter>ソース ファイル\application\event</Filter>
     </ClCompile>
-    <ClCompile Include="application\event\ChangePostEffectEvent.cpp">
-      <Filter>ソース ファイル\application\event</Filter>
-    </ClCompile>
     <ClCompile Include="application\enemy\BaseEnemy.cpp">
       <Filter>ソース ファイル\application\enemy</Filter>
     </ClCompile>
@@ -255,13 +252,13 @@
     <ClCompile Include="application\enemy\EnemyManager.cpp">
       <Filter>ソース ファイル\application\enemy</Filter>
     </ClCompile>
-	<ClCompile Include="application\event\EventManager.cpp">
-	  <Filter>ソース ファイル\application\event</Filter>
-	</ClCompile>
-	<ClCompile Include="application\player\Explosion.cpp">
-	  <Filter>ソース ファイル\application\player</Filter>
-	</ClCompile>
-	<ClCompile Include="application\player\Player.cpp">
+    <ClCompile Include="application\event\EventManager.cpp">
+      <Filter>ソース ファイル\application\event</Filter>
+    </ClCompile>
+    <ClCompile Include="application\player\Explosion.cpp">
+      <Filter>ソース ファイル\application\player</Filter>
+    </ClCompile>
+    <ClCompile Include="application\player\Player.cpp">
       <Filter>ソース ファイル\application\player</Filter>
     </ClCompile>
     <ClCompile Include="application\collider\CollisionManager.cpp">
@@ -271,6 +268,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="application\skydome\Skydome.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="application\event\LightHouse.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -709,22 +709,19 @@
     <ClInclude Include="application\event\BaseEvent.h">
       <Filter>ヘッダー ファイル\application\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="application\event\ChangePostEffectEvent.h">
-      <Filter>ヘッダー ファイル\application\event</Filter>
-    </ClInclude>
     <ClInclude Include="application\event\EventManager.h">
       <Filter>ヘッダー ファイル\application\event</Filter>
     </ClInclude>
     <ClInclude Include="application\enemy\Enemy.h">
       <Filter>ヘッダー ファイル\application\enemy</Filter>
     </ClInclude>
-	<ClInclude Include="application\enemy\EnemyManager.h">
-	  <Filter>ヘッダー ファイル\application\enemy</Filter>
-	</ClInclude>
-	<ClInclude Include="application\player\Explosion.h">
-	  <Filter>ヘッダー ファイル\application\player</Filter>
-	</ClInclude>
-	<ClInclude Include="application\player\Player.h">
+    <ClInclude Include="application\enemy\EnemyManager.h">
+      <Filter>ヘッダー ファイル\application\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\player\Explosion.h">
+      <Filter>ヘッダー ファイル\application\player</Filter>
+    </ClInclude>
+    <ClInclude Include="application\player\Player.h">
       <Filter>ヘッダー ファイル\application\player</Filter>
     </ClInclude>
     <ClInclude Include="application\collider\CollisionManager.h">
@@ -734,6 +731,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="application\skydome\Skydome.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="application\event\LightHouse.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

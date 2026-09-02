@@ -493,13 +493,6 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 void StageData::CreateEnemy(const EnemySpawnData& enemyData)
 {
 	std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>();
-	Logger::Log(std::format(
-		"[CreateEnemy] enemy = {}, pos = ({}, {}, {})",
-		static_cast<void*>(enemy.get()),
-		enemyData.transform.translate.x,
-		enemyData.transform.translate.y,
-		enemyData.transform.translate.z
-	));
 	enemy->Initialize(enemyData.transform, enemyData.filePath);
 
 	// コライダーがあれば生成、配置
@@ -564,6 +557,12 @@ StageData::EventSpawnData StageData::LoadEvent(nlohmann::json& event)
 	// データ格納用の変数を宣言
 	EventSpawnData eventSpawnData;
 
+	if (event.contains("file_name"))
+	{
+		// ファイル名を登録
+		eventSpawnData.filePath = event["file_name"].get<std::string>();
+	}
+
 	// トランスフォームのパラメータ読み込み
 	nlohmann::json& transform = event["transform"];
 	// 平行移動データを格納
@@ -597,8 +596,8 @@ StageData::EventSpawnData StageData::LoadEvent(nlohmann::json& event)
 
 void StageData::CreateEvents(const EventSpawnData& eventData)
 {
-	std::unique_ptr<ChangePostEffectEvent> event = std::make_unique<ChangePostEffectEvent>();
-	event->Initialize(eventData.transform);
+	std::unique_ptr<LightHouse> event = std::make_unique<LightHouse>();
+	event->Initialize(eventData.transform,eventData.filePath);
 
 	// コライダーがあれば生成、配置
 	if (eventData.collider.hasCollier)
