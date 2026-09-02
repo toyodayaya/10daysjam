@@ -50,7 +50,7 @@ private:
 	
 	// 移動限界
 	const float kMoveLimitX_ = 7.0f;
-	const float kMoveLimitY_ = 4.0f;
+	const float kMoveLimitZ_ = 4.0f;
 	
 	// 初期最大HP
 	const int kIniMaxHp_ = 20;

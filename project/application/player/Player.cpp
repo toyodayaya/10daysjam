@@ -114,23 +114,23 @@ void Player::Move() {
 	}
 	if (Input::GetInstance()->PushKey(DIK_S))
 	{
-		moveDirection.y -= 1.0f;
+		moveDirection.z -= 1.0f;
 	}
 	if (Input::GetInstance()->PushKey(DIK_W))
 	{
-		moveDirection.y += 1.0f;
+		moveDirection.z += 1.0f;
 	}
 
 	constexpr float kMoveSpeed = 0.1f;
 	moveDirection = MathManager::Normalize(moveDirection);
 	transform_.translate.x += moveDirection.x * kMoveSpeed;
-	transform_.translate.y += moveDirection.y * kMoveSpeed;
+	transform_.translate.z += moveDirection.z * kMoveSpeed;
 
 	// 範囲を超えない処理
 	transform_.translate.x = max(transform_.translate.x, -kMoveLimitX_);
 	transform_.translate.x = std::min(transform_.translate.x, +kMoveLimitX_);
-	transform_.translate.y = max(transform_.translate.y, -kMoveLimitY_);
-	transform_.translate.y = std::min(transform_.translate.y, +kMoveLimitY_);
+	transform_.translate.z = max(transform_.translate.z, -kMoveLimitZ_);
+	transform_.translate.z = std::min(transform_.translate.z, +kMoveLimitZ_);
 
 }
 
