@@ -453,6 +453,13 @@ namespace MathManager
 		return ret;
 	}
 
+	float Flerp(const float& start, const float& end, float t)
+	{
+		float ret;
+		ret = start + (end - start) * t;
+		return ret;
+	}
+
 	Quaternion MakeRotateXQuaternion(float rad)
 	{
 		Quaternion q;

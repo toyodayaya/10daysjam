@@ -97,7 +97,7 @@ void Object3d::CreateSpotLight()
 	spotLightData->distance = 7.0f;
 	spotLightData->direction =
 		Normalize({ -1.0f,-1.0f,0.0f });
-	spotLightData->intensity = 4.0f;
+	spotLightData->intensity = 0.0f;
 	spotLightData->decay = 2.0f;
 	spotLightData->cosAngle = std::cos(std::numbers::pi_v<float> / 3.0f);
 	spotLightData->cosFalloffStart = std::cos(std::numbers::pi_v<float> / 3.0f);
