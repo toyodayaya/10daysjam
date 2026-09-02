@@ -17,7 +17,7 @@ public:
 	void Finalize() override;
 
 	// 衝突応答
-	void OnCollision(std::string hitObjectType) override;
+	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 private:
 	
 	// 当たり判定フラグ

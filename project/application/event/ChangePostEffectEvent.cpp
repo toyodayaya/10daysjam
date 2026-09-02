@@ -92,5 +92,5 @@ void ChangePostEffectEvent::Draw()
 #endif // _DEBUG
 }
 
-void ChangePostEffectEvent::OnCollision(std::string hitObjectType)
+void ChangePostEffectEvent::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {}
