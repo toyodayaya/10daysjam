@@ -200,3 +200,6 @@ void Player::Respawn() {
 	isDead_ = false;
 	isHit_ = false;
 }
+
+void Player::AddHP(const float& hp)
+{}

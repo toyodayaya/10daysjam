@@ -35,6 +35,9 @@ public:
 	// 爆発攻撃を取得
 	const Explosion& GetExplosion() const { return explosion_; }
 
+	// HP加算関数
+	void AddHP(const float& hp) override;
+
 private:
 	
 	// 当たり判定フラグ

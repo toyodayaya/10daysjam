@@ -13,6 +13,9 @@ public:
 	bool IsDead() { return isDead_; }
 	Object3d* GetObject3d() { return object3d_.get(); }
 
+	// HP加算関数
+	virtual void AddHP(const float& hp) = 0;
+
 	
 	// 更新
 	virtual void Update() = 0;

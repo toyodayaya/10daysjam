@@ -27,7 +27,15 @@ public:
 	// 保有中HPを取得
 	uint32_t GetHp() const { return hp_; }
 
+	// HP加算関数
+	void AddHP(const float& hp) override;
+
 private:
+	// 灯台の明るさ
+	float intencity = 0.0f;
+	// 灯台の明るさの減衰率
+	float decay = 100.0f;
+
 #ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;
 #endif // _DEBUG

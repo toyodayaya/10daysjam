@@ -1,9 +1,8 @@
 #include "LightHouse.h"
-
 #ifdef _DEBUG
 #include "DebugDrawCommon.h"
 #endif // _DEBUG
-
+#include "ImGuiManager.h"
 #include "MathManager.h"
 using namespace MathManager;
 
@@ -15,7 +14,7 @@ void LightHouse::Initialize(const QuaternionTransform& transform, const std::str
 	object3d_->SetModel(filePath);
 	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 	object3d_->SetTransform(transform);
-	object3d_->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
+	object3d_->SetPointLightPos(transform.translate);
 	transform_ = transform;
 
 	isDead_ = false;
@@ -38,12 +37,26 @@ void LightHouse::Finalize()
 
 void LightHouse::Update()
 {
-	object3d_->Update();
+
 
 #ifdef _DEBUG
 	// デバッグ描画の更新処理
 	debugDraw->UpdateBox();
 #endif // _DEBUG
+
+#ifdef USE_IMGUI
+	ImGui::Begin("LightHouse");
+	Vector3 transform = object3d_->GetWorldTranslate();
+	ImGui::DragFloat3("pos", &transform.x);
+	ImGui::DragFloat("intencity", &intencity);
+	ImGui::DragFloat("decay", &decay);
+
+	ImGui::End();
+
+#endif // USE_IMGUI
+	object3d_->SetPointLightIntencity(intencity);
+	object3d_->SetPointLightDecay(decay);
+	object3d_->Update();
 }
 
 void LightHouse::Draw()
@@ -58,7 +71,12 @@ void LightHouse::Draw()
 void LightHouse::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {}
 
-void LightHouse::AddHp(uint32_t hp)
+void LightHouse::AddHP(const float& hp)
 {
-	hp_ += hp;
+	intencity += hp;
+
+	if (intencity <= 0.0f)
+	{
+		intencity = 0.0f;
+	}
 }
