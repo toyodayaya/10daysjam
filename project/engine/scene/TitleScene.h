@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseScene.h"
+#include <vector>
 
 class TitleScene : public BaseScene
 {
@@ -14,5 +15,5 @@ public:
 	void Draw() override;
 
 private:
-
+	std::vector<int> ranking_;
 };

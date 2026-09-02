@@ -8,6 +8,7 @@
 #include "EventManager.h"
 #include "LightHouse.h"
 #include "SceneManager.h"
+#include "DamageManager.h"
 
 void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailCamera)
 {
@@ -160,6 +161,9 @@ void Player::SelfDestruct() {
 		const Vector3 explosionCenter = object3d_->GetWorldTranslate();
 		Respawn();
 		explosion_.Activate(explosionCenter);
+
+		// ダメージを記録
+		//DamageManager::GetInstance()->RankingUpdate(ダメージの数値);
 	}
 }
 

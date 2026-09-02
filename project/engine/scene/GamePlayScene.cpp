@@ -6,6 +6,7 @@
 #include "SkyboxCommon.h"
 #include "Input.h"
 #include "SceneManager.h"
+#include "DamageManager.h"
 
 void GamePlayScene::Initialize()
 {
