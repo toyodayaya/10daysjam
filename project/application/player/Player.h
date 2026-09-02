@@ -62,5 +62,8 @@ private:
 	const int kRecoveryHp_ = 1;
 	// HP回復タイマー(秒)
 	float recoveryHpTimer_ = 0.0f;
+
+	// 灯台にうつすHPの数値
+	const int lighthouseHp_ = 5;
 };
 

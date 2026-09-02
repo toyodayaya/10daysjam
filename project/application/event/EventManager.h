@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 
+class LightHouse;
+
 class EventManager
 {
 public:
@@ -42,6 +44,8 @@ public:
 
 	// setter
 	void SetEvents(std::unique_ptr<BaseEvent> event) { events_.push_back(std::move(event)); }
+	// 保有中HPが最も多い灯台を取得
+	LightHouse* GetHighestHpLightHouse() const;
 	
 	// インスタンス
 	static EventManager* GetInstance();

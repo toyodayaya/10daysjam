@@ -57,3 +57,8 @@ void LightHouse::Draw()
 
 void LightHouse::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {}
+
+void LightHouse::AddHp(uint32_t hp)
+{
+	hp_ += hp;
+}

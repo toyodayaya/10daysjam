@@ -5,6 +5,8 @@
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 #include "Input.h"
+#include "EventManager.h"
+#include "LightHouse.h"
 #include "SceneManager.h"
 
 void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailCamera)
@@ -91,13 +93,29 @@ void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 	if (hitObjectType_ == "EventSpawn")
 	{
 		// 灯台だった場合の処理
+
+		// EキーでHPを移す
+		if (Input::GetInstance()->TriggerKey(DIK_Q))
+		{
+			// HPを移す処理
+			// 灯台に移すHPが残っていたら移せる
+			if (hp_ > lighthouseHp_)
+			{
+				// 衝突相手が灯台の場合のみHPを移す
+				LightHouse* lightHouse = dynamic_cast<LightHouse*>(hitObject_);
+				if (lightHouse != nullptr)
+				{
+					lightHouse->AddHp(static_cast<uint32_t>(lighthouseHp_));
+					hp_ -= lighthouseHp_;
+				}
+			}
+		}
 	}
 	else if (hitObjectType_ == "EnemySpawn")
 	{
 		// ボスだった場合の処理
 	}
 
-	isDead_ = true;
 }
 
 void Player::Move() {
@@ -167,6 +185,16 @@ void Player::AutoRecoveryHp() {
 // リスポーン処理
 void Player::Respawn() {
 	explosion_.Deactivate();
+
+	// 保有中HPが最も多い灯台をリスポーン先にする
+	LightHouse* respawnLightHouse = EventManager::GetInstance()->GetHighestHpLightHouse();
+	if (respawnLightHouse != nullptr)
+	{
+		respawnPosition_ = respawnLightHouse->GetTransform().translate;
+		maxHp_ = static_cast<int>(respawnLightHouse->GetHp());
+		hp_ = std::min(hp_, maxHp_);
+	}
+
 	transform_.translate = respawnPosition_;
 	object3d_->SetTranslate(transform_.translate);
 	isDead_ = false;

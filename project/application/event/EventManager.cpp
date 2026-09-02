@@ -1,4 +1,5 @@
 #include "EventManager.h"
+#include "LightHouse.h"
 #include <cassert>
 
 std::unique_ptr<EventManager> EventManager::instance = nullptr;
@@ -38,4 +39,21 @@ void EventManager::Finalize()
 
 	// インスタンスを解放
 	instance.reset();
+}
+
+LightHouse* EventManager::GetHighestHpLightHouse() const
+{
+	LightHouse* highestHpLightHouse = nullptr;
+
+	for (const std::unique_ptr<BaseEvent>& event : events_)
+	{
+		LightHouse* lightHouse = dynamic_cast<LightHouse*>(event.get());
+		if (lightHouse != nullptr &&
+			(highestHpLightHouse == nullptr || lightHouse->GetHp() > highestHpLightHouse->GetHp()))
+		{
+			highestHpLightHouse = lightHouse;
+		}
+	}
+
+	return highestHpLightHouse;
 }
