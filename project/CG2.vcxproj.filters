@@ -292,7 +292,7 @@
       <Filter>ソース ファイル\application\skydome</Filter>
     </ClCompile>
     <ClCompile Include="application\damage\DamageManager.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\application\damage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -758,7 +758,7 @@
       <Filter>ヘッダー ファイル\application\skydome</Filter>
     </ClInclude>
     <ClInclude Include="application\damage\DamageManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\application\damage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "BaseScene.h"
 #include "SceneFactory.h"
+#include "DamageManager.h"
 
 void Game::Initialize()
 {
@@ -13,6 +14,8 @@ void Game::Initialize()
 	// Imguiマネージャーの初期化
 	imguiManager = std::make_unique <ImguiManager>();
 	imguiManager->Initialize(winAPIManager.get(), dxBasis.get(), srvManager);
+
+	DamageManager::GetInstance()->Initialize();
 
 	// シーンファクトリーの生成とセット
 	sceneFactory = std::make_unique <SceneFactory>();
@@ -75,6 +78,8 @@ void Game::Draw()
 
 void Game::Finalize()
 {
+	DamageManager::GetInstance()->Finalize();
+
 	// シーンマネージャーの終了処理
 	SceneManager::GetInstance()->Finalize();
 
