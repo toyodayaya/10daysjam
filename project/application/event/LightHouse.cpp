@@ -62,7 +62,6 @@ void LightHouse::Update()
 	ImGui::Begin("LightHouse");
 	ImGui::DragFloat3("pos", &transform_.translate.x);
 	ImGui::DragFloat("intencity", &intencity);
-	ImGui::DragFloat("decay", &decay);
 
 	ImGui::End();
 #endif // USE_IMGUI
@@ -75,7 +74,6 @@ void LightHouse::Update()
 
 	object3d_->SetTranslate(transform_.translate);
 	object3d_->SetPointLightIntencity(intencity);
-	object3d_->SetPointLightDecay(decay);
 	object3d_->Update();
 }
 

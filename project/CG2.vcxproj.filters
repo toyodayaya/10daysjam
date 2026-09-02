@@ -127,6 +127,24 @@
     <Filter Include="ソース ファイル\application\collider">
       <UniqueIdentifier>{775c9440-c23a-49e2-acd0-c977066f1ceb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\application\base">
+      <UniqueIdentifier>{86157af9-433b-4451-8e0d-e19f2149973f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\skydome">
+      <UniqueIdentifier>{9cc5ac9d-000b-46fd-bb29-7741ca1b4a8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\skydome">
+      <UniqueIdentifier>{59ceb186-22c2-44a3-a646-a8a4bf3af26d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\base">
+      <UniqueIdentifier>{9b606682-b748-4155-ae95-d0ac35506319}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\damage">
+      <UniqueIdentifier>{3127e6d2-cc77-4134-a5df-70d84b1c8376}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\damage">
+      <UniqueIdentifier>{f845eadb-a997-49c9-9b9a-005dc1db023e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -261,16 +279,19 @@
     <ClCompile Include="application\player\Player.cpp">
       <Filter>ソース ファイル\application\player</Filter>
     </ClCompile>
-    <ClCompile Include="application\collider\CollisionManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="application\base\BaseCharacter.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\application\base</Filter>
     </ClCompile>
-    <ClCompile Include="application\skydome\Skydome.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="application\collider\CollisionManager.cpp">
+      <Filter>ソース ファイル\application\collider</Filter>
     </ClCompile>
     <ClCompile Include="application\event\LightHouse.cpp">
+      <Filter>ソース ファイル\application\event</Filter>
+    </ClCompile>
+    <ClCompile Include="application\skydome\Skydome.cpp">
+      <Filter>ソース ファイル\application\skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="application\damage\DamageManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -725,15 +746,18 @@
       <Filter>ヘッダー ファイル\application\player</Filter>
     </ClInclude>
     <ClInclude Include="application\collider\CollisionManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\application\collision</Filter>
     </ClInclude>
     <ClInclude Include="application\base\BaseCharacter.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="application\skydome\Skydome.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\application\base</Filter>
     </ClInclude>
     <ClInclude Include="application\event\LightHouse.h">
+      <Filter>ヘッダー ファイル\application\event</Filter>
+    </ClInclude>
+    <ClInclude Include="application\skydome\Skydome.h">
+      <Filter>ヘッダー ファイル\application\skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="application\damage\DamageManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
