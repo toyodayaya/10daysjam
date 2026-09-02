@@ -193,6 +193,7 @@ void Player::Respawn() {
 		respawnPosition_ = respawnLightHouse->GetTransform().translate;
 		maxHp_ = static_cast<int>(respawnLightHouse->GetHp());
 		hp_ = std::min(hp_, maxHp_);
+		respawnLightHouse->SetIsHit(true);
 	}
 
 	transform_.translate = respawnPosition_;

@@ -23,12 +23,15 @@ public:
 	// 衝突応答
 	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 	// 保有中HPを取得
-	uint32_t GetHp() const { return hp_; }
+	uint32_t GetHp() const { return static_cast<uint32_t>(intencity); }
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
 	// 最大HPを設定
 	void SetMaxHP(const float& hp) override;
+
+	// setter
+	void SetIsHit(bool isHit) { this->isHit_ = isHit; }
 
 private:
 	// 灯台の明るさ
@@ -46,9 +49,6 @@ private:
 #ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;
 #endif // _DEBUG
-
-	// 保有中HP
-	uint32_t hp_ = 0;
 
 };
 
