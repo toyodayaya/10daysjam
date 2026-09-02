@@ -7,6 +7,7 @@
 void TitleScene::Initialize()
 {
 	ranking_ = DamageManager::GetInstance()->GetRanking();
+	DamageManager::GetInstance()->RankingBitMapFont();
 }
 
 void TitleScene::Finalize()
@@ -21,6 +22,8 @@ void TitleScene::Update()
 		SceneManager::GetInstance()->ChangeScene("GamePlayScene");
 	}
 
+	DamageManager::GetInstance()->Update();
+
 #ifdef USE_IMGUI
 	ImGui::Begin("ranking");
 	ImGui::Text("1st:%d", ranking_[0]);
@@ -33,5 +36,5 @@ void TitleScene::Update()
 
 void TitleScene::Draw()
 {
-	
+	DamageManager::GetInstance()->Draw();
 }
