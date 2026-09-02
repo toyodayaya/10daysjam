@@ -105,7 +105,7 @@ void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 				LightHouse* lightHouse = dynamic_cast<LightHouse*>(hitObject_);
 				if (lightHouse != nullptr)
 				{
-					lightHouse->AddHp(static_cast<uint32_t>(lighthouseHp_));
+					lightHouse->AddHP(static_cast<float>(lighthouseHp_));
 					hp_ -= lighthouseHp_;
 				}
 			}

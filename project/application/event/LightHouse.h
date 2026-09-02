@@ -22,8 +22,6 @@ public:
 	void Draw() override;
 	// 衝突応答
 	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
-	// 保有中HPを増やす
-	void AddHp(uint32_t hp);
 	// 保有中HPを取得
 	uint32_t GetHp() const { return hp_; }
 

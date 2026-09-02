@@ -74,6 +74,7 @@ void LightHouse::OnCollision(std::string hitObjectType, BaseCharacter* hitObject
 void LightHouse::AddHP(const float& hp)
 {
 	intencity += hp;
+	hp_ += static_cast<uint32_t>(hp);
 
 	if (intencity <= 0.0f)
 	{
