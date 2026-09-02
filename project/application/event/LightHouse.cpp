@@ -4,6 +4,7 @@
 #endif // _DEBUG
 #include "ImGuiManager.h"
 #include "MathManager.h"
+#include <algorithm>
 using namespace MathManager;
 
 void LightHouse::Initialize(const QuaternionTransform& transform, const std::string& filePath)
@@ -80,4 +81,13 @@ void LightHouse::AddHP(const float& hp)
 	{
 		intencity = 0.0f;
 	}
+}
+
+uint32_t LightHouse::WithdrawHp(uint32_t maxAmount)
+{
+	const uint32_t withdrawnHp = (std::min)(hp_, maxAmount);
+	hp_ -= withdrawnHp;
+	intencity = (std::max)(0.0f, intencity - static_cast<float>(withdrawnHp));
+
+	return withdrawnHp;
 }

@@ -93,21 +93,32 @@ void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 	if (hitObjectType_ == "EventSpawn")
 	{
 		// 灯台だった場合の処理
+		LightHouse* lightHouse = dynamic_cast<LightHouse*>(hitObject_);
+		if (lightHouse == nullptr)
+		{
+			return;
+		}
 
-		// EキーでHPを移す
+		// QキーでHPを移す
 		if (Input::GetInstance()->TriggerKey(DIK_Q))
 		{
 			// HPを移す処理
 			// 灯台に移すHPが残っていたら移せる
 			if (hp_ > lighthouseHp_)
 			{
-				// 衝突相手が灯台の場合のみHPを移す
-				LightHouse* lightHouse = dynamic_cast<LightHouse*>(hitObject_);
-				if (lightHouse != nullptr)
-				{
-					lightHouse->AddHP(static_cast<float>(lighthouseHp_));
-					hp_ -= lighthouseHp_;
-				}
+				lightHouse->AddHP(static_cast<float>(lighthouseHp_));
+				hp_ -= lighthouseHp_;
+			}
+		}
+
+		// Zキーで灯台の保有中HPを回収する
+		if (Input::GetInstance()->TriggerKey(DIK_Z))
+		{
+			const int receivableHp = maxHp_ - hp_;
+			if (receivableHp > 0)
+			{
+				const uint32_t withdrawnHp = lightHouse->WithdrawHp(static_cast<uint32_t>(receivableHp));
+				hp_ += static_cast<int>(withdrawnHp);
 			}
 		}
 	}

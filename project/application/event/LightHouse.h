@@ -27,6 +27,8 @@ public:
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
+	// 指定量まで保有中HPを取り出し、実際に取り出した量を返す
+	uint32_t WithdrawHp(uint32_t maxAmount);
 
 private:
 	// 灯台の明るさ
