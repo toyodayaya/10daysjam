@@ -17,6 +17,8 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	object3d_->SetTransform(transform);
 	object3d_->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
 	transform_ = transform;
+	respawnPosition_ = transform.translate;
+	explosion_.Initialize();
 	isHit_ = false;
 
 	isDead_ = false;
@@ -24,41 +26,32 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 
 void Player::Update()
 {
-	// キー入力でプレイヤーを移動させる
-	if (Input::GetInstance()->PushKey(DIK_A))
-	{
-		transform_.translate.x -= 0.1f;
-	}
-	else if (Input::GetInstance()->PushKey(DIK_D))
-	{
-		transform_.translate.x += 0.1f;
-	}
-	else if (Input::GetInstance()->PushKey(DIK_S))
-	{
-		transform_.translate.y -= 0.1f;
-	}
-	else if (Input::GetInstance()->PushKey(DIK_W))
-	{
-		transform_.translate.y += 0.1f;
-	}
+	// 爆発判定は発生したフレームだけ有効にする
+	explosion_.Deactivate();
 
-	// 範囲を超えない処理
-	transform_.translate.x = max(transform_.translate.x, -kMoveLimitX_);
-	transform_.translate.x = std::min(transform_.translate.x, +kMoveLimitX_);
-	transform_.translate.y = max(transform_.translate.y, -kMoveLimitY_);
-	transform_.translate.y = std::min(transform_.translate.y, +kMoveLimitY_);
+	// HP自動回復処理
+	AutoRecoveryHp();
 
+	// 移動処理
+	Move();
 
 	object3d_->SetTranslate(transform_.translate);
 
 	// 3Dオブジェクトを更新
 	object3d_->Update();
 
+	// 自爆処理
+	SelfDestruct();
+	// 爆発範囲表示の更新
+	explosion_.Update();
+
 
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
 	Vector3 transform = object3d_->GetWorldTranslate();
 	ImGui::DragFloat3("pos", &transform.x);
+	// HP表示
+	ImGui::Text("HP: %d / %d", hp_, maxHp_);
 
 	ImGui::End();
 
@@ -79,6 +72,8 @@ void Player::Draw()
 	}
 
 	object3d_->Draw();
+	// 爆発範囲の描画
+	explosion_.Draw();
 }
 
 void Player::Finalize()
@@ -103,4 +98,77 @@ void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 	}
 
 	isDead_ = true;
+}
+
+void Player::Move() {
+	// キー入力でプレイヤーを移動させる
+	Vector3 moveDirection = { 0.0f, 0.0f, 0.0f };
+
+	if (Input::GetInstance()->PushKey(DIK_A))
+	{
+		moveDirection.x -= 1.0f;
+	}
+	if (Input::GetInstance()->PushKey(DIK_D))
+	{
+		moveDirection.x += 1.0f;
+	}
+	if (Input::GetInstance()->PushKey(DIK_S))
+	{
+		moveDirection.y -= 1.0f;
+	}
+	if (Input::GetInstance()->PushKey(DIK_W))
+	{
+		moveDirection.y += 1.0f;
+	}
+
+	constexpr float kMoveSpeed = 0.1f;
+	moveDirection = MathManager::Normalize(moveDirection);
+	transform_.translate.x += moveDirection.x * kMoveSpeed;
+	transform_.translate.y += moveDirection.y * kMoveSpeed;
+
+	// 範囲を超えない処理
+	transform_.translate.x = max(transform_.translate.x, -kMoveLimitX_);
+	transform_.translate.x = std::min(transform_.translate.x, +kMoveLimitX_);
+	transform_.translate.y = max(transform_.translate.y, -kMoveLimitY_);
+	transform_.translate.y = std::min(transform_.translate.y, +kMoveLimitY_);
+
+}
+
+void Player::SelfDestruct() {
+	// スペースキーで自爆する
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE))
+	{
+		// リスポーン前のワールド座標を爆心地として保存する
+		const Vector3 explosionCenter = object3d_->GetWorldTranslate();
+		Respawn();
+		explosion_.Activate(explosionCenter);
+	}
+}
+
+// HP自動回復処理
+void Player::AutoRecoveryHp() {
+
+	// 1秒に1HPを回復する
+	// HPが最大値に達していない場合のみ回復する
+	if (hp_ < maxHp_) {
+		// タイマーが1秒以上経過した場合に回復する
+		if (recoveryHpTimer_ >= 1.0f) {
+			hp_ += kRecoveryHp_;
+			// 最大HPを超えないようにする
+			hp_ = std::clamp(hp_, 0, maxHp_);
+			recoveryHpTimer_ = 0.0f;
+		}
+	}
+
+	// タイマーの加算
+	recoveryHpTimer_ += 1.0f / 60.0f; // 60FPS
+}
+
+// リスポーン処理
+void Player::Respawn() {
+	explosion_.Deactivate();
+	transform_.translate = respawnPosition_;
+	object3d_->SetTranslate(transform_.translate);
+	isDead_ = false;
+	isHit_ = false;
 }
