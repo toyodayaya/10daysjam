@@ -39,6 +39,8 @@ public:
 	void AddHP(const float& hp) override;
 
 private:
+	// 発生中の爆発とEnemyの当たり判定を行う
+	void DamageEnemiesWithExplosion();
 	
 	// 当たり判定フラグ
 	bool isHit_;
@@ -53,7 +55,7 @@ private:
 	
 	// 移動限界
 	const float kMoveLimitX_ = 7.0f;
-	const float kMoveLimitZ_ = 4.0f;
+	const float kMoveLimitZ_ = 7.0f;
 	
 	// 初期最大HP
 	const int kIniMaxHp_ = 20;

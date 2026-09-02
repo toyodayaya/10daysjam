@@ -5,6 +5,7 @@
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 #include "Input.h"
+#include "EnemyManager.h"
 #include "EventManager.h"
 #include "LightHouse.h"
 #include "SceneManager.h"
@@ -171,6 +172,32 @@ void Player::SelfDestruct() {
 		const Vector3 explosionCenter = object3d_->GetWorldTranslate();
 		Respawn();
 		explosion_.Activate(explosionCenter);
+
+		// 爆発が有効な発生フレームに一度だけEnemyへダメージを与える
+		DamageEnemiesWithExplosion();
+	}
+}
+
+void Player::DamageEnemiesWithExplosion()
+{
+	if (!explosion_.IsActive())
+	{
+		return;
+	}
+
+	// Enemy一覧を直接走査
+	const std::vector<std::unique_ptr<BaseEnemy>>& enemies = EnemyManager::GetInstance()->GetEnemies();
+	for (const std::unique_ptr<BaseEnemy>& enemy : enemies)
+	{
+		if (enemy->IsDead())
+		{
+			continue;
+		}
+
+		if (explosion_.IsCollision(enemy->GetDamageAabb()))
+		{
+			enemy->TakeDamage(explosion_.GetDamage());
+		}
 	}
 }
 
