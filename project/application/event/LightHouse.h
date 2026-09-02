@@ -24,6 +24,10 @@ public:
 	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 	// 保有中HPを取得
 	uint32_t GetHp() const { return hp_; }
+	// 灯台本体の当たり判定に使用するAABBを取得
+	AABB GetCollisionAabb() const;
+	// 灯台にインタラクトできる範囲を取得
+	AABB GetInteractionAabb() const;
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
@@ -42,6 +46,10 @@ private:
 
 	// 保有中HP
 	uint32_t hp_ = 0;
+	// 当たり判定用AABBの中心から各面までの距離
+	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
+	// インタラクト用AABBの中心から各面までの距離
+	const Vector3 kInteractionAabbHalfSize_ = { 3.0f, 1.5f, 3.0f };
 
 };
 
