@@ -137,8 +137,8 @@ void StageData::CheckAllCollision()
 			if (CollisionManager::GetInstance()->IsCollision(colliderAABB, colliderHitAABB))
 			{
 				// オブジェクトのヒット処理
-				colliders.parent->OnCollision();
-				collidersHit.parent->OnCollision();
+				colliders.parent->OnCollision(collidersHit.objectType,collidersHit.parent);
+				collidersHit.parent->OnCollision(colliders.objectType,colliders.parent);
 			}
 
 		}

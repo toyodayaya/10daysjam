@@ -28,7 +28,7 @@ void Enemy::Draw()
 	object3d_->Draw();
 }
 
-void Enemy::OnCollision()
+void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
 	isDead_ = true;
 }

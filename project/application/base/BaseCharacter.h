@@ -22,7 +22,7 @@ public:
 	virtual void Finalize() = 0;
 
 	// オブジェクトの衝突応答
-	virtual void OnCollision() = 0;
+	virtual void OnCollision(std::string hitObjectType,BaseCharacter* hitObject) = 0;
 
 	// 仮想デストラクタ
 	virtual ~BaseCharacter() = default;
@@ -33,5 +33,9 @@ protected:
 	bool isDead_ = false;
 	// 3dオブジェクト
 	std::unique_ptr<Object3d> object3d_;
+	// 接触したオブジェクトのタイプ
+	std::string hitObjectType_;
+	// 接触したオブジェクトのポインタ
+	BaseCharacter* hitObject_ = nullptr;
 };
 

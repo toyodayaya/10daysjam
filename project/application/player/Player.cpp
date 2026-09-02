@@ -79,8 +79,24 @@ void Player::Draw()
 void Player::Finalize()
 {}
 
-void Player::OnCollision()
+void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
+	// ぶつかったオブジェクトのポインタを取得
+	hitObject_ = hitObject;
+
+	// ぶつかったオブジェクトのタイプを記録
+	hitObjectType_ = hitObjectType;
+
+	// どのオブジェクトにぶつかったか判定
+	if (hitObjectType_ == "EventSpawn")
+	{
+		// 灯台だった場合の処理
+	}
+	else if (hitObjectType_ == "EnemySpawn")
+	{
+		// ボスだった場合の処理
+	}
+
 	isDead_ = true;
 }
 

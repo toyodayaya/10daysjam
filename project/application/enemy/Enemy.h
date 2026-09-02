@@ -13,7 +13,7 @@ public:
 	// 描画
 	void Draw() override;
 	// 衝突応答
-	void OnCollision() override;
+	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 
 	// getter
 	Vector3 GetTranslate() { return transform_.translate; }
