@@ -19,6 +19,7 @@ public:
 	Vector3 GetTranslate() { return transform_.translate; }
 	// HP加算関数
 	void AddHP(const float& hp) override;
+	void SetMaxHP(const float& hp) override;
 	// ダメージを受ける
 	void TakeDamage(int damage) override;
 	// 爆発との当たり判定に使用するAABBを取得

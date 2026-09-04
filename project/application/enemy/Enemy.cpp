@@ -39,6 +39,9 @@ void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 void Enemy::AddHP(const float& hp)
 {}
 
+void Enemy::SetMaxHP(const float& hp)
+{}
+
 void Enemy::TakeDamage(int damage)
 {
 	// 無効なダメージや死亡後の重複ダメージは処理しない
