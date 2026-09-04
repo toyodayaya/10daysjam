@@ -1,5 +1,15 @@
 #include "Enemy.h"
 #include "Object3dCommon.h"
+#ifdef USE_IMGUI
+#include "ImGuiManager.h"
+#endif // USE_IMGUI
+#include "Player.h"
+#include "EventManager.h"
+#include "LightHouse.h"
+#include "CollisionManager.h"
+#include <algorithm>
+#include <cmath>
+#include <utility>
 
 void Enemy::Initialize(const QuaternionTransform& transform, const std::string& filePath)
 {
@@ -10,10 +20,12 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 	object3d_->SetTransform(transform);
 	transform_ = transform;
+	hp_ = kMaxHp_;
 	isDead_ = false;
 	attackState_ = AttackState::Patrol;
 	attackTimer_ = kPatrolFrames_;
 	nextAttackIsSlam_ = true;
+	slamHitPlayer_ = false;
 	patrolFrame_ = 0;
 	patrolDirection_ = 1.0f;
 	startPosition_ = transform_.translate;
@@ -22,7 +34,7 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	slamStartPosition_ = transform_.translate;
 	slamTargetPosition_ = transform_.translate;
 	shotTimer_ = kShotIntervalFrames_;
-	bulletModelFilePath_ = filePath; // 読み込み済みのボスモデルを弾の仮表示に再利用。
+	bulletModelFilePath_ = filePath;
 	bullets_.clear();
 }
 
@@ -59,6 +71,10 @@ void Enemy::Update()
 	else if (attackState_ == AttackState::Rush)
 	{
 		attackStateName = "Rush";
+	}
+	else if (attackState_ == AttackState::RushImpact)
+	{
+		attackStateName = "RushImpact";
 	}
 	else if (attackState_ == AttackState::Return)
 	{
@@ -97,7 +113,9 @@ void Enemy::Update()
 	{
 		ImGui::Text("Return XZ: %.2f, %.2f", startPosition_.x, startPosition_.z);
 	}
-	else if (attackState_ == AttackState::Charge || attackState_ == AttackState::Rush)
+	else if (attackState_ == AttackState::Charge ||
+		attackState_ == AttackState::Rush ||
+		attackState_ == AttackState::RushImpact)
 	{
 		ImGui::Text("Target XZ: %.2f, %.2f",
 			attackTargetPosition_.x, attackTargetPosition_.z);
@@ -143,7 +161,7 @@ bool Enemy::TryStartSpecialAttack()
 			nextAttackIsSlam_ = true;
 			return true;
 		}
-		// 明るい灯台がない場合も、プレイヤーへの攻撃は止めない。
+
 		if (TryStartSlamAttack())
 		{
 			nextAttackIsSlam_ = false;
@@ -228,20 +246,27 @@ void Enemy::UpdateAttack()
 			// 目的地を通り越さない。距離0でも割り算をしない。
 			transform_.translate.x += dx;
 			transform_.translate.z += dz;
-			// 灯台に到着したら、次のフレームから初期位置へ戻る。
-			attackState_ = AttackState::Return;
-			attackTimer_ = 0;
+			// 到着したフレームの衝突判定を残してから初期位置へ戻る。
+			attackState_ = AttackState::RushImpact;
+			attackTimer_ = 1;
 		}
 		else
 		{
 			transform_.translate.x += dx / distance * kRushSpeed_;
 			transform_.translate.z += dz / distance * kRushSpeed_;
 		}
-		// 灯台のHPはここで直接減らさない。
-		// 既存のStageDataの接触判定からLightHouse::OnCollision()が呼ばれ、
-		// 灯台側の減衰処理によって明るさ（HP）が減る。
+
 		break;
 	}
+
+	case AttackState::RushImpact:
+		// StageDataの衝突判定はUpdate後に行われるため、到着状態を1フレーム維持する。
+		if (--attackTimer_ <= 0)
+		{
+			attackState_ = AttackState::Return;
+			attackTimer_ = 0;
+		}
+		break;
 
 	case AttackState::Return:
 	{
@@ -341,7 +366,6 @@ void Enemy::UpdateAttack()
 
 	case AttackState::SlamFall:
 	{
-		// 最初はゆっくり、地面に近づくほど速くなる落下にする。
 		const int elapsedFrames = kSlamFallFrames_ - attackTimer_ + 1;
 		const float progress = static_cast<float>(elapsedFrames)
 			/ static_cast<float>(kSlamFallFrames_);
@@ -387,10 +411,11 @@ void Enemy::UpdateAttack()
 
 	case AttackState::SlamReturn:
 	{
-		// 叩きつけた位置から最初の位置へ戻り、攻撃を終了する。
+		// 叩きつけた位置・高さから最初の位置へ戻り、攻撃を終了する。
 		const float dx = startPosition_.x - transform_.translate.x;
+		const float dy = startPosition_.y - transform_.translate.y;
 		const float dz = startPosition_.z - transform_.translate.z;
-		const float distance = std::sqrt(dx * dx + dz * dz);
+		const float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
 		if (distance <= kReturnSpeed_)
 		{
 			transform_.translate = startPosition_;
@@ -400,6 +425,7 @@ void Enemy::UpdateAttack()
 		else
 		{
 			transform_.translate.x += dx / distance * kReturnSpeed_;
+			transform_.translate.y += dy / distance * kReturnSpeed_;
 			transform_.translate.z += dz / distance * kReturnSpeed_;
 		}
 		break;
@@ -437,8 +463,7 @@ void Enemy::UpdatePatrolShooting()
 
 bool Enemy::TryShootAtPlayer()
 {
-	// 登録済みのプレイヤーを探すためだけに参照する。
-	// 弾を登録したり、当たり判定やダメージ処理を呼んだりはしない。
+	// 登録済みのプレイヤーを探して、発射方向を決める。
 	Player* targetPlayer = nullptr;
 	for (const auto& collider : CollisionManager::GetInstance()->GetColliders())
 	{
@@ -501,6 +526,7 @@ bool Enemy::TryStartSlamAttack()
 	// 着地する高さはボスの初期配置と同じにする。
 	slamTargetPosition_.y = startPosition_.y;
 	ResetSlamScale();
+	slamHitPlayer_ = false;
 	attackState_ = AttackState::SlamCharge;
 	attackTimer_ = kSlamChargeFrames_;
 	return true;
@@ -555,6 +581,9 @@ bool Enemy::CreateBullet(const Vector3& direction, float spawnOffset)
 
 void Enemy::UpdateBullets()
 {
+	// Playerの登録済みコライダーを使うため、Player側へ弾専用処理を追加しない。
+	const auto colliders = CollisionManager::GetInstance()->GetColliders();
+
 	for (auto it = bullets_.begin(); it != bullets_.end();)
 	{
 		if (--it->remainingFrames <= 0)
@@ -566,6 +595,48 @@ void Enemy::UpdateBullets()
 		it->position.z += it->velocity.z;
 		it->object3d->SetTranslate(it->position);
 		it->object3d->Update();
+
+		const AABB bulletAabb = CollisionManager::GetInstance()->MakeAABB(
+			it->position, kBulletAabbHalfSize_);
+		bool hitPlayer = false;
+
+		for (const auto& collider : colliders)
+		{
+			if (collider.objectType != "PlayerSpawn" || collider.parent == nullptr ||
+				collider.parent->IsDead() || collider.parent->GetObject3d() == nullptr)
+			{
+				continue;
+			}
+
+			Player* player = dynamic_cast<Player*>(collider.parent);
+			if (player == nullptr)
+			{
+				continue;
+			}
+
+			Vector3 playerCenter = player->GetObject3d()->GetWorldTranslate();
+			playerCenter.x += collider.center.x;
+			playerCenter.y += collider.center.y;
+			playerCenter.z += collider.center.z;
+			const AABB playerAabb = CollisionManager::GetInstance()->MakeAABB(
+				playerCenter, collider.size);
+
+			if (CollisionManager::GetInstance()->IsCollision(bulletAabb, playerAabb))
+			{
+				// TakeDamageは座標を変更しないため、弾が当たってもPlayerはずれない。
+				player->TakeDamage(kBulletDamage_);
+				hitPlayer = true;
+				break;
+			}
+		}
+
+		// 1発が連続してダメージを与えないよう、命中した弾はその場で削除する。
+		if (hitPlayer)
+		{
+			it = bullets_.erase(it);
+			continue;
+		}
+
 		++it;
 	}
 }
@@ -586,44 +657,67 @@ void Enemy::Draw()
 
 void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
-	isDead_ = true;
+	// 地面叩きつけの落下中、または着地衝撃中にプレイヤーと重なった場合だけつぶす。
+	if (hitObjectType == "PlayerSpawn")
+	{
+		if (!IsSlamContactPhase() || slamHitPlayer_)
+		{
+			return;
+		}
+
+		Player* player = dynamic_cast<Player*>(hitObject);
+		if (player == nullptr)
+		{
+			return;
+		}
+
+		slamHitPlayer_ = true;
+		// 座標を変更せず、その場でHPを減らしてぺったんこにする。
+		player->TakeDamage(kSlamDamage_);
+		player->StartSquashed();
+
+		// 落下中に当たった場合は現在の高さで落下を止め、衝撃状態へ移る。
+		// プレイヤーに当たらなかった場合は従来どおり地面まで落下する。
+		if (attackState_ == AttackState::SlamFall)
+		{
+			// 接触した高さから少しだけ押し込み、Playerを潰しているように見せる。
+			// ただし地面までは落ち切らないよう最低停止高さを保証する。
+			const float minimumStopY =
+				slamTargetPosition_.y + kSlamMinimumStopHeight_;
+			transform_.translate.y = (std::max)(
+				minimumStopY,
+				transform_.translate.y - kSlamPressDepth_);
+
+			attackState_ = AttackState::SlamImpact;
+			attackTimer_ = kSlamImpactFrames_;
+
+			// 衝突がUpdate後でも、そのフレームの描画へ停止位置を反映する。
+			object3d_->SetTransform(transform_);
+			object3d_->Update();
+		}
+		return;
+	}
+
+	// 自爆が命中したという通知の場合
+	if (hitObjectType == "Explosion")
+	{
+		Player* player = dynamic_cast<Player*>(hitObject);
+		if (player == nullptr)
+		{
+			return;
+		}
+
+		const Explosion& explosion = player->GetExplosion();
+
+		if (explosion.IsActive())
+		{
+			TakeDamage(explosion.GetDamage());
+		}
+	}
 }
 
 void Enemy::AddHP(const float& hp)
 {}
-
-void Enemy::TakeDamage(int damage)
-{
-	// 無効なダメージや死亡後の重複ダメージは処理しない
-	if (damage <= 0 || isDead_)
-	{
-		return;
-	}
-
-	hp_ = (std::max)(0, hp_ - damage);
-	if (hp_ == 0)
-	{
-		isDead_ = true;
-	}
-}
-
-AABB Enemy::GetDamageAabb() const
-{
-	// 爆発判定専用のAABBを作成する
-	const Vector3& center = transform_.translate;
-	return {
-		{
-			center.x - kDamageAabbHalfSize_.x,
-			center.y - kDamageAabbHalfSize_.y,
-			center.z - kDamageAabbHalfSize_.z
-		},
-		{
-			center.x + kDamageAabbHalfSize_.x,
-			center.y + kDamageAabbHalfSize_.y,
-			center.z + kDamageAabbHalfSize_.z
-		}
-	};
-}
 
 void Enemy::SetMaxHP(const float& hp)
 {}
@@ -644,4 +738,38 @@ void Enemy::TakeDamage(int damage)
 		bullets_.clear(); // 撃破時に残弾も消す。
 	}
 	// クリアへの遷移はGamePlayScene側で行う。
+}
+
+AABB Enemy::GetDamageAabb() const
+{
+	// ボスの現在位置を中心に、爆発判定用のAABBを作る。
+	const Vector3 center = transform_.translate;
+	return {
+		{
+			center.x - kDamageAabbHalfSize_.x,
+			center.y - kDamageAabbHalfSize_.y,
+			center.z - kDamageAabbHalfSize_.z
+		},
+		{
+			center.x + kDamageAabbHalfSize_.x,
+			center.y + kDamageAabbHalfSize_.y,
+			center.z + kDamageAabbHalfSize_.z
+		}
+	};
+}
+
+bool Enemy::IsSlamContactPhase() const
+{
+	return
+		attackState_ == AttackState::SlamFall ||
+		attackState_ == AttackState::SlamImpact ||
+		// Playerへ命中した場合だけ、ボスが離れるまで押し出しを再開しない。
+		(attackState_ == AttackState::SlamReturn && slamHitPlayer_);
+}
+
+bool Enemy::IsLighthouseAttackContactActive() const
+{
+	return
+		attackState_ == AttackState::Rush ||
+		attackState_ == AttackState::RushImpact;
 }

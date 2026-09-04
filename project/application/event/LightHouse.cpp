@@ -1,4 +1,5 @@
 #include "LightHouse.h"
+#include "Enemy.h"
 #ifdef _DEBUG
 #include "DebugDrawCommon.h"
 #endif // _DEBUG
@@ -43,7 +44,7 @@ void LightHouse::Update()
 		// ヒットフラグが立っている時の処理
 
 		if (t <= 1.0f)
-		{			
+		{
 			// tを加算
 			t += 0.01f;
 
@@ -109,8 +110,13 @@ void LightHouse::OnCollision(std::string hitObjectType, BaseCharacter* hitObject
 	}
 	else if (hitObjectType_ == "EnemySpawn")
 	{
-		// ボスだった場合の処理
-		SetIsHit(true);
+		// 灯台突進中のボスに当たった場合だけHPを消費する。
+		// 叩きつけ・巡回・帰還中の接触では灯台に影響させない。
+		Enemy* enemy = dynamic_cast<Enemy*>(hitObject_);
+		if (enemy != nullptr && enemy->IsLighthouseAttackContactActive())
+		{
+			SetIsHit(true);
+		}
 	}
 }
 
@@ -133,7 +139,7 @@ void LightHouse::AddHP(const float& hp)
 	{
 		intencity = 0.0f;
 	}
-	else if(intencity >= maxIntencity)
+	else if (intencity >= maxIntencity)
 	{
 		intencity = maxIntencity;
 	}

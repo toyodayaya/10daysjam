@@ -24,22 +24,26 @@ public:
 	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 	// 保有中HPを取得
 	uint32_t GetHp() const { return hp_; }
-	// 灯台本体の当たり判定に使用するAABBを取得
-	AABB GetCollisionAabb() const;
-	// 灯台にインタラクトできる範囲を取得
-	AABB GetInteractionAabb() const;
+	// 使用中・破壊演出中かを取得
+	bool IsHit() const { return isHit_; }
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
-	// 指定量まで保有中HPを取り出し、実際に取り出した量を返す
-	uint32_t WithdrawHp(uint32_t maxAmount);
 	// 最大HPを設定
 	void SetMaxHP(const float& hp) override;
+	// 最大maxAmountまで灯台のHPを取り出す
+	uint32_t WithdrawHp(uint32_t maxAmount);
+	// 灯台本体の押し出し判定用AABB
+	AABB GetCollisionAabb() const;
+	// PlayerがHPを受け渡すための広めのAABB
+	AABB GetInteractionAabb() const;
 
 	// setter
 	void SetIsHit(bool isHit);
 
 private:
+	// ゲーム上で灯台が保有しているHP
+	uint32_t hp_ = 10;
 	// 灯台の明るさ
 	float intencity = 10.0f;
 	// 灯台の明るさの減衰率
@@ -51,17 +55,13 @@ private:
 	bool isHit_ = false;
 	// 線形補間用の変数
 	float t = 0.0f;
+	// 灯台本体と、HP受け渡し範囲の大きさ
+	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
+	const Vector3 kInteractionAabbHalfSize_ = { 2.0f, 2.0f, 2.0f };
 
 #ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;
 #endif // _DEBUG
-
-	// 保有中HP
-	uint32_t hp_ = 0;
-	// 当たり判定用AABBの中心から各面までの距離
-	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
-	// インタラクト用AABBの中心から各面までの距離
-	const Vector3 kInteractionAabbHalfSize_ = { 3.0f, 1.5f, 3.0f };
 
 };
 
