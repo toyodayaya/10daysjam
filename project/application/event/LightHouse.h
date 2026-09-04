@@ -33,19 +33,16 @@ public:
 	void AddHP(const float& hp) override;
 	// 指定量まで保有中HPを取り出し、実際に取り出した量を返す
 	uint32_t WithdrawHp(uint32_t maxAmount);
-	// 最大HPを設定
-	void SetMaxHP(const float& hp) override;
-
+	
 	// setter
 	void SetIsHit(bool isHit) { this->isHit_ = isHit; }
+	void SetHp(uint32_t hp) { this->hp_ = hp; }
 
 private:
 	// 灯台の明るさ
-	float intencity = 10.0f;
+	float intencity = 0.0f;
 	// 灯台の明るさの減衰率
 	float decay = 10.0f;
-	// 灯台の明るさの限界値
-	float maxIntencity = 10.0f;
 
 	// 接触フラグ
 	bool isHit_ = false;
@@ -57,7 +54,7 @@ private:
 #endif // _DEBUG
 
 	// 保有中HP
-	uint32_t hp_ = 0;
+	uint32_t hp_ = 6;
 	// 当たり判定用AABBの中心から各面までの距離
 	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 	// インタラクト用AABBの中心から各面までの距離

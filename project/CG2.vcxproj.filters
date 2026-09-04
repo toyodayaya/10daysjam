@@ -294,6 +294,9 @@
     <ClCompile Include="application\damage\DamageManager.cpp">
       <Filter>ソース ファイル\application\damage</Filter>
     </ClCompile>
+    <ClCompile Include="engine\scene\ResultScene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\object3d\Object3d.PS.hlsl">
@@ -759,6 +762,9 @@
     </ClInclude>
     <ClInclude Include="application\damage\DamageManager.h">
       <Filter>ヘッダー ファイル\application\damage</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\scene\ResultScene.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

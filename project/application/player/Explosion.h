@@ -33,6 +33,9 @@ public:
 	float GetRadius() const;
 	int GetDamage() const;
 
+	// setter
+	void SetDamage(int damage) { damage_ = damage; }
+
 private:
 	Vector3 center_ = { 0.0f, 0.0f, 0.0f };
 	float radius_ = 0.0f;

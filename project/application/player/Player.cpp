@@ -11,6 +11,7 @@
 #include "SceneManager.h"
 #include <algorithm>
 #include <limits>
+#include <numeric>
 #include "DamageManager.h"
 
 void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailCamera)
@@ -161,6 +162,11 @@ void Player::SelfDestruct() {
 	{
 		// リスポーン前のワールド座標を爆心地として保存する
 		const Vector3 explosionCenter = object3d_->GetWorldTranslate();
+		// ダメージを設定
+		explosion_.SetDamage(hp_);
+		// ダメージを記録
+		DamageManager::GetInstance()->SetOnePlayBestDamage(hp_);
+		// リスポーン
 		Respawn();
 		explosion_.Activate(explosionCenter);
 
@@ -176,6 +182,7 @@ void Player::DamageEnemiesWithExplosion()
 		return;
 	}
 
+	
 	// Enemy一覧を直接走査
 	const std::vector<std::unique_ptr<BaseEnemy>>& enemies = EnemyManager::GetInstance()->GetEnemies();
 	for (const std::unique_ptr<BaseEnemy>& enemy : enemies)
@@ -326,9 +333,6 @@ void Player::UpdateLightHouseInteraction()
 				targetLightHouse->WithdrawHp(static_cast<uint32_t>(receivableHp));
 			hp_ += static_cast<int>(withdrawnHp);
 		}
-
-		// ダメージを記録
-		//DamageManager::GetInstance()->RankingUpdate(ダメージの数値);
 	}
 }
 
@@ -361,8 +365,9 @@ void Player::Respawn() {
 	{
 		respawnPosition_ = respawnLightHouse->GetTransform().translate;
 		maxHp_ = static_cast<int>(respawnLightHouse->GetHp());
-		hp_ = std::min(hp_, maxHp_);
+		hp_ = std::midpoint(0, maxHp_);
 		respawnLightHouse->SetIsHit(true);
+		respawnLightHouse->SetHp(6);
 	}
 
 	transform_.translate = respawnPosition_;
@@ -374,5 +379,3 @@ void Player::Respawn() {
 void Player::AddHP(const float& hp)
 {}
 
-void Player::SetMaxHP(const float& hp)
-{}

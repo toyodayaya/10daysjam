@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "Object3dCommon.h"
 #include <algorithm>
+#include "SceneManager.h"
 
 void Enemy::Initialize(const QuaternionTransform& transform, const std::string& filePath)
 {
@@ -50,6 +51,8 @@ void Enemy::TakeDamage(int damage)
 	if (hp_ == 0)
 	{
 		isDead_ = true;
+		// 死亡したら画面遷移
+		SceneManager::GetInstance()->ChangeScene("ResultScene");
 	}
 }
 
@@ -70,6 +73,3 @@ AABB Enemy::GetDamageAabb() const
 		}
 	};
 }
-
-void Enemy::SetMaxHP(const float& hp)
-{}

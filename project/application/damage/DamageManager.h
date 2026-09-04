@@ -18,6 +18,12 @@ public:
 	// PassKeyを受け取るコンストラクタ
 	explicit DamageManager(ConstructorKey) {}
 
+	enum State
+	{
+		Roll,
+		Notice
+	};
+
 
 private:
 	// デストラクタ
@@ -30,15 +36,21 @@ private:
 	static std::unique_ptr<DamageManager> instance;
 
 	// ダメージ記録用の変数
-	std::vector<int> damageRankings_ = { 1234,54321,123 };
+	std::vector<int> damageRankings_ = { 0,0,0 };
 	int nowDamage_ = 0;
+	int bestDamage_ = 0;
 
 	// ダメージの桁数上限
 	static const int kNumberArray = 6;
 	// 数字用のモデル
-	std::array<std::array<std::vector<std::unique_ptr<Sprite>>, kNumberArray>,3> numbers_;
+	std::array<std::array<std::vector<std::unique_ptr<Sprite>>, kNumberArray>,4> numbers_;
 	// 数字記録用の変数
-	std::array<std::array<int, kNumberArray>, 3> bitmapNumber_;
+	std::array<std::array<int, kNumberArray>, 4> bitmapNumber_;
+
+	// 発表フェーズ
+	State phase_ = Roll;
+	// ドラムロールタイマー
+	float drumRollTimer_ = 2;
 
 public:
 	// インスタンス
@@ -48,8 +60,10 @@ public:
 	void Initialize();
 	// 更新
 	void Update();
+	void BestDamageUpdate();
 	// 描画
 	void Draw();
+	void BestDamageDraw();
 	// 終了
 	void Finalize();
 
@@ -58,9 +72,14 @@ public:
 
 	// ビットマップフォントを設定
 	void RankingBitMapFont();
+	void BestDamageBitMapFont();
+
+	// 1プレイ内の最高ダメージを記録する関数
+	void SetOnePlayBestDamage(const int& damage);
 
 	// getter
 	std::vector<int> GetRanking() { return damageRankings_; }
+	State GetState() { return phase_; }
 
 };
 
