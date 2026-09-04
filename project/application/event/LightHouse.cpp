@@ -4,6 +4,7 @@
 #endif // _DEBUG
 #include "ImGuiManager.h"
 #include "MathManager.h"
+#include <algorithm>
 using namespace MathManager;
 
 void LightHouse::Initialize(const QuaternionTransform& transform, const std::string& filePath)
@@ -130,4 +131,49 @@ void LightHouse::SetMaxHP(const float& hp)
 {
 	// 明るさの限界値を更新
 	maxIntencity = hp;
+}
+
+uint32_t LightHouse::WithdrawHp(uint32_t maxAmount)
+{
+	const uint32_t withdrawnHp = (std::min)(hp_, maxAmount);
+	hp_ -= withdrawnHp;
+	intencity = (std::max)(0.0f, intencity - static_cast<float>(withdrawnHp));
+
+	return withdrawnHp;
+}
+
+AABB LightHouse::GetCollisionAabb() const
+{
+	// 灯台の論理座標を中心に、アプリケーション層で使うAABBを作成する
+	const Vector3& center = transform_.translate;
+	return {
+		{
+			center.x - kCollisionAabbHalfSize_.x,
+			center.y - kCollisionAabbHalfSize_.y,
+			center.z - kCollisionAabbHalfSize_.z
+		},
+		{
+			center.x + kCollisionAabbHalfSize_.x,
+			center.y + kCollisionAabbHalfSize_.y,
+			center.z + kCollisionAabbHalfSize_.z
+		}
+	};
+}
+
+AABB LightHouse::GetInteractionAabb() const
+{
+	// 本体の当たり判定とは別に、広めのインタラクト範囲を作成する
+	const Vector3& center = transform_.translate;
+	return {
+		{
+			center.x - kInteractionAabbHalfSize_.x,
+			center.y - kInteractionAabbHalfSize_.y,
+			center.z - kInteractionAabbHalfSize_.z
+		},
+		{
+			center.x + kInteractionAabbHalfSize_.x,
+			center.y + kInteractionAabbHalfSize_.y,
+			center.z + kInteractionAabbHalfSize_.z
+		}
+	};
 }

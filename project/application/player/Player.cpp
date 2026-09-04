@@ -5,9 +5,12 @@
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 #include "Input.h"
+#include "EnemyManager.h"
 #include "EventManager.h"
 #include "LightHouse.h"
 #include "SceneManager.h"
+#include <algorithm>
+#include <limits>
 #include "DamageManager.h"
 
 void Player::Initialize(const QuaternionTransform& transform, const std::string& filePath, bool isRailCamera)
@@ -42,6 +45,9 @@ void Player::Update()
 
 	// 3Dオブジェクトを更新
 	object3d_->Update();
+
+	// 灯台本体の衝突判定とは独立して、インタラクト範囲を判定する
+	UpdateLightHouseInteraction();
 
 	// 自爆処理
 	SelfDestruct();
@@ -94,27 +100,23 @@ void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 	if (hitObjectType_ == "EventSpawn")
 	{
 		// 灯台だった場合の処理
-
-		// EキーでHPを移す
-		if (Input::GetInstance()->TriggerKey(DIK_Q))
+		LightHouse* lightHouse = dynamic_cast<LightHouse*>(hitObject_);
+		if (lightHouse == nullptr)
 		{
-			// HPを移す処理
-			// 灯台に移すHPが残っていたら移せる
-			if (hp_ > lighthouseHp_)
-			{
-				// 衝突相手が灯台の場合のみHPを移す
-				LightHouse* lightHouse = dynamic_cast<LightHouse*>(hitObject_);
-				if (lightHouse != nullptr)
-				{
-					lightHouse->AddHP(static_cast<float>(lighthouseHp_));
-					hp_ -= lighthouseHp_;
-				}
-			}
+			return;
 		}
+
+		// 灯台本体との重なりがなくなる位置までPlayerを押し戻す
+		ResolveObstacleOverlap(lightHouse->GetCollisionAabb());
 	}
 	else if (hitObjectType_ == "EnemySpawn")
 	{
-		// ボスだった場合の処理
+		BaseEnemy* enemy = dynamic_cast<BaseEnemy*>(hitObject_);
+		if (enemy != nullptr && !enemy->IsDead())
+		{
+			// Enemy本体との重なりがなくなる位置までPlayerを押し戻す
+			ResolveObstacleOverlap(enemy->GetDamageAabb());
+		}
 	}
 
 }
@@ -161,6 +163,169 @@ void Player::SelfDestruct() {
 		const Vector3 explosionCenter = object3d_->GetWorldTranslate();
 		Respawn();
 		explosion_.Activate(explosionCenter);
+
+		// 爆発が有効な発生フレームに一度だけEnemyへダメージを与える
+		DamageEnemiesWithExplosion();
+	}
+}
+
+void Player::DamageEnemiesWithExplosion()
+{
+	if (!explosion_.IsActive())
+	{
+		return;
+	}
+
+	// Enemy一覧を直接走査
+	const std::vector<std::unique_ptr<BaseEnemy>>& enemies = EnemyManager::GetInstance()->GetEnemies();
+	for (const std::unique_ptr<BaseEnemy>& enemy : enemies)
+	{
+		if (enemy->IsDead())
+		{
+			continue;
+		}
+
+		if (explosion_.IsCollision(enemy->GetDamageAabb()))
+		{
+			enemy->TakeDamage(explosion_.GetDamage());
+		}
+	}
+}
+
+void Player::ResolveObstacleOverlap(const AABB& obstacleAabb)
+{
+	// Playerの現在座標からAABBを作成する
+	const AABB playerAabb = {
+		{
+			transform_.translate.x - kCollisionAabbHalfSize_.x,
+			transform_.translate.y - kCollisionAabbHalfSize_.y,
+			transform_.translate.z - kCollisionAabbHalfSize_.z
+		},
+		{
+			transform_.translate.x + kCollisionAabbHalfSize_.x,
+			transform_.translate.y + kCollisionAabbHalfSize_.y,
+			transform_.translate.z + kCollisionAabbHalfSize_.z
+		}
+	};
+
+	const float overlapX = (std::min)(playerAabb.max.x, obstacleAabb.max.x) -
+		(std::max)(playerAabb.min.x, obstacleAabb.min.x);
+	const float overlapY = (std::min)(playerAabb.max.y, obstacleAabb.max.y) -
+		(std::max)(playerAabb.min.y, obstacleAabb.min.y);
+	const float overlapZ = (std::min)(playerAabb.max.z, obstacleAabb.max.z) -
+		(std::max)(playerAabb.min.z, obstacleAabb.min.z);
+
+	// 3軸すべてが重なっている場合だけ押し戻す
+	if (overlapX <= 0.0f || overlapY <= 0.0f || overlapZ <= 0.0f)
+	{
+		return;
+	}
+
+	const float obstacleCenterX = (obstacleAabb.min.x + obstacleAabb.max.x) * 0.5f;
+	const float obstacleCenterZ = (obstacleAabb.min.z + obstacleAabb.max.z) * 0.5f;
+
+	// X/Zのうち重なりが小さい軸へ押し戻すことで、障害物に沿って移動できるようにする
+	if (overlapX <= overlapZ)
+	{
+		if (transform_.translate.x < obstacleCenterX)
+		{
+			transform_.translate.x -= overlapX;
+		}
+		else if (transform_.translate.x > obstacleCenterX)
+		{
+			transform_.translate.x += overlapX;
+		}
+		else
+		{
+			// 中心が一致するリスポーン時は、ステージ中央側へ押し出す
+			transform_.translate.x += obstacleCenterX >= 0.0f ? -overlapX : overlapX;
+		}
+	}
+	else
+	{
+		if (transform_.translate.z < obstacleCenterZ)
+		{
+			transform_.translate.z -= overlapZ;
+		}
+		else if (transform_.translate.z > obstacleCenterZ)
+		{
+			transform_.translate.z += overlapZ;
+		}
+		else
+		{
+			// 中心が一致する場合はステージ中央側へ押し出す
+			transform_.translate.z += obstacleCenterZ >= 0.0f ? -overlapZ : overlapZ;
+		}
+	}
+
+	// 衝突判定後の描画にも押し戻した座標を即時反映する
+	object3d_->SetTranslate(transform_.translate);
+	object3d_->Update();
+}
+
+void Player::UpdateLightHouseInteraction()
+{
+	LightHouse* targetLightHouse = nullptr;
+	float nearestDistanceSquared = (std::numeric_limits<float>::max)();
+
+	// 登録中の灯台を調べ、インタラクト範囲内で最も近い1基を選ぶ
+	const std::vector<std::unique_ptr<BaseEvent>>& events = EventManager::GetInstance()->GetEvents();
+	for (const std::unique_ptr<BaseEvent>& event : events)
+	{
+		LightHouse* lightHouse = dynamic_cast<LightHouse*>(event.get());
+		if (lightHouse == nullptr)
+		{
+			continue;
+		}
+
+		const AABB interactionAabb = lightHouse->GetInteractionAabb();
+		const Vector3& playerPosition = transform_.translate;
+		const bool isInsideInteractionAabb =
+			playerPosition.x >= interactionAabb.min.x && playerPosition.x <= interactionAabb.max.x &&
+			playerPosition.y >= interactionAabb.min.y && playerPosition.y <= interactionAabb.max.y &&
+			playerPosition.z >= interactionAabb.min.z && playerPosition.z <= interactionAabb.max.z;
+
+		if (!isInsideInteractionAabb)
+		{
+			continue;
+		}
+
+		const Vector3 lightHousePosition = lightHouse->GetTransform().translate;
+		const float differenceX = playerPosition.x - lightHousePosition.x;
+		const float differenceY = playerPosition.y - lightHousePosition.y;
+		const float differenceZ = playerPosition.z - lightHousePosition.z;
+		const float distanceSquared =
+			differenceX * differenceX + differenceY * differenceY + differenceZ * differenceZ;
+
+		if (distanceSquared < nearestDistanceSquared)
+		{
+			nearestDistanceSquared = distanceSquared;
+			targetLightHouse = lightHouse;
+		}
+	}
+
+	if (targetLightHouse == nullptr)
+	{
+		return;
+	}
+
+	// QキーでPlayerから灯台へHPを移す
+	if (Input::GetInstance()->TriggerKey(DIK_Q) && hp_ > lighthouseHp_)
+	{
+		targetLightHouse->AddHP(static_cast<float>(lighthouseHp_));
+		hp_ -= lighthouseHp_;
+	}
+
+	// ZキーでPlayerの最大HPを超えない範囲まで灯台のHPを回収する
+	if (Input::GetInstance()->TriggerKey(DIK_Z))
+	{
+		const int receivableHp = maxHp_ - hp_;
+		if (receivableHp > 0)
+		{
+			const uint32_t withdrawnHp =
+				targetLightHouse->WithdrawHp(static_cast<uint32_t>(receivableHp));
+			hp_ += static_cast<int>(withdrawnHp);
+		}
 
 		// ダメージを記録
 		//DamageManager::GetInstance()->RankingUpdate(ダメージの数値);

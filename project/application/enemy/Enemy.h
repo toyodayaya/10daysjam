@@ -21,8 +21,17 @@ public:
 	void AddHP(const float& hp) override;
 	// 最大HPを設定
 	void SetMaxHP(const float& hp) override;
+	// ダメージを受ける
+	void TakeDamage(int damage) override;
+	// 爆発との当たり判定に使用するAABBを取得
+	AABB GetDamageAabb() const override;
 
 private:
-
+	// 初期HP
+	const int kInitialHp_ = 30;
+	// 現在HP
+	int hp_ = kInitialHp_;
+	// 爆発判定用AABBの中心から各面までの距離
+	const Vector3 kDamageAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 };
 

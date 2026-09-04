@@ -41,6 +41,12 @@ public:
 	void SetMaxHP(const float& hp) override;
 
 private:
+	// 発生中の爆発とEnemyの当たり判定を行う
+	void DamageEnemiesWithExplosion();
+	// Playerと障害物のAABBの重なりを解消する
+	void ResolveObstacleOverlap(const AABB& obstacleAabb);
+	// 範囲内で最も近い灯台とのインタラクトを処理する
+	void UpdateLightHouseInteraction();
 	
 	// 当たり判定フラグ
 	bool isHit_;
@@ -52,10 +58,12 @@ private:
 	const float kExplosionRadius_ = 3.0f;
 	const int kExplosionDamage_ = 10;
 	Explosion explosion_{ kExplosionRadius_, kExplosionDamage_ };
+	// Playerの当たり判定用AABBの中心から各面までの距離
+	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 	
 	// 移動限界
 	const float kMoveLimitX_ = 7.0f;
-	const float kMoveLimitZ_ = 4.0f;
+	const float kMoveLimitZ_ = 7.0f;
 	
 	// 初期最大HP
 	const int kIniMaxHp_ = 20;

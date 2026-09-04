@@ -15,20 +15,14 @@ EnemyManager* EnemyManager::GetInstance()
 
 void EnemyManager::Update()
 {
-	// デスフラグが立った弾を削除
-	enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(), []
-	(const std::unique_ptr<BaseEnemy>& enemy)
-		{
-			return enemy->IsDead();
-		}
-	),
-		enemies_.end()
-	);
-
 	// 登録された敵を更新
 	for (const std::unique_ptr<BaseEnemy>& enemy : enemies_)
 	{
-		enemy->Update();
+		// コライダーが参照しているEnemyを無効にしないため、死亡後も実体は保持する
+		if (!enemy->IsDead())
+		{
+			enemy->Update();
+		}
 	}
 }
 
@@ -37,7 +31,11 @@ void EnemyManager::Draw()
 	// 登録された敵を描画
 	for (const std::unique_ptr<BaseEnemy>& enemy : enemies_)
 	{
-		enemy->Draw();
+		// 死亡したEnemyは実体だけ保持し、描画は行わない
+		if (!enemy->IsDead())
+		{
+			enemy->Draw();
+		}
 	}
 }
 

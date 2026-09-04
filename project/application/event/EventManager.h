@@ -44,6 +44,8 @@ public:
 
 	// setter
 	void SetEvents(std::unique_ptr<BaseEvent> event) { events_.push_back(std::move(event)); }
+	// 登録されているイベント一覧を取得
+	const std::vector<std::unique_ptr<BaseEvent>>& GetEvents() const { return events_; }
 	// 保有中HPが最も多い灯台を取得
 	LightHouse* GetHighestHpLightHouse() const;
 	
