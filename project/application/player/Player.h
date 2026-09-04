@@ -45,17 +45,32 @@ private:
 	void ResolveObstacleOverlap(const AABB& obstacleAabb);
 	// 範囲内で最も近い灯台とのインタラクトを処理する
 	void UpdateLightHouseInteraction();
+	// リスポーン時のスケールアニメーションを開始する
+	void StartRespawnScaleAnimation();
+	// リスポーン時のスケールアニメーションを更新する
+	void UpdateRespawnScaleAnimation();
 	
 	// 当たり判定フラグ
 	bool isHit_;
 
 	// リスポーン座標
 	Vector3 respawnPosition_ = { 0.0f, 0.0f, 0.0f };
+	// 灯台を使用できない場合に戻る初期スポーン座標
+	Vector3 initialRespawnPosition_ = { 0.0f, 0.0f, 0.0f };
+	// Player本来のスケール
+	Vector3 baseScale_ = { 1.0f, 1.0f, 1.0f };
+	// リスポーン演出の再生時間（60FPSで約0.4秒）
+	static constexpr int kRespawnScaleAnimationFrames_ = 24;
+	// リスポーン直後のスケール倍率
+	static constexpr float kRespawnStartScaleRate_ = 0.05f;
+	int respawnScaleAnimationFrame_ = 0;
+	bool isRespawnScaleAnimating_ = false;
 
 	// 自爆攻撃
 	const float kExplosionRadius_ = 3.0f;
-	const int kExplosionDamage_ = 10;
-	Explosion explosion_{ kExplosionRadius_, kExplosionDamage_ };
+	// 爆発の基礎ダメージ
+	const int kBaseExplosionDamage_ = 10;
+	Explosion explosion_{ kExplosionRadius_, kBaseExplosionDamage_ };
 	// Playerの当たり判定用AABBの中心から各面までの距離
 	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 	
@@ -65,6 +80,8 @@ private:
 	
 	// 初期最大HP
 	const int kIniMaxHp_ = 20;
+	// 最大HPの最低値
+	const int kMinimumMaxHp_ = 10;
 	// 最大HP
 	int maxHp_ = kIniMaxHp_;
 	// HP
