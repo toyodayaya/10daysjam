@@ -172,11 +172,7 @@ void Player::SelfDestruct() {
 		explosion_.SetDamage(hp_);
 		// ダメージを記録
 		DamageManager::GetInstance()->SetOnePlayBestDamage(hp_);
-		// リスポーン
-		const int remainingHp = (std::max)(0, hp_);
-		const int explosionDamage = kBaseExplosionDamage_ + remainingHp;
-		explosion_.SetDamage(explosionDamage);
-
+		
 		// リスポーンでHPが変わる前に爆発の情報を確定させる
 		Respawn();
 		explosion_.Activate(explosionCenter);

@@ -45,6 +45,9 @@ public:
 	// getter
 	const std::vector<std::unique_ptr<BaseEnemy>>& GetEnemies() { return enemies_; }
 
+	// 保有中の敵からデスフラグを取得
+	BaseEnemy* GetIsDeadEnemy() const;
+
 	// インスタンス
 	static EnemyManager* GetInstance();
 };

@@ -1,4 +1,4 @@
-#include "GamePlayScene.h"
+#include "TutorialScene.h"
 #include "TextureManager.h"
 #include "ModelManager.h"
 #include "StageManager.h"
@@ -9,7 +9,7 @@
 #include "DamageManager.h"
 #include "EnemyManager.h"
 
-void GamePlayScene::Initialize()
+void TutorialScene::Initialize()
 {
 	// スプライトを読み込む
 	TextureManager::GetInstance()->LoadTexture("resources/human/white.png");
@@ -21,11 +21,11 @@ void GamePlayScene::Initialize()
 	ModelManager::GetInstance()->LoadModel("resources/cube", "cube.obj", Model::AnimationType::kNone);
 
 	// ステージを読み込む
-	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");
+	StageManager::GetInstance()->LoadJsonData("resources/stages", "tutorial.json");
 	// ステージを設定する
-	stageData_ = StageManager::GetInstance()->FindJsonData("1.json");
+	stageData_ = StageManager::GetInstance()->FindJsonData("tutorial.json");
 	// ステージを作成する
-	stageData_->CreateStage("1.json");
+	stageData_->CreateStage("tutorial.json");
 
 	// Skyboxの初期化
 	skydomeTransform.translate = { 0.0f,0.0f,0.0f };
@@ -35,13 +35,13 @@ void GamePlayScene::Initialize()
 	skydome->Initialize(skydomeTransform, "skydome.obj");
 }
 
-void GamePlayScene::Finalize()
+void TutorialScene::Finalize()
 {
 	stageData_->ClearStage();
 	stageData_ = nullptr;
 }
 
-void GamePlayScene::Update()
+void TutorialScene::Update()
 {
 	// ステージを更新
 	stageData_->Update();
@@ -52,14 +52,63 @@ void GamePlayScene::Update()
 	// skydomeの更新処理
 	skydome->Update();
 
-	// 死亡したら画面遷移
-	if (EnemyManager::GetInstance()->GetIsDeadEnemy())
+	switch (phase_)
 	{
-		SceneManager::GetInstance()->ChangeScene("ResultScene");
+	case kLighting:
+	{
+		// 最も明るい灯台のHPを取得
+		LightHouse* respawnLightHouse = EventManager::GetInstance()->GetHighestHpLightHouse();
+		if (respawnLightHouse != nullptr)
+		{
+			if (respawnLightHouse->GetHp() >= 15)
+			{
+				// 次のフェーズへ
+				phase_ = kRespawn;
+				return;
+			}
+		}
+
+		break;
+	}
+
+	case kRespawn:
+	{
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE))
+		{
+			// プレイヤーが自爆したら次のフェーズへ
+			phase_ = kDefeat;
+			return;
+		}
+
+
+		break;
+	}
+
+	case kDefeat:
+	{
+		// 敵が死亡したら
+		if (EnemyManager::GetInstance()->GetIsDeadEnemy())
+		{
+			// 次のフェーズへ
+			phase_ = kNextScene;
+			return;
+		}
+
+		break;
+	}
+
+	case kNextScene:
+	{
+		// エンターキーで次のシーンへ
+		if (Input::GetInstance()->TriggerKey(DIK_RETURN))
+		{
+			SceneManager::GetInstance()->ChangeScene("GamePlayScene");
+		}
+	}
 	}
 }
 
-void GamePlayScene::Draw()
+void TutorialScene::Draw()
 {
 	// ステージを描画
 	stageData_->Draw();

@@ -17,9 +17,13 @@ void TitleScene::Finalize()
 
 void TitleScene::Update()
 {
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE))
+	if (Input::GetInstance()->TriggerKey(DIK_2))
 	{
 		SceneManager::GetInstance()->ChangeScene("GamePlayScene");
+	}
+	else if (Input::GetInstance()->TriggerKey(DIK_1))
+	{
+		SceneManager::GetInstance()->ChangeScene("TutorialScene");
 	}
 
 	DamageManager::GetInstance()->Update();

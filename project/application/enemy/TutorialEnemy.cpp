@@ -1,9 +1,9 @@
-#include "Enemy.h"
+#include "TutorialEnemy.h"
 #include "Object3dCommon.h"
 #include <algorithm>
 #include "SceneManager.h"
 
-void Enemy::Initialize(const QuaternionTransform& transform, const std::string& filePath)
+void TutorialEnemy::Initialize(const QuaternionTransform& transform, const std::string& filePath)
 {
 	// 3Dオブジェクトを初期化
 	object3d_ = std::make_unique<Object3d>();
@@ -16,33 +16,33 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	isDead_ = false;
 }
 
-void Enemy::Finalize()
+void TutorialEnemy::Finalize()
 {
 	
 }
 
-void Enemy::Update()
+void TutorialEnemy::Update()
 {
 	object3d_->Update();
 }
 
-void Enemy::Draw()
+void TutorialEnemy::Draw()
 {
 	object3d_->Draw();
 }
 
-void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
+void TutorialEnemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
 	
 }
 
-void Enemy::AddHP(const float& hp)
+void TutorialEnemy::AddHP(const float& hp)
 {}
 
-void Enemy::SetMaxHP(const float& hp)
+void TutorialEnemy::SetMaxHP(const float& hp)
 {}
 
-void Enemy::TakeDamage(int damage)
+void TutorialEnemy::TakeDamage(int damage)
 {
 	// 無効なダメージや死亡後の重複ダメージは処理しない
 	if (damage <= 0 || isDead_)
@@ -55,9 +55,14 @@ void Enemy::TakeDamage(int damage)
 	{
 		isDead_ = true;
 	}
+	else
+	{
+		// 一発で倒しきれなかった場合は回復
+		hp_ = kInitialHp_;
+	}
 }
 
-AABB Enemy::GetDamageAabb() const
+AABB TutorialEnemy::GetDamageAabb() const
 {
 	// 爆発判定専用のAABBを作成する
 	const Vector3& center = transform_.translate;

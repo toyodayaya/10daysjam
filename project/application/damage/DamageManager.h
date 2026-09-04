@@ -20,8 +20,8 @@ public:
 
 	enum State
 	{
-		Roll,
-		Notice
+		kRoll,
+		kNotice
 	};
 
 
@@ -48,7 +48,7 @@ private:
 	std::array<std::array<int, kNumberArray>, 4> bitmapNumber_;
 
 	// 発表フェーズ
-	State phase_ = Roll;
+	State phase_ = kRoll;
 	// ドラムロールタイマー
 	float drumRollTimer_ = 2;
 
