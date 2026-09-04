@@ -5,6 +5,7 @@
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 #include "Input.h"
+#include "Enemy.h"
 #include "EnemyManager.h"
 #include "EventManager.h"
 #include "LightHouse.h"
@@ -29,6 +30,7 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	initialRespawnPosition_ = transform.translate;
 	explosion_.Initialize();
 	isHit_ = false;
+	squashTimer_ = 0;
 
 	isDead_ = false;
 }
@@ -45,6 +47,8 @@ void Player::Update()
 	Move();
 	// リスポーン時の出現演出を更新
 	UpdateRespawnScaleAnimation();
+	// 叩きつけで潰れた見た目を更新
+	UpdateSquashAnimation();
 
 	object3d_->SetTranslate(transform_.translate);
 	object3d_->SetScale(transform_.scale);
@@ -120,6 +124,14 @@ void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 		BaseEnemy* enemy = dynamic_cast<BaseEnemy*>(hitObject_);
 		if (enemy != nullptr && !enemy->IsDead())
 		{
+			// ボスが落下中、または着地衝撃中の間だけ押し出さない。
+			// BaseEnemyで受けるため、ほかのEnemy派生クラスの判定は今までどおり残る。
+			Enemy* boss = dynamic_cast<Enemy*>(enemy);
+			if (boss != nullptr && boss->IsSlamContactPhase())
+			{
+				return;
+			}
+
 			// Enemy本体との重なりがなくなる位置までPlayerを押し戻す
 			ResolveObstacleOverlap(enemy->GetDamageAabb());
 		}
@@ -392,6 +404,21 @@ void Player::UpdateRespawnScaleAnimation()
 	}
 }
 
+void Player::UpdateSquashAnimation()
+{
+	if (squashTimer_ <= 0)
+	{
+		return;
+	}
+
+	--squashTimer_;
+	if (squashTimer_ == 0)
+	{
+		// 演出終了時にPlayer本来の大きさへ戻す。
+		transform_.scale = baseScale_;
+	}
+}
+
 // HP自動回復処理
 void Player::AutoRecoveryHp() {
 
@@ -414,6 +441,7 @@ void Player::AutoRecoveryHp() {
 // リスポーン処理
 void Player::Respawn() {
 	explosion_.Deactivate();
+	squashTimer_ = 0;
 	// 使用できる灯台がない場合は初期スポーン地点へ戻る
 	respawnPosition_ = initialRespawnPosition_;
 
@@ -441,6 +469,39 @@ void Player::Respawn() {
 void Player::AddHP(const float& hp)
 {}
 
+void Player::TakeDamage(int damage)
+{
+	// 撃破後や、0以下のダメージではHPを変更しない。
+	if (isDead_ || damage <= 0)
+	{
+		return;
+	}
+
+	// 座標やスケールには触れず、現在HPだけを減らす。
+	hp_ = (damage >= hp_) ? 0 : hp_ - damage;
+	// 被弾直後に自動回復してダメージが見えなくならないよう、回復時間を数え直す。
+	recoveryHpTimer_ = 0.0f;
+	if (hp_ == 0)
+	{
+		isDead_ = true;
+	}
+}
+
+void Player::StartSquashed()
+{
+	// 座標は一切変更せず、見た目のスケールだけを変更する。
+	squashTimer_ = kSquashFrames_;
+	isRespawnScaleAnimating_ = false;
+	transform_.scale = {
+		baseScale_.x * kSquashHorizontalScale_,
+		baseScale_.y * kSquashVerticalScale_,
+		baseScale_.z * kSquashHorizontalScale_
+	};
+
+	// 衝突がUpdate後でも、そのフレームの描画へ潰れた見た目を反映する。
+	object3d_->SetScale(transform_.scale);
+	object3d_->Update();
+}
 
 void Player::SetMaxHP(const float& hp)
 {

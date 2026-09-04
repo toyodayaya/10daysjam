@@ -31,6 +31,10 @@ public:
 
 	// リスポーン処理
 	void Respawn();
+	// 座標を動かさず、現在HPだけを減らす
+	void TakeDamage(int damage);
+	// 叩きつけ命中時のぺったんこ演出を開始する
+	void StartSquashed();
 
 	// 爆発攻撃を取得
 	const Explosion& GetExplosion() const { return explosion_; }
@@ -51,7 +55,9 @@ private:
 	void StartRespawnScaleAnimation();
 	// リスポーン時のスケールアニメーションを更新する
 	void UpdateRespawnScaleAnimation();
-	
+	// ぺったんこ演出を更新する
+	void UpdateSquashAnimation();
+
 	// 当たり判定フラグ
 	bool isHit_;
 
@@ -67,6 +73,12 @@ private:
 	static constexpr float kRespawnStartScaleRate_ = 0.05f;
 	int respawnScaleAnimationFrame_ = 0;
 	bool isRespawnScaleAnimating_ = false;
+	// ぺったんこ状態を維持する時間（60FPSで約1秒）
+	static constexpr int kSquashFrames_ = 60;
+	// ぺったんこ中の横方向と縦方向の倍率
+	static constexpr float kSquashHorizontalScale_ = 1.3f;
+	static constexpr float kSquashVerticalScale_ = 0.25f;
+	int squashTimer_ = 0;
 
 	// 自爆攻撃
 	const float kExplosionRadius_ = 3.0f;
@@ -74,11 +86,11 @@ private:
 	Explosion explosion_{ kExplosionRadius_, hp_ };
 	// Playerの当たり判定用AABBの中心から各面までの距離
 	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
-	
+
 	// 移動限界
 	const float kMoveLimitX_ = 7.0f;
 	const float kMoveLimitZ_ = 7.0f;
-	
+
 	// 初期最大HP
 	const int kIniMaxHp_ = 10;
 	// 最大HPの最低値
