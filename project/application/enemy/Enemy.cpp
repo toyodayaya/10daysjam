@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cmath>
 #include <utility>
-#include "SceneManager.h"
 
 void Enemy::Initialize(const QuaternionTransform& transform, const std::string& filePath)
 {
@@ -23,6 +22,10 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	transform_ = transform;
 	hp_ = kMaxHp_;
 	isDead_ = false;
+	isDying_ = false;
+	deathExplosionStarted_ = false;
+	deathAnimationFrame_ = 0;
+	deathExplosion_.Initialize();
 	attackState_ = AttackState::Patrol;
 	attackTimer_ = kPatrolFrames_;
 	nextAttackIsSlam_ = true;
@@ -35,7 +38,7 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	slamStartPosition_ = transform_.translate;
 	slamTargetPosition_ = transform_.translate;
 	shotTimer_ = kShotIntervalFrames_;
-	bulletModelFilePath_ = filePath;
+	bulletModelFilePath_ = filePath; // 読み込み済みのボスモデルを弾の仮表示に再利用。
 	bullets_.clear();
 }
 
@@ -48,6 +51,25 @@ void Enemy::Update()
 {
 	if (isDead_)
 	{
+		return;
+	}
+
+	// HPが0になった後は攻撃処理を止め、撃破演出だけを更新する。
+	if (isDying_)
+	{
+		// 先に更新することで、爆発を発生させた最初のフレームも描画される。
+		deathExplosion_.Update();
+		UpdateDeathAnimation();
+		object3d_->SetTransform(transform_);
+		object3d_->Update();
+
+#ifdef USE_IMGUI
+		ImGui::Begin("Boss");
+		ImGui::Text("HP: %d / %d", hp_, kMaxHp_);
+		ImGui::Text("State: Dying (%d / %d)",
+			deathAnimationFrame_, kDeathAnimationFrames_);
+		ImGui::End();
+#endif // USE_IMGUI
 		return;
 	}
 
@@ -162,7 +184,7 @@ bool Enemy::TryStartSpecialAttack()
 			nextAttackIsSlam_ = true;
 			return true;
 		}
-
+		// 明るい灯台がない場合も、プレイヤーへの攻撃は止めない。
 		if (TryStartSlamAttack())
 		{
 			nextAttackIsSlam_ = false;
@@ -256,7 +278,9 @@ void Enemy::UpdateAttack()
 			transform_.translate.x += dx / distance * kRushSpeed_;
 			transform_.translate.z += dz / distance * kRushSpeed_;
 		}
-
+		// 灯台のHPはここで直接減らさない。
+		// 既存のStageDataの接触判定からLightHouse::OnCollision()が呼ばれ、
+		// 灯台側の減衰処理によって明るさ（HP）が減る。
 		break;
 	}
 
@@ -367,6 +391,7 @@ void Enemy::UpdateAttack()
 
 	case AttackState::SlamFall:
 	{
+		// 最初はゆっくり、地面に近づくほど速くなる落下にする。
 		const int elapsedFrames = kSlamFallFrames_ - attackTimer_ + 1;
 		const float progress = static_cast<float>(elapsedFrames)
 			/ static_cast<float>(kSlamFallFrames_);
@@ -650,6 +675,8 @@ void Enemy::Draw()
 	}
 
 	object3d_->Draw();
+	// 撃破時の爆発は当たり判定を使わず、描画だけ行う。
+	deathExplosion_.Draw();
 	for (const auto& bullet : bullets_)
 	{
 		bullet.object3d->Draw();
@@ -658,6 +685,12 @@ void Enemy::Draw()
 
 void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
+	// 撃破演出中は攻撃も被弾も行わない。
+	if (isDying_)
+	{
+		return;
+	}
+
 	// 地面叩きつけの落下中、または着地衝撃中にプレイヤーと重なった場合だけつぶす。
 	if (hitObjectType == "PlayerSpawn")
 	{
@@ -726,7 +759,7 @@ void Enemy::SetMaxHP(const float& hp)
 void Enemy::TakeDamage(int damage)
 {
 	// 撃破後や、0以下のダメージではHPを変更しない。
-	if (isDead_ || damage <= 0)
+	if (isDead_ || isDying_ || damage <= 0)
 	{
 		return;
 	}
@@ -735,10 +768,68 @@ void Enemy::TakeDamage(int damage)
 	hp_ = (damage >= hp_) ? 0 : hp_ - damage;
 	if (hp_ == 0)
 	{
-		isDead_ = true;
-		bullets_.clear(); // 撃破時に残弾も消す。
+		StartDeathAnimation();
 	}
-	// クリアへの遷移はGamePlayScene側で行う。
+	// 演出終了後にisDead_がtrueになり、GamePlayScene側のクリア判定へ進む。
+}
+
+void Enemy::StartDeathAnimation()
+{
+	isDying_ = true;
+	deathExplosionStarted_ = false;
+	deathAnimationFrame_ = 0;
+	deathPosition_ = transform_.translate;
+	deathScale_ = transform_.scale;
+	bullets_.clear();
+}
+
+void Enemy::UpdateDeathAnimation()
+{
+	++deathAnimationFrame_;
+
+	constexpr float kPi = 3.14159265359f;
+	if (deathAnimationFrame_ <= kDeathWarningFrames_)
+	{
+		// 最初の0.5秒は揺れを強めながら、少しずつ膨らませる。
+		const float progress = static_cast<float>(deathAnimationFrame_) /
+			static_cast<float>(kDeathWarningFrames_);
+		const float scaleRate = 1.0f +
+			(kDeathMaxScaleRate_ - 1.0f) * progress;
+
+		const float phase = static_cast<float>(deathAnimationFrame_) * kPi * 0.35f;
+		transform_.translate = deathPosition_;
+		transform_.translate.x +=
+			std::sin(phase) * kDeathShakeWidth_ * progress;
+		transform_.translate.z +=
+			std::cos(phase * 1.37f) * kDeathShakeWidth_ * progress;
+		transform_.scale = {
+			deathScale_.x * scaleRate,
+			deathScale_.y * scaleRate,
+			deathScale_.z * scaleRate
+		};
+	}
+	else
+	{
+		// 膨らみ切ったら本体を隠し、その位置で大きな爆発を1回だけ発生させる。
+		transform_.translate = deathPosition_;
+		transform_.scale = { 0.0f, 0.0f, 0.0f };
+		if (!deathExplosionStarted_)
+		{
+			deathExplosionStarted_ = true;
+			deathExplosion_.Activate(deathPosition_);
+			// 演出専用なので攻撃判定は同じフレームで無効化する。
+			deathExplosion_.Deactivate();
+		}
+	}
+
+	// Explosion側の表示時間が終わってから死亡扱いにして、クリアへ進む。
+	if (deathAnimationFrame_ > kDeathAnimationFrames_)
+	{
+		transform_.translate = deathPosition_;
+		transform_.scale = { 0.0f, 0.0f, 0.0f };
+		isDying_ = false;
+		isDead_ = true;
+	}
 }
 
 AABB Enemy::GetDamageAabb() const
@@ -762,13 +853,21 @@ AABB Enemy::GetDamageAabb() const
 bool Enemy::IsSlamContactPhase() const
 {
 	return
+		// 撃破演出中もPlayer側の押し戻しを止める。
+		isDying_ ||
 		attackState_ == AttackState::SlamFall ||
 		attackState_ == AttackState::SlamImpact ||
+		// Playerへ命中した場合だけ、ボスが離れるまで押し出しを再開しない。
 		(attackState_ == AttackState::SlamReturn && slamHitPlayer_);
 }
 
 bool Enemy::IsLighthouseAttackContactActive() const
 {
+	if (isDying_)
+	{
+		return false;
+	}
+
 	return
 		attackState_ == AttackState::Rush ||
 		attackState_ == AttackState::RushImpact;

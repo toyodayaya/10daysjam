@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseEnemy.h"
+#include "Explosion.h"
 #include "Object3d.h"
 #include <cstdint>
 #include <memory>
@@ -24,6 +25,7 @@ public:
 	Vector3 GetTranslate() { return transform_.translate; }
 	// HP加算関数
 	void AddHP(const float& hp) override;
+	// 最大HPを設定
 	void SetMaxHP(const float& hp) override;
 	// ダメージを受ける
 	void TakeDamage(int damage) override;
@@ -62,6 +64,9 @@ private:
 	void UpdateBullets();
 	bool TryStartSlamAttack();
 	void ResetSlamScale();
+	// 撃破演出を開始・更新する
+	void StartDeathAnimation();
+	void UpdateDeathAnimation();
 
 	// 弾はEnemyが所有し、移動・描画・Playerとの当たり判定を行う。
 	struct Bullet
@@ -81,6 +86,22 @@ private:
 	int shotTimer_ = kShotIntervalFrames_;
 	std::string bulletModelFilePath_;
 	std::vector<Bullet> bullets_;
+
+	// 撃破後すぐに消さず、揺れ・膨張の後に演出専用の爆発を表示する。
+	static constexpr int kDeathWarningFrames_ = 30;  // 揺れながら膨らむ：0.5秒
+	static constexpr int kDeathExplosionFrames_ = 12; // 爆発表示：約0.2秒
+	static constexpr int kDeathAnimationFrames_ =
+		kDeathWarningFrames_ + kDeathExplosionFrames_;
+	static constexpr float kDeathMaxScaleRate_ = 1.25f;
+	static constexpr float kDeathShakeWidth_ = 0.18f;
+	static constexpr float kDeathExplosionRadius_ = 3.0f;
+	// ダメージ0の演出専用爆発。IsCollisionは呼ばない。
+	Explosion deathExplosion_{ kDeathExplosionRadius_, 0 };
+	bool isDying_ = false;
+	bool deathExplosionStarted_ = false;
+	int deathAnimationFrame_ = 0;
+	Vector3 deathPosition_ = { 0.0f, 0.0f, 0.0f };
+	Vector3 deathScale_ = { 1.0f, 1.0f, 1.0f };
 
 	// 狙いを決める時、このHP（明るさ）以上の灯台だけを対象にする。
 	static constexpr uint32_t kTargetMinHp_ = 5;
@@ -129,4 +150,3 @@ private:
 	// 爆発判定用AABBの中心から各面までの距離
 	const Vector3 kDamageAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 };
-
