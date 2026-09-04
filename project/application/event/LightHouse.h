@@ -28,7 +28,6 @@ public:
 	AABB GetCollisionAabb() const;
 	// 灯台にインタラクトできる範囲を取得
 	AABB GetInteractionAabb() const;
-	uint32_t GetHp() const { return static_cast<uint32_t>(intencity); }
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
