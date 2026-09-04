@@ -38,6 +38,18 @@ void DamageManager::Initialize()
 			}
 		}
 	}
+
+	// ランキング用の画像を読み込む
+	for (size_t i = 0; i < 3; i++)
+	{
+		std::string filePath = "resources/numbers/" + std::to_string(i+1) + "s.png";
+		TextureManager::GetInstance()->LoadTexture(filePath);
+		auto sprite = std::make_unique<Sprite>();
+		sprite->Initialize(SpriteCommon::GetInstance(), filePath);
+		Vector2 pos = { 0.0f,static_cast<float>((i * 90) + 320) };
+		sprite->SetPosition(pos);
+		rankSprite_.push_back(std::move(sprite));
+	}
 }
 
 void DamageManager::Update()
@@ -49,6 +61,8 @@ void DamageManager::Update()
 			int number = bitmapNumber_[r][i];
 			numbers_[r][i][number]->Update();
 		}
+
+		rankSprite_[r]->Update();
 	}
 }
 
@@ -111,6 +125,8 @@ void DamageManager::Draw()
 			int number = bitmapNumber_[r][i];
 			numbers_[r][i][number]->Draw();
 		}
+
+		rankSprite_[r]->Draw();
 	}
 }
 
@@ -190,7 +206,7 @@ void DamageManager::RankingBitMapFont()
 			for (int j = 0; j < 10; j++)
 			{
 				int number = bitmapNumber_[r][i];
-				Vector2 pos = { static_cast<float>(i * 100),static_cast<float>(r * 100) };
+				Vector2 pos = { static_cast<float>((i * 60) + 100),static_cast<float>((r * 90) + 350) };
 				numbers_[r][i][number]->SetPosition(pos);
 			}
 		}
@@ -215,7 +231,7 @@ void DamageManager::BestDamageBitMapFont()
 	{
 		for (size_t j = 0; j < 10; j++)
 		{
-			Vector2 pos = { static_cast<float>(i * 100),0.0f };
+			Vector2 pos = { static_cast<float>((i * 60) + 400),300.0f };
 			numbers_[3][i][j]->SetPosition(pos);
 		}
 
