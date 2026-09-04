@@ -55,6 +55,7 @@ void LightHouse::Update()
 			// フラグを戻す
 			isHit_ = false;
 			t = 0.0f;
+			intencity = 0.0f;
 		}
 	}
 
@@ -63,7 +64,9 @@ void LightHouse::Update()
 	ImGui::Begin("LightHouse");
 	ImGui::DragFloat3("pos", &transform_.translate.x);
 	ImGui::DragFloat("intencity", &intencity);
+
 	ImGui::Text("Stored HP: %u", hp_);
+
 
 	ImGui::End();
 #endif // USE_IMGUI
@@ -132,18 +135,12 @@ void LightHouse::AddHP(const float& hp)
 	if (intencity <= 0.0f)
 	{
 		intencity = 0.0f;
+		hp_ = 0;
 	}
-	else if(intencity >= maxIntencity)
-	{
-		intencity = maxIntencity;
-	}
+
+	hp_ = static_cast<uint32_t>(intencity);
 }
 
-void LightHouse::SetMaxHP(const float& hp)
-{
-	// 明るさの限界値を更新
-	maxIntencity = hp;
-}
 
 void LightHouse::SetIsHit(bool isHit)
 {
