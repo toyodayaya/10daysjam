@@ -430,7 +430,6 @@ void Player::Respawn() {
 		// 灯台の保有HPが少なくても、Playerの最大HPは最低値を下回らない
 		SetMaxHP(static_cast<float>(respawnLightHouse->GetHp()));
 		respawnLightHouse->SetIsHit(true);
-		respawnLightHouse->SetHp(6);
 	}
 
 	transform_.translate = respawnPosition_;

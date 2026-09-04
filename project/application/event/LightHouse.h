@@ -31,11 +31,12 @@ public:
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
+	void SetMaxHP(const float& hp) override;
 	// 指定量まで保有中HPを取り出し、実際に取り出した量を返す
 	uint32_t WithdrawHp(uint32_t maxAmount);
 	
 	// setter
-	void SetIsHit(bool isHit) { this->isHit_ = isHit; }
+	void SetIsHit(bool isHit);
 	void SetHp(uint32_t hp) { this->hp_ = hp; }
 	// 使用・破壊状態か取得
 	bool IsHit() const { return isHit_; }
@@ -56,7 +57,7 @@ private:
 #endif // _DEBUG
 
 	// 保有中HP
-	uint32_t hp_ = 6;
+	uint32_t hp_ = 0;
 	// 当たり判定用AABBの中心から各面までの距離
 	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 	// インタラクト用AABBの中心から各面までの距離

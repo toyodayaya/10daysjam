@@ -141,6 +141,9 @@ void LightHouse::AddHP(const float& hp)
 	hp_ = static_cast<uint32_t>(intencity);
 }
 
+void LightHouse::SetMaxHP(const float& hp)
+{}
+
 
 void LightHouse::SetIsHit(bool isHit)
 {
