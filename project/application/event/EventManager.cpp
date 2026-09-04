@@ -48,7 +48,8 @@ LightHouse* EventManager::GetHighestHpLightHouse() const
 	for (const std::unique_ptr<BaseEvent>& event : events_)
 	{
 		LightHouse* lightHouse = dynamic_cast<LightHouse*>(event.get());
-		if (lightHouse != nullptr &&
+		// 0HPまたは使用・破壊中の灯台はリスポーン候補にしない
+		if (lightHouse != nullptr && !lightHouse->IsHit() && lightHouse->GetHp() > 0 &&
 			(highestHpLightHouse == nullptr || lightHouse->GetHp() > highestHpLightHouse->GetHp()))
 		{
 			highestHpLightHouse = lightHouse;

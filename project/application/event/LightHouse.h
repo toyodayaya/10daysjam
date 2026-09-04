@@ -23,15 +23,23 @@ public:
 	// 衝突応答
 	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 	// 保有中HPを取得
-	uint32_t GetHp() const { return static_cast<uint32_t>(intencity); }
+	uint32_t GetHp() const { return hp_; }
+	// 灯台本体の当たり判定に使用するAABBを取得
+	AABB GetCollisionAabb() const;
+	// 灯台にインタラクトできる範囲を取得
+	AABB GetInteractionAabb() const;
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
+	// 指定量まで保有中HPを取り出し、実際に取り出した量を返す
+	uint32_t WithdrawHp(uint32_t maxAmount);
 	// 最大HPを設定
 	void SetMaxHP(const float& hp) override;
 
 	// setter
-	void SetIsHit(bool isHit) { this->isHit_ = isHit; }
+	void SetIsHit(bool isHit);
+	// 使用・破壊状態か取得
+	bool IsHit() const { return isHit_; }
 
 private:
 	// 灯台の明るさ
@@ -49,6 +57,13 @@ private:
 #ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;
 #endif // _DEBUG
+
+	// 保有中HP
+	uint32_t hp_ = 0;
+	// 当たり判定用AABBの中心から各面までの距離
+	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
+	// インタラクト用AABBの中心から各面までの距離
+	const Vector3 kInteractionAabbHalfSize_ = { 3.0f, 1.5f, 3.0f };
 
 };
 

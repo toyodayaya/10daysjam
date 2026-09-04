@@ -1,14 +1,5 @@
 #include "Enemy.h"
 #include "Object3dCommon.h"
-#ifdef USE_IMGUI
-#include "ImGuiManager.h"
-#endif // USE_IMGUI
-#include "Player.h"
-#include "EventManager.h"
-#include "LightHouse.h"
-#include "CollisionManager.h"
-#include <cmath>
-#include <utility>
 
 void Enemy::Initialize(const QuaternionTransform& transform, const std::string& filePath)
 {
@@ -19,7 +10,6 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	object3d_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
 	object3d_->SetTransform(transform);
 	transform_ = transform;
-	hp_ = kMaxHp_;
 	isDead_ = false;
 	attackState_ = AttackState::Patrol;
 	attackTimer_ = kPatrolFrames_;
@@ -596,26 +586,44 @@ void Enemy::Draw()
 
 void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
-	// 自爆が命中したという通知の場合
-	if (hitObjectType == "Explosion")
-	{
-		Player* player = dynamic_cast<Player*>(hitObject);
-		if (player == nullptr)
-		{
-			return;
-		}
-
-		const Explosion& explosion = player->GetExplosion();
-
-		if (explosion.IsActive())
-		{
-			TakeDamage(explosion.GetDamage());
-		}
-	}
+	isDead_ = true;
 }
 
 void Enemy::AddHP(const float& hp)
 {}
+
+void Enemy::TakeDamage(int damage)
+{
+	// 無効なダメージや死亡後の重複ダメージは処理しない
+	if (damage <= 0 || isDead_)
+	{
+		return;
+	}
+
+	hp_ = (std::max)(0, hp_ - damage);
+	if (hp_ == 0)
+	{
+		isDead_ = true;
+	}
+}
+
+AABB Enemy::GetDamageAabb() const
+{
+	// 爆発判定専用のAABBを作成する
+	const Vector3& center = transform_.translate;
+	return {
+		{
+			center.x - kDamageAabbHalfSize_.x,
+			center.y - kDamageAabbHalfSize_.y,
+			center.z - kDamageAabbHalfSize_.z
+		},
+		{
+			center.x + kDamageAabbHalfSize_.x,
+			center.y + kDamageAabbHalfSize_.y,
+			center.z + kDamageAabbHalfSize_.z
+		}
+	};
+}
 
 void Enemy::SetMaxHP(const float& hp)
 {}
