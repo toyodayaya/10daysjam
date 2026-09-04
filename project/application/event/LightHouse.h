@@ -49,6 +49,8 @@ private:
 	float intencity = 0.0f;
 	// 灯台の明るさの減衰率
 	float decay = 10.0f;
+	// 灯台の明るさの限界値
+	float maxIntencity = 10.0f;
 
 	// 接触フラグ
 	bool isHit_ = false;

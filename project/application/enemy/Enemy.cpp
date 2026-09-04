@@ -758,3 +758,18 @@ AABB Enemy::GetDamageAabb() const
 		}
 	};
 }
+
+bool Enemy::IsSlamContactPhase() const
+{
+	return
+		attackState_ == AttackState::SlamFall ||
+		attackState_ == AttackState::SlamImpact ||
+		(attackState_ == AttackState::SlamReturn && slamHitPlayer_);
+}
+
+bool Enemy::IsLighthouseAttackContactActive() const
+{
+	return
+		attackState_ == AttackState::Rush ||
+		attackState_ == AttackState::RushImpact;
+}
