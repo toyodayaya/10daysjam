@@ -37,7 +37,9 @@ public:
 	void SetMaxHP(const float& hp) override;
 
 	// setter
-	void SetIsHit(bool isHit) { this->isHit_ = isHit; }
+	void SetIsHit(bool isHit);
+	// 使用・破壊状態か取得
+	bool IsHit() const { return isHit_; }
 
 private:
 	// 灯台の明るさ

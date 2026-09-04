@@ -23,7 +23,9 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	object3d_->SetTransform(transform);
 	object3d_->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
 	transform_ = transform;
+	baseScale_ = transform.scale;
 	respawnPosition_ = transform.translate;
+	initialRespawnPosition_ = transform.translate;
 	explosion_.Initialize();
 	isHit_ = false;
 
@@ -40,8 +42,11 @@ void Player::Update()
 
 	// 移動処理
 	Move();
+	// リスポーン時の出現演出を更新
+	UpdateRespawnScaleAnimation();
 
 	object3d_->SetTranslate(transform_.translate);
+	object3d_->SetScale(transform_.scale);
 
 	// 3Dオブジェクトを更新
 	object3d_->Update();
@@ -159,8 +164,13 @@ void Player::SelfDestruct() {
 	// スペースキーで自爆する
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE))
 	{
-		// リスポーン前のワールド座標を爆心地として保存する
+		// リスポーン前の座標と残りHPを爆発へ反映する
 		const Vector3 explosionCenter = object3d_->GetWorldTranslate();
+		const int remainingHp = (std::max)(0, hp_);
+		const int explosionDamage = kBaseExplosionDamage_ + remainingHp;
+		explosion_.SetDamage(explosionDamage);
+
+		// リスポーンでHPが変わる前に爆発の情報を確定させる
 		Respawn();
 		explosion_.Activate(explosionCenter);
 
@@ -273,7 +283,8 @@ void Player::UpdateLightHouseInteraction()
 	for (const std::unique_ptr<BaseEvent>& event : events)
 	{
 		LightHouse* lightHouse = dynamic_cast<LightHouse*>(event.get());
-		if (lightHouse == nullptr)
+		// 使用・破壊中の灯台とはインタラクトしない
+		if (lightHouse == nullptr || lightHouse->IsHit())
 		{
 			continue;
 		}
@@ -332,6 +343,54 @@ void Player::UpdateLightHouseInteraction()
 	}
 }
 
+void Player::StartRespawnScaleAnimation()
+{
+	respawnScaleAnimationFrame_ = 0;
+	isRespawnScaleAnimating_ = true;
+
+	// 最初はほぼ見えない大きさにして、次フレーム以降で元の大きさへ戻す
+	transform_.scale = {
+		baseScale_.x * kRespawnStartScaleRate_,
+		baseScale_.y * kRespawnStartScaleRate_,
+		baseScale_.z * kRespawnStartScaleRate_
+	};
+}
+
+void Player::UpdateRespawnScaleAnimation()
+{
+	if (!isRespawnScaleAnimating_)
+	{
+		return;
+	}
+
+	const float progress = static_cast<float>(respawnScaleAnimationFrame_) /
+		static_cast<float>(kRespawnScaleAnimationFrames_ - 1);
+
+	// EaseOutBackで一度少し膨らませ、元サイズへ戻すことで「にゅっ」とした動きにする
+	constexpr float kBackStrength = 1.70158f;
+	constexpr float kBackCoefficient = kBackStrength + 1.0f;
+	const float offsetProgress = progress - 1.0f;
+	const float easedProgress = 1.0f +
+		kBackCoefficient * offsetProgress * offsetProgress * offsetProgress +
+		kBackStrength * offsetProgress * offsetProgress;
+	const float scaleRate = kRespawnStartScaleRate_ +
+		(1.0f - kRespawnStartScaleRate_) * easedProgress;
+
+	transform_.scale = {
+		baseScale_.x * scaleRate,
+		baseScale_.y * scaleRate,
+		baseScale_.z * scaleRate
+	};
+
+	++respawnScaleAnimationFrame_;
+	if (respawnScaleAnimationFrame_ >= kRespawnScaleAnimationFrames_)
+	{
+		// 誤差が残らないよう、終了時は本来のスケールを直接設定する
+		transform_.scale = baseScale_;
+		isRespawnScaleAnimating_ = false;
+	}
+}
+
 // HP自動回復処理
 void Player::AutoRecoveryHp() {
 
@@ -354,19 +413,25 @@ void Player::AutoRecoveryHp() {
 // リスポーン処理
 void Player::Respawn() {
 	explosion_.Deactivate();
+	// 使用できる灯台がない場合は初期スポーン地点へ戻る
+	respawnPosition_ = initialRespawnPosition_;
 
 	// 保有中HPが最も多い灯台をリスポーン先にする
 	LightHouse* respawnLightHouse = EventManager::GetInstance()->GetHighestHpLightHouse();
 	if (respawnLightHouse != nullptr)
 	{
 		respawnPosition_ = respawnLightHouse->GetTransform().translate;
-		maxHp_ = static_cast<int>(respawnLightHouse->GetHp());
-		hp_ = std::min(hp_, maxHp_);
+		// 灯台の保有HPが少なくても、Playerの最大HPは最低値を下回らない
+		SetMaxHP(static_cast<float>(respawnLightHouse->GetHp()));
 		respawnLightHouse->SetIsHit(true);
 	}
 
 	transform_.translate = respawnPosition_;
+	StartRespawnScaleAnimation();
 	object3d_->SetTranslate(transform_.translate);
+	object3d_->SetScale(transform_.scale);
+	// リスポーンしたフレームの描画にも座標と小さいスケールを反映する
+	object3d_->Update();
 	isDead_ = false;
 	isHit_ = false;
 }
@@ -375,4 +440,9 @@ void Player::AddHP(const float& hp)
 {}
 
 void Player::SetMaxHP(const float& hp)
-{}
+{
+	// 外部から10未満の値が渡されても、最大HPの最低値を保証する
+	maxHp_ = (std::max)(kMinimumMaxHp_, static_cast<int>(hp));
+	// 最大HPが現在HPより小さくなった場合は現在HPも上限内に収める
+	hp_ = (std::min)(hp_, maxHp_);
+}

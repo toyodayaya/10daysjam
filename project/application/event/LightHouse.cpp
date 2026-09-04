@@ -63,6 +63,7 @@ void LightHouse::Update()
 	ImGui::Begin("LightHouse");
 	ImGui::DragFloat3("pos", &transform_.translate.x);
 	ImGui::DragFloat("intencity", &intencity);
+	ImGui::Text("Stored HP: %u", hp_);
 
 	ImGui::End();
 #endif // USE_IMGUI
@@ -109,12 +110,23 @@ void LightHouse::OnCollision(std::string hitObjectType, BaseCharacter* hitObject
 	else if (hitObjectType_ == "EnemySpawn")
 	{
 		// ボスだった場合の処理
-		isHit_ = true;
+		SetIsHit(true);
 	}
 }
 
 void LightHouse::AddHP(const float& hp)
 {
+	// ゲーム上の保有HPと表示上の明るさを両方更新する
+	if (hp >= 0.0f)
+	{
+		hp_ += static_cast<uint32_t>(hp);
+	}
+	else
+	{
+		const uint32_t decreaseHp = static_cast<uint32_t>(-hp);
+		hp_ -= (std::min)(hp_, decreaseHp);
+	}
+
 	intencity += hp;
 
 	if (intencity <= 0.0f)
@@ -131,6 +143,18 @@ void LightHouse::SetMaxHP(const float& hp)
 {
 	// 明るさの限界値を更新
 	maxIntencity = hp;
+}
+
+void LightHouse::SetIsHit(bool isHit)
+{
+	// リスポーンに使用された、またはEnemyに破壊された灯台の保有HPを消費する
+	if (isHit && !isHit_)
+	{
+		hp_ = 0;
+		t = 0.0f;
+	}
+
+	isHit_ = isHit;
 }
 
 uint32_t LightHouse::WithdrawHp(uint32_t maxAmount)
