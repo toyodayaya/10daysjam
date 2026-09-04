@@ -4,6 +4,7 @@
 #include "Object3d.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "TutorialEnemy.h"
 #include "LightHouse.h"
 #include <string>
 #include <vector>
@@ -54,6 +55,7 @@ public:
 		QuaternionTransform transform;
 		std::string filePath;
 		ColliderSpawnData collider;
+		std::string enemyType;
 	};
 
 

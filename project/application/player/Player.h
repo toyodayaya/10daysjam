@@ -71,8 +71,7 @@ private:
 	// 自爆攻撃
 	const float kExplosionRadius_ = 3.0f;
 	// 爆発の基礎ダメージ
-	const int kBaseExplosionDamage_ = 10;
-	Explosion explosion_{ kExplosionRadius_, kBaseExplosionDamage_ };
+	Explosion explosion_{ kExplosionRadius_, hp_ };
 	// Playerの当たり判定用AABBの中心から各面までの距離
 	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 	
@@ -81,9 +80,9 @@ private:
 	const float kMoveLimitZ_ = 7.0f;
 	
 	// 初期最大HP
-	const int kIniMaxHp_ = 20;
+	const int kIniMaxHp_ = 10;
 	// 最大HPの最低値
-	const int kMinimumMaxHp_ = 10;
+	const int kMinimumMaxHp_ = 6;
 	// 最大HP
 	int maxHp_ = kIniMaxHp_;
 	// HP

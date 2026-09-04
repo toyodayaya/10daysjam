@@ -56,11 +56,11 @@ void DamageManager::BestDamageUpdate()
 {
 	switch (phase_)
 	{
-	case Roll:
+	case kRoll:
 	{
 		if (drumRollTimer_ <= 0.0f)
 		{
-			phase_ = Notice;
+			phase_ = kNotice;
 			return;
 		}
 		else
@@ -87,7 +87,7 @@ void DamageManager::BestDamageUpdate()
 		break;
 	}
 
-	case Notice:
+	case kNotice:
 	{
 
 		for (size_t i = 0; i < kNumberArray; ++i)
@@ -118,7 +118,7 @@ void DamageManager::BestDamageDraw()
 {
 	switch (phase_)
 	{
-	case Roll:
+	case kRoll:
 	{
 		// ドラムロール用にランダム値を初期化
 		std::random_device seedGenerator;
@@ -133,7 +133,7 @@ void DamageManager::BestDamageDraw()
 		}
 		break;
 	}
-	case Notice:
+	case kNotice:
 	{
 
 		for (size_t i = 0; i < kNumberArray; ++i)
@@ -199,6 +199,10 @@ void DamageManager::RankingBitMapFont()
 
 void DamageManager::BestDamageBitMapFont()
 {
+	// 数値を初期化しておく
+	phase_ = kRoll;
+	drumRollTimer_ = 2;
+
 	for (int j = 5; j >= 0; j--)
 	{
 		// 最高ダメージの数値を分割して記録

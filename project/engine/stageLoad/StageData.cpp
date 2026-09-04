@@ -137,8 +137,8 @@ void StageData::CheckAllCollision()
 			if (CollisionManager::GetInstance()->IsCollision(colliderAABB, colliderHitAABB))
 			{
 				// オブジェクトのヒット処理
-				colliders.parent->OnCollision(collidersHit.objectType,collidersHit.parent);
-				collidersHit.parent->OnCollision(colliders.objectType,colliders.parent);
+				colliders.parent->OnCollision(collidersHit.objectType, collidersHit.parent);
+				collidersHit.parent->OnCollision(colliders.objectType, colliders.parent);
 			}
 
 		}
@@ -459,6 +459,12 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 		enemySpawnData.filePath = enemy["file_name"].get<std::string>();
 	}
 
+	if (enemy.contains("event_name"))
+	{
+		// 敵のタイプを記録
+		enemySpawnData.enemyType = enemy["event_name"].get<std::string>();
+	}
+
 	// トランスフォームのパラメータ読み込み
 	nlohmann::json& transform = enemy["transform"];
 	// 平行移動データを格納
@@ -492,8 +498,18 @@ StageData::EnemySpawnData StageData::LoadEnemy(nlohmann::json& enemy)
 
 void StageData::CreateEnemy(const EnemySpawnData& enemyData)
 {
-	std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>();
-	enemy->Initialize(enemyData.transform, enemyData.filePath);
+	std::unique_ptr<BaseEnemy> enemy;
+
+	if (enemyData.enemyType == "boss")
+	{
+		enemy = std::make_unique<Enemy>();
+		enemy->Initialize(enemyData.transform, enemyData.filePath);
+	}
+	else if (enemyData.enemyType == "tutorial")
+	{
+		enemy = std::make_unique<TutorialEnemy>();
+		enemy->Initialize(enemyData.transform, enemyData.filePath);
+	}
 
 	// コライダーがあれば生成、配置
 	if (enemyData.collider.hasCollier)
@@ -597,7 +613,7 @@ StageData::EventSpawnData StageData::LoadEvent(nlohmann::json& event)
 void StageData::CreateEvents(const EventSpawnData& eventData)
 {
 	std::unique_ptr<LightHouse> event = std::make_unique<LightHouse>();
-	event->Initialize(eventData.transform,eventData.filePath);
+	event->Initialize(eventData.transform, eventData.filePath);
 
 	// コライダーがあれば生成、配置
 	if (eventData.collider.hasCollier)

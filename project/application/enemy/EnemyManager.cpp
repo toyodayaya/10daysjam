@@ -4,6 +4,24 @@
 std::unique_ptr<EnemyManager> EnemyManager::instance = nullptr;
 
 
+BaseEnemy* EnemyManager::GetIsDeadEnemy() const
+{
+	BaseEnemy* deadEnemy = nullptr;
+
+	for (const std::unique_ptr<BaseEnemy>& enemy : enemies_)
+	{
+		BaseEnemy* isDeadEnemy = dynamic_cast<BaseEnemy*>(enemy.get());
+		// デスフラグの立っている敵を取得
+		if (isDeadEnemy->IsDead())
+		{
+			deadEnemy = isDeadEnemy;
+		}
+
+	}
+
+	return deadEnemy;
+}
+
 EnemyManager* EnemyManager::GetInstance()
 {
 	if (instance == nullptr)

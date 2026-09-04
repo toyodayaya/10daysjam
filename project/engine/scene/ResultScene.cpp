@@ -18,7 +18,7 @@ void ResultScene::Update()
 {
 	DamageManager::GetInstance()->BestDamageUpdate();
 
-	if (DamageManager::GetInstance()->GetState() == DamageManager::State::Notice)
+	if (DamageManager::GetInstance()->GetState() == DamageManager::State::kNotice)
 	{
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE))
 		{
