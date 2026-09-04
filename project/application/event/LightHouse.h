@@ -28,7 +28,6 @@ public:
 	AABB GetCollisionAabb() const;
 	// 灯台にインタラクトできる範囲を取得
 	AABB GetInteractionAabb() const;
-	uint32_t GetHp() const { return static_cast<uint32_t>(intencity); }
 
 	// HP加算関数
 	void AddHP(const float& hp) override;
@@ -38,7 +37,9 @@ public:
 	void SetMaxHP(const float& hp) override;
 
 	// setter
-	void SetIsHit(bool isHit) { this->isHit_ = isHit; }
+	void SetIsHit(bool isHit);
+	// 使用・破壊状態か取得
+	bool IsHit() const { return isHit_; }
 
 private:
 	// 灯台の明るさ

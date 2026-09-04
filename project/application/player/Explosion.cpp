@@ -28,21 +28,30 @@ void Explosion::Initialize()
 	debugSphere_->SetTranslate(center_);
 	debugSphere_->SetParent(nullptr);
 	debugSphere_->SetIsRailCamera(false);
-	debugDisplayFrames_ = 0;
+	effectElapsedFrames_ = 0;
+	isEffectActive_ = false;
 #endif
 }
 
 void Explosion::Update()
 {
 #ifdef _DEBUG
-	if (debugSphere_ && debugDisplayFrames_ > 0)
+	if (debugSphere_ && isEffectActive_)
 	{
+		// 0～1の進行度を作り、Smoothstepで自然に収縮させる
+		const float progress = static_cast<float>(effectElapsedFrames_) /
+			static_cast<float>(kEffectDurationFrames_ - 1);
+		const float smoothProgress = progress * progress * (3.0f - 2.0f * progress);
+		const float scaleRate = 1.0f - smoothProgress;
+		const float effectScale = radius_ * kInitialEffectScaleMultiplier_ * scaleRate;
+
+		debugSphere_->SetScale({ effectScale, effectScale, effectScale });
 		debugSphere_->Update();
 
-		// 発生フレームを含めて約0.2秒表示する
-		if (!isActive_)
+		++effectElapsedFrames_;
+		if (effectElapsedFrames_ >= kEffectDurationFrames_)
 		{
-			--debugDisplayFrames_;
+			isEffectActive_ = false;
 		}
 	}
 #endif
@@ -51,7 +60,7 @@ void Explosion::Update()
 void Explosion::Draw()
 {
 #ifdef _DEBUG
-	if (debugSphere_ && debugDisplayFrames_ > 0)
+	if (debugSphere_ && isEffectActive_)
 	{
 		debugSphere_->Draw();
 	}
@@ -67,8 +76,10 @@ void Explosion::Activate(const Vector3& center)
 	if (debugSphere_)
 	{
 		debugSphere_->SetTranslate(center_);
-		debugSphere_->SetScale({ radius_, radius_, radius_ });
-		debugDisplayFrames_ = kDebugDisplayFrames_;
+		const float initialEffectScale = radius_ * kInitialEffectScaleMultiplier_;
+		debugSphere_->SetScale({ initialEffectScale, initialEffectScale, initialEffectScale });
+		effectElapsedFrames_ = 0;
+		isEffectActive_ = true;
 	}
 #endif
 }
@@ -76,6 +87,12 @@ void Explosion::Activate(const Vector3& center)
 void Explosion::Deactivate()
 {
 	isActive_ = false;
+}
+
+void Explosion::SetDamage(int damage)
+{
+	// ダメージが負数にならないように補正する
+	damage_ = (std::max)(0, damage);
 }
 
 bool Explosion::IsCollision(const AABB& aabb) const
