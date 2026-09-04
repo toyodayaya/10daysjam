@@ -95,6 +95,12 @@ void StageData::Draw()
 		debugBox->DrawBox();
 	}
 #endif // _DEBUG
+
+	// UIが3Dオブジェクトに隠れないよう、全ての3D描画が終わってから描画する
+	for (const std::unique_ptr<Player>& player : players_)
+	{
+		player->DrawUI();
+	}
 }
 
 void StageData::CheckAllCollision()

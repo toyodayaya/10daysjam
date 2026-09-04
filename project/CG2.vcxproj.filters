@@ -279,6 +279,9 @@
     <ClCompile Include="application\player\Player.cpp">
       <Filter>ソース ファイル\application\player</Filter>
     </ClCompile>
+    <ClCompile Include="application\player\PlayerHPUI.cpp">
+      <Filter>ソース ファイル\application\player</Filter>
+    </ClCompile>
     <ClCompile Include="application\base\BaseCharacter.cpp">
       <Filter>ソース ファイル\application\base</Filter>
     </ClCompile>
@@ -743,6 +746,9 @@
       <Filter>ヘッダー ファイル\application\player</Filter>
     </ClInclude>
     <ClInclude Include="application\player\Player.h">
+      <Filter>ヘッダー ファイル\application\player</Filter>
+    </ClInclude>
+    <ClInclude Include="application\player\PlayerHPUI.h">
       <Filter>ヘッダー ファイル\application\player</Filter>
     </ClInclude>
     <ClInclude Include="application\collider\CollisionManager.h">

@@ -206,6 +206,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\RenderTexture.cpp" />
     <ClCompile Include="application\player\Explosion.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
+    <ClCompile Include="application\player\PlayerHPUI.cpp" />
     <ClCompile Include="application\skydome\Skydome.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -492,6 +493,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\stageLoad\StageData.h" />
     <ClInclude Include="application\player\Explosion.h" />
     <ClInclude Include="application\player\Player.h" />
+    <ClInclude Include="application\player\PlayerHPUI.h" />
     <ClInclude Include="application\skydome\Skydome.h" />
   </ItemGroup>
   <ItemGroup>

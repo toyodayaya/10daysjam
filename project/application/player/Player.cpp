@@ -27,6 +27,8 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	respawnPosition_ = transform.translate;
 	initialRespawnPosition_ = transform.translate;
 	explosion_.Initialize();
+	hpUI_.Initialize();
+	hpUI_.Update(hp_, maxHp_);
 	isHit_ = false;
 
 	isDead_ = false;
@@ -58,6 +60,8 @@ void Player::Update()
 	SelfDestruct();
 	// 爆発範囲表示の更新
 	explosion_.Update();
+	// このフレームで変化した現在HP・最大HPをUIへ反映する
+	hpUI_.Update(hp_, maxHp_);
 
 
 #ifdef USE_IMGUI
@@ -88,6 +92,12 @@ void Player::Draw()
 	object3d_->Draw();
 	// 爆発範囲の描画
 	explosion_.Draw();
+}
+
+void Player::DrawUI()
+{
+	// UIはStageDataから全3Dオブジェクトの描画後に呼び出される
+	hpUI_.Draw();
 }
 
 void Player::Finalize()
