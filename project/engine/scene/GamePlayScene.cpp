@@ -53,7 +53,7 @@ void GamePlayScene::Update()
 	skydome->Update();
 
 	// 死亡したら画面遷移
-	if (EnemyManager::GetInstance()->GetIsDeadEnemy())
+	if (EnemyManager::GetInstance()->GetIsDeadEnemy() || Input::GetInstance()->TriggerKey(DIK_E))
 	{
 		SceneManager::GetInstance()->ChangeScene("ResultScene");
 	}

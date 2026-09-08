@@ -1,6 +1,8 @@
 #pragma once
 #include "BaseScene.h"
-#include <vector>
+#include "Sprite.h"
+#include <memory>
+
 
 class ResultScene : public BaseScene
 {
@@ -15,4 +17,7 @@ public:
 	void Draw() override;
 
 private:
+	std::unique_ptr<Sprite> backGround_;
+	std::unique_ptr<Sprite> pressSpace_;
+
 };
