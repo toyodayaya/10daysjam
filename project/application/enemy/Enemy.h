@@ -1,7 +1,9 @@
 #pragma once
 #include "BaseEnemy.h"
+#include "BossHPUI.h"
 #include "Explosion.h"
 #include "Object3d.h"
+#include "Audio.h"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -18,6 +20,8 @@ public:
 	void Update() override;
 	// 描画
 	void Draw() override;
+	// ボスHP UIの描画
+	void DrawUI() override;
 	// 衝突応答
 	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 
@@ -171,6 +175,14 @@ private:
 	const int kMaxHp_ = 30;
 	// ボスの現在HP
 	int hp_ = kMaxHp_;
+	// 画面中央上に表示するボスHPバー
+	BossHPUI hpUI_;
 	// 爆発判定用AABBの中心から各面までの距離
 	const Vector3 kDamageAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
+
+	// サウンドデータ
+	Audio::SoundData chargeSE_;
+	Audio::SoundData rushSE_;
+	Audio::SoundData jumpSE_;
+	Audio::SoundData landSE_;
 };

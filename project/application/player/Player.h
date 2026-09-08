@@ -5,6 +5,7 @@
 #include "BaseCharacter.h"
 #include "Explosion.h"
 #include "PlayerHPUI.h"
+#include "Audio.h"
 
 class Player : public BaseCharacter
 {
@@ -70,6 +71,8 @@ private:
 	Vector3 initialRespawnPosition_ = { 0.0f, 0.0f, 0.0f };
 	// Player本来のスケール
 	Vector3 baseScale_ = { 1.0f, 1.0f, 1.0f };
+	// モデル本来の向きを保持し、移動方向の回転と合成する
+	Quaternion baseRotation_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 	// リスポーン演出の再生時間（60FPSで約0.4秒）
 	static constexpr int kRespawnScaleAnimationFrames_ = 24;
 	// リスポーン直後のスケール倍率
@@ -112,5 +115,9 @@ private:
 
 	// 灯台にうつすHPの数値
 	const int lighthouseHp_ = 5;
+
+	// サウンドデータ
+	Audio::SoundData collectSE_;
+	Audio::SoundData explosionSE_;
 };
 

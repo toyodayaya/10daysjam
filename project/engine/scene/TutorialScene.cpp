@@ -25,7 +25,7 @@ void TutorialScene::Initialize()
 	// objファイルからモデルを読み込む
 	ModelManager::GetInstance()->LoadModel("resources/player", "player.obj", Model::AnimationType::kNone);
 	ModelManager::GetInstance()->LoadModel("resources/enemy", "enemy.obj", Model::AnimationType::kNone);
-	ModelManager::GetInstance()->LoadModel("resources/cube", "cube.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/lighthouse", "lighthouse.obj", Model::AnimationType::kNone);
 	ModelManager::GetInstance()->LoadModel("resources/skydome", "skydome.obj", Model::AnimationType::kNone);
 
 	// ステージを読み込む
@@ -45,29 +45,36 @@ void TutorialScene::Initialize()
 	// スプライトの初期化
 	lighting_ = std::make_unique<Sprite>();
 	lighting_->Initialize(SpriteCommon::GetInstance(), "resources/UI/lighting.png");
-	lighting_->SetPosition(Vector2{ 0.0f,500.0f });
+	lighting_->SetPosition(Vector2{ 0.0f,-30.0f });
 
 	respawn_ = std::make_unique<Sprite>();
 	respawn_->Initialize(SpriteCommon::GetInstance(), "resources/UI/respawn.png");
-	respawn_->SetPosition(Vector2{ 0.0f,500.0f });
+	respawn_->SetPosition(Vector2{ 0.0f,-30.0f });
 
 	defeat_ = std::make_unique<Sprite>();
 	defeat_->Initialize(SpriteCommon::GetInstance(), "resources/UI/defeat.png");
-	defeat_->SetPosition(Vector2{ 0.0f,500.0f });
+	defeat_->SetPosition(Vector2{ 0.0f,-30.0f });
 
 	next_ = std::make_unique<Sprite>();
 	next_->Initialize(SpriteCommon::GetInstance(), "resources/UI/nextScene.png");
-	next_->SetPosition(Vector2{ 0.0f,500.0f });
+	next_->SetPosition(Vector2{ 0.0f,-30.0f });
 
 	goTitle_ = std::make_unique<Sprite>();
 	goTitle_->Initialize(SpriteCommon::GetInstance(), "resources/UI/return.png");
-	goTitle_->SetPosition(Vector2{ 0.0f,400.0f });
+	goTitle_->SetPosition(Vector2{ 0.0f,500.0f });
+
+	// 音声読み込み
+	tutorialBgm_ = Audio::GetInstance()->SoundLoadFile("resources/sound/BGM/tutorial.mp3");
+	// 音声再生
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), tutorialBgm_);
 }
 
 void TutorialScene::Finalize()
 {
 	stageData_->ClearStage();
 	stageData_ = nullptr;
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), tutorialBgm_);
+	Audio::GetInstance()->SoundUnload(&tutorialBgm_);
 }
 
 void TutorialScene::Update()

@@ -4,6 +4,7 @@
 #include "Object3dCommon.h"
 #include "Object3d.h"
 #include "Sprite.h"
+#include "Audio.h"
 #include <cstdint>
 #include <memory>
 #ifdef _DEBUG
@@ -47,7 +48,7 @@ private:
 	// ゲーム上で灯台が保有しているHP
 	uint32_t hp_ = 10;
 	// 灯台の明るさ
-	float intencity = 0.0f;
+	float intencity = 10.0f;
 	// 灯台の明るさの減衰率
 	float decay = 10.0f;
 	// 灯台の明るさの限界値
@@ -68,6 +69,10 @@ private:
 
 	// プレイヤーヒットフラグ
 	bool isHitPlayer_ = false;
+
+	// サウンドデータ
+	Audio::SoundData lightingSE_;
+	Audio::SoundData lightoutSE_;
 
 #ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;

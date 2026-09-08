@@ -11,6 +11,7 @@
 #include "LightHouse.h"
 #include "SceneManager.h"
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <numeric>
 #include "DamageManager.h"
@@ -26,6 +27,7 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	object3d_->SetOffset(Vector3{ 0.0f,0.0f,10.0f });
 	transform_ = transform;
 	baseScale_ = transform.scale;
+	baseRotation_ = transform.rotate;
 	respawnPosition_ = transform.translate;
 	initialRespawnPosition_ = transform.translate;
 	explosion_.Initialize();
@@ -35,6 +37,10 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	squashTimer_ = 0;
 
 	isDead_ = false;
+
+	// 音声読み込み
+	collectSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/collect.mp3");
+	explosionSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/explosion.mp3");
 }
 
 void Player::Update()
@@ -54,6 +60,7 @@ void Player::Update()
 
 	object3d_->SetTranslate(transform_.translate);
 	object3d_->SetScale(transform_.scale);
+	object3d_->SetRotate(transform_.rotate);
 
 	// 3Dオブジェクトを更新
 	object3d_->Update();
@@ -106,7 +113,12 @@ void Player::DrawUI()
 }
 
 void Player::Finalize()
-{}
+{
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), explosionSE_);
+	Audio::GetInstance()->SoundUnload(&explosionSE_);
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), collectSE_);
+	Audio::GetInstance()->SoundUnload(&collectSE_);
+}
 
 void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
@@ -172,6 +184,22 @@ void Player::Move() {
 
 	constexpr float kMoveSpeed = 0.1f;
 	moveDirection = MathManager::Normalize(moveDirection);
+
+	// 入力がある間は、モデルの正面（+Z）を移動方向へ向ける
+	if (MathManager::LengthSquared(moveDirection) > 0.0f)
+	{
+		const float yaw = std::atan2(moveDirection.x, moveDirection.z);
+		const float halfYaw = yaw * 0.5f;
+		const Quaternion directionRotation = {
+			0.0f,
+			std::sin(halfYaw),
+			0.0f,
+			std::cos(halfYaw)
+		};
+		transform_.rotate = MathManager::QuaternionNormalize(
+			MathManager::QuaternionMultiply(directionRotation, baseRotation_));
+	}
+
 	transform_.translate.x += moveDirection.x * kMoveSpeed;
 	transform_.translate.z += moveDirection.z * kMoveSpeed;
 
@@ -201,6 +229,9 @@ void Player::SelfDestruct() {
 
 		// 爆発が有効な発生フレームに一度だけEnemyへダメージを与える
 		DamageEnemiesWithExplosion();
+
+		// 音声再生
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), explosionSE_);
 	}
 }
 
@@ -362,6 +393,8 @@ void Player::UpdateLightHouseInteraction()
 			const uint32_t withdrawnHp =
 				targetLightHouse->WithdrawHp(static_cast<uint32_t>(receivableHp));
 			hp_ += static_cast<int>(withdrawnHp);
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), collectSE_);
 		}
 	}
 }

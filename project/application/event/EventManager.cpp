@@ -35,6 +35,11 @@ void EventManager::Draw()
 void EventManager::Finalize()
 {
 	// 登録されたイベントを解放
+	for (auto& event : events_)
+	{
+		event->Finalize();
+	}
+
 	events_.clear();
 
 	// インスタンスを解放
