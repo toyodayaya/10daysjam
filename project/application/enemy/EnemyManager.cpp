@@ -71,6 +71,12 @@ void EnemyManager::DrawUI()
 void EnemyManager::Finalize()
 {
 	// 登録された敵を終了
+	for (auto& enemy : enemies_)
+	{
+		enemy->Finalize();
+	}
+
+
 	enemies_.clear();
 
 	// インスタンスを解放

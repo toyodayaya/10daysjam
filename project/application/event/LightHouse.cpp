@@ -223,6 +223,9 @@ void LightHouse::SetIsHit(bool isHit)
 	{
 		hp_ = 0;
 		t = 0.0f;
+		Vector2 scale = bar_->GetSize();
+		scale.x = 0.0f;
+		bar_->SetSize(scale);
 		// 音声再生
 		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_);
 	}
@@ -235,6 +238,10 @@ uint32_t LightHouse::WithdrawHp(uint32_t maxAmount)
 	const uint32_t withdrawnHp = (std::min)(hp_, maxAmount);
 	hp_ -= withdrawnHp;
 	intencity = (std::max)(0.0f, intencity - static_cast<float>(withdrawnHp));
+
+	Vector2 scale = bar_->GetSize();
+	scale.x = intencity;
+	bar_->SetSize(scale);
 
 	// 音声再生
 	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_);

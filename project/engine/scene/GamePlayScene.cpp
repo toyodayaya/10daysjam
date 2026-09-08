@@ -86,7 +86,7 @@ void GamePlayScene::Update()
 	if (Input::GetInstance()->TriggerKey(DIK_R))
 	{
 		// Rキーが押されたらタイトルへ
-		SceneManager::GetInstance()->ChangeScene("ResultScene");
+		SceneManager::GetInstance()->ChangeScene("TitleScene");
 	}
 }
 
