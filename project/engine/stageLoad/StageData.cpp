@@ -51,12 +51,6 @@ void StageData::Update()
 	// デバッグ更新
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
-		if (debugBox->GetParent()->IsDead())
-		{
-			return;
-		}
-
-
 		debugBox->UpdateBox();
 	}
 #endif // _DEBUG
@@ -87,11 +81,6 @@ void StageData::Draw()
 	// デバッグ描画
 	for (const std::unique_ptr<DebugDraw>& debugBox : debugBoxs_)
 	{
-		if (debugBox->GetParent()->IsDead())
-		{
-			continue;
-		}
-
 		debugBox->DrawBox();
 	}
 #endif // _DEBUG

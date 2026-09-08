@@ -34,12 +34,12 @@ void LightHouse::Initialize(const QuaternionTransform& transform, const std::str
 
 	hpSprite_ = std::make_unique<Sprite>();
 	hpSprite_->Initialize(SpriteCommon::GetInstance(), "resources/UI/hp.png");
-	hpSprite_->SetAnchorPoint(Vector2{ 1.5f,2.0f });
+	hpSprite_->SetAnchorPoint(Vector2{ 1.5f,1.5f });
 
 	bar_ = std::make_unique<Sprite>();
 	bar_->Initialize(SpriteCommon::GetInstance(), "resources/UI/bar.png");
-	bar_->SetAnchorPoint(Vector2{ 0.0f,2.0f });
-	bar_->SetSize(Vector2{ 0.0f,50.0f });
+	bar_->SetAnchorPoint(Vector2{ 0.0f,2.3f });
+	bar_->SetSize(Vector2{ 0.0f,30.0f });
 
 	// 音声読み込み
 	lightingSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/lighting.mp3");
@@ -110,17 +110,15 @@ void LightHouse::Update()
 	object3d_->SetPointLightIntencity(intencity);
 	object3d_->Update();
 
-	if (isHitPlayer_)
-	{
-		// オブジェクトの座標をスクリーン座標に変換
-		Vector3 translate = Project(object3d_->GetTranslate(), 0.0f, 0.0f, 1280.0f, 720.0f, object3d_->GetViewProjection());
-		Vector2 pos = { translate.x,translate.y };
-		// スプライトの位置を設定
-		controller_->SetPosition(pos);
-		hpSprite_->SetPosition(pos);
-		pos.x -= 40.0f;
-		bar_->SetPosition(pos);
-	}
+
+	// オブジェクトの座標をスクリーン座標に変換
+	Vector3 translate = Project(object3d_->GetTranslate(), 0.0f, 0.0f, 1280.0f, 720.0f, object3d_->GetViewProjection());
+	Vector2 pos = { translate.x,translate.y };
+	// スプライトの位置を設定
+	controller_->SetPosition(pos);
+	hpSprite_->SetPosition(pos);
+	pos.x -= 40.0f;
+	bar_->SetPosition(pos);
 
 	// スプライトを更新
 	controller_->Update();
@@ -138,10 +136,10 @@ void LightHouse::Draw()
 	if (isHitPlayer_)
 	{
 		controller_->Draw();
-		hpSprite_->Draw();
-		bar_->Draw();
-	}
 
+	}
+	hpSprite_->Draw();
+	bar_->Draw();
 #ifdef _DEBUG
 	debugDraw->DrawBox();
 #endif // _DEBUG
@@ -208,8 +206,8 @@ void LightHouse::AddHP(const float& hp)
 	bar_->SetSize(scale);
 
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightingSE_);
-	
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightingSE_,false);
+
 }
 
 void LightHouse::SetMaxHP(const float& hp)
@@ -227,7 +225,7 @@ void LightHouse::SetIsHit(bool isHit)
 		scale.x = 0.0f;
 		bar_->SetSize(scale);
 		// 音声再生
-		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_);
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_,false);
 	}
 
 	isHit_ = isHit;
@@ -244,7 +242,7 @@ uint32_t LightHouse::WithdrawHp(uint32_t maxAmount)
 	bar_->SetSize(scale);
 
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_);
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_,false);
 
 	return withdrawnHp;
 }

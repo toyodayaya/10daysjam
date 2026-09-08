@@ -22,6 +22,7 @@ void GamePlayScene::Initialize()
 	ModelManager::GetInstance()->LoadModel("resources/enemy", "enemy.obj", Model::AnimationType::kNone);
 	ModelManager::GetInstance()->LoadModel("resources/lighthouse", "lighthouse.obj", Model::AnimationType::kNone);
 	ModelManager::GetInstance()->LoadModel("resources/skydome", "skydome.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/cube", "cube.obj", Model::AnimationType::kNone);
 
 	// ステージを読み込む
 	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");
@@ -40,16 +41,16 @@ void GamePlayScene::Initialize()
 	// スプライトの初期化
 	space_ = std::make_unique<Sprite>();
 	space_->Initialize(SpriteCommon::GetInstance(), "resources/UI/space.png");
-	space_->SetPosition(Vector2{ -20.0f,550.0f });
+	space_->SetPosition(Vector2{ -100.0f,550.0f });
 
 	goTitle_ = std::make_unique<Sprite>();
 	goTitle_->Initialize(SpriteCommon::GetInstance(), "resources/UI/return.png");
-	goTitle_->SetPosition(Vector2{ 40.0f,400.0f });
+	goTitle_->SetPosition(Vector2{ -30.0f,450.0f });
 
 	// 音声読み込み
 	playBgm_ = Audio::GetInstance()->SoundLoadFile("resources/sound/BGM/gameplay.mp3");
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), playBgm_);
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), playBgm_,true);
 }
 
 void GamePlayScene::Finalize()

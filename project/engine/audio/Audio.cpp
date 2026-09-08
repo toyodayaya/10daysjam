@@ -32,7 +32,7 @@ void Audio::Initialize()
 {
 	// MF全体の初期化
 	HRESULT result;
-	result = MFStartup(MF_VERSION,MFSTARTUP_NOSOCKET);
+	result = MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
 	assert(SUCCEEDED(result));
 
 	// xAudio2エンジンのインスタンスを生成
@@ -85,7 +85,7 @@ Audio::SoundData Audio::SoundLoadFile(const std::string& filename)
 		// サンプルを読み込む
 		result = pReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, &streamIndex, &flags, &llTimeStamp, &pSample);
 		// ストリームの末尾に達したらループを抜ける
-		if(flags & MF_SOURCE_READERF_ENDOFSTREAM)
+		if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
 		{
 			break;
 		}
@@ -105,7 +105,7 @@ Audio::SoundData Audio::SoundLoadFile(const std::string& filename)
 			pBuffer->Unlock();
 		}
 	}
-	
+
 	return soundData;
 }
 
@@ -116,7 +116,7 @@ void Audio::SoundUnload(SoundData* soundData)
 	soundData->wfex = {};
 }
 
-void Audio::SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData)
+void Audio::SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData, bool isLoop)
 {
 	HRESULT result;
 
@@ -130,6 +130,16 @@ void Audio::SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData)
 	buf.pAudioData = soundData.buffer.data();
 	buf.AudioBytes = (UINT32)soundData.buffer.size();
 	buf.Flags = XAUDIO2_END_OF_STREAM;
+
+	if (isLoop)
+	{
+		buf.LoopCount = XAUDIO2_LOOP_INFINITE;
+	}
+	else
+	{
+		buf.LoopCount = 0;
+	}
+
 
 	// 管理リストに追加
 	activeVoices.insert(pSourceVoice);

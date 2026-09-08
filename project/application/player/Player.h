@@ -97,8 +97,8 @@ private:
 	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 
 	// 移動限界
-	const float kMoveLimitX_ = 7.0f;
-	const float kMoveLimitZ_ = 7.0f;
+	const float kMoveLimitX_ = 20.0f;
+	const float kMoveLimitZ_ = 20.0f;
 
 	// 初期最大HP
 	const int kIniMaxHp_ = 10;
