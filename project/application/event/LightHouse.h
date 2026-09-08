@@ -3,6 +3,7 @@
 #include "EventManager.h"
 #include "Object3dCommon.h"
 #include "Object3d.h"
+#include "Sprite.h"
 #include <cstdint>
 #include <memory>
 #ifdef _DEBUG
@@ -59,6 +60,14 @@ private:
 	// 灯台本体と、HP受け渡し範囲の大きさ
 	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 	const Vector3 kInteractionAabbHalfSize_ = { 2.0f, 2.0f, 2.0f };
+
+	// スプライト
+	std::unique_ptr<Sprite> controller_;
+	std::unique_ptr<Sprite> hpSprite_;
+	std::unique_ptr<Sprite> bar_;
+
+	// プレイヤーヒットフラグ
+	bool isHitPlayer_ = false;
 
 #ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;

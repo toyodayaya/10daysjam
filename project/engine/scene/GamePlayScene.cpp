@@ -8,17 +8,20 @@
 #include "SceneManager.h"
 #include "DamageManager.h"
 #include "EnemyManager.h"
+#include "SpriteCommon.h"
 
 void GamePlayScene::Initialize()
 {
 	// スプライトを読み込む
 	TextureManager::GetInstance()->LoadTexture("resources/human/white.png");
-	ModelManager::GetInstance()->LoadModel("resources/skydome", "skydome.obj", Model::AnimationType::kNone);
+	TextureManager::GetInstance()->LoadTexture("resources/UI/space.png");
+	TextureManager::GetInstance()->LoadTexture("resources/UI/return.png");
 
 	// objファイルからモデルを読み込む
 	ModelManager::GetInstance()->LoadModel("resources/player", "player.obj", Model::AnimationType::kNone);
 	ModelManager::GetInstance()->LoadModel("resources/enemy", "enemy.obj", Model::AnimationType::kNone);
-	ModelManager::GetInstance()->LoadModel("resources/cube", "cube.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/lighthouse", "lighthouse.obj", Model::AnimationType::kNone);
+	ModelManager::GetInstance()->LoadModel("resources/skydome", "skydome.obj", Model::AnimationType::kNone);
 
 	// ステージを読み込む
 	StageManager::GetInstance()->LoadJsonData("resources/stages", "1.json");
@@ -33,6 +36,15 @@ void GamePlayScene::Initialize()
 	skydomeTransform.rotate = { 0.0f,0.0f,0.0f,1.0f };
 	skydome = std::make_unique<Skydome>();
 	skydome->Initialize(skydomeTransform, "skydome.obj");
+
+	// スプライトの初期化
+	space_ = std::make_unique<Sprite>();
+	space_->Initialize(SpriteCommon::GetInstance(), "resources/UI/space.png");
+	space_->SetPosition(Vector2{ -20.0f,550.0f });
+
+	goTitle_ = std::make_unique<Sprite>();
+	goTitle_->Initialize(SpriteCommon::GetInstance(), "resources/UI/return.png");
+	goTitle_->SetPosition(Vector2{ 40.0f,400.0f });
 }
 
 void GamePlayScene::Finalize()
@@ -43,8 +55,13 @@ void GamePlayScene::Finalize()
 
 void GamePlayScene::Update()
 {
+	
 	// ステージを更新
 	stageData_->Update();
+
+	// スプライトの更新
+	space_->Update();
+	goTitle_->Update();
 
 	// 全ての当たり判定を走査
 	stageData_->CheckAllCollision();
@@ -56,13 +73,25 @@ void GamePlayScene::Update()
 	if (EnemyManager::GetInstance()->GetIsDeadEnemy())
 	{
 		SceneManager::GetInstance()->ChangeScene("ResultScene");
+		return;
+	}
+	
+	if (Input::GetInstance()->TriggerKey(DIK_R))
+	{
+		// Rキーが押されたらタイトルへ
+		SceneManager::GetInstance()->ChangeScene("TitleScene");
 	}
 }
 
 void GamePlayScene::Draw()
 {
+	
 	// ステージを描画
 	stageData_->Draw();
+
+	// スプライトの描画
+	space_->Draw();
+	goTitle_->Draw();
 
 	// skydomeの描画
 	skydome->Draw();

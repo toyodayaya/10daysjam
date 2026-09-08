@@ -3,6 +3,7 @@
 #include "BaseScene.h"
 #include <memory>
 #include "StageData.h"
+#include "Sprite.h"
 
 class TutorialScene : public BaseScene
 {
@@ -33,5 +34,10 @@ private:
 	QuaternionTransform skydomeTransform;
 	// チュートリアルフェーズ
 	Phase phase_ = kLighting;
-
+	// スプライト
+	std::unique_ptr<Sprite> lighting_;
+	std::unique_ptr<Sprite> respawn_;
+	std::unique_ptr<Sprite> defeat_;
+	std::unique_ptr<Sprite> next_;
+	std::unique_ptr<Sprite> goTitle_;
 };

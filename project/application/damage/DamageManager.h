@@ -46,6 +46,8 @@ private:
 	std::array<std::array<std::vector<std::unique_ptr<Sprite>>, kNumberArray>,4> numbers_;
 	// 数字記録用の変数
 	std::array<std::array<int, kNumberArray>, 4> bitmapNumber_;
+	// 順位スプライト配列
+	std::vector<std::unique_ptr<Sprite>> rankSprite_;
 
 	// 発表フェーズ
 	State phase_ = kRoll;

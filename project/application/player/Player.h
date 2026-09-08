@@ -4,6 +4,7 @@
 #include <memory>
 #include "BaseCharacter.h"
 #include "Explosion.h"
+#include "PlayerHPUI.h"
 
 class Player : public BaseCharacter
 {
@@ -14,6 +15,8 @@ public:
 	void Update() override;
 	// 描画
 	void Draw() override;
+	// 3Dオブジェクトの後にHP UIを描画する
+	void DrawUI();
 	// 終了
 	void Finalize() override;
 
@@ -84,6 +87,9 @@ private:
 	const float kExplosionRadius_ = 3.0f;
 	// 爆発の基礎ダメージ
 	Explosion explosion_{ kExplosionRadius_, hp_ };
+	const int kBaseExplosionDamage_ = 10;
+	// Playerの現在HPを表示する2D UI
+	PlayerHPUI hpUI_;
 	// Playerの当たり判定用AABBの中心から各面までの距離
 	const Vector3 kCollisionAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
 
