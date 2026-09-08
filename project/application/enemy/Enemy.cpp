@@ -25,8 +25,6 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	object3d_->SetTransform(transform);
 	transform_ = transform;
 	hp_ = kMaxHp_;
-	hpUI_.Initialize();
-	hpUI_.Update(hp_, kMaxHp_);
 	isDead_ = false;
 	isDying_ = false;
 	deathExplosionStarted_ = false;
@@ -38,8 +36,14 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	slamHitPlayer_ = false;
 	patrolFrame_ = 0;
 	patrolDirection_ = 1.0f;
+	patrolType_ = PatrolType::MoveToLighthouse;
+	lighthousePatrolIndex_ = 0;
+	patrolTargetPosition_ = transform_.translate;
+	patrolStopTimer_ = 0;
+	hasPatrolTarget_ = false;
 	startPosition_ = transform_.translate;
 	startScale_ = transform_.scale;
+	baseRotation_ = transform_.rotate;
 	attackTargetPosition_ = transform_.translate;
 	lighthouseChargeStartPosition_ = transform_.translate;
 	lighthouseWarningFrame_ = 0;
@@ -131,6 +135,9 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	rushSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/rush.mp3");
 	jumpSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/jump.mp3");
 	landSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/landing.mp3");
+
+	// ボスHP UIを初期化
+	hpUI_.Initialize();
 }
 
 void Enemy::Finalize()
@@ -138,14 +145,6 @@ void Enemy::Finalize()
 	bullets_.clear();
 	lighthouseWarningCircle_.reset();
 	deathExplosionVisuals_.clear();
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_);
-	Audio::GetInstance()->SoundUnload(&chargeSE_);
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_);
-	Audio::GetInstance()->SoundUnload(&rushSE_);
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_);
-	Audio::GetInstance()->SoundUnload(&jumpSE_);
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_);
-	Audio::GetInstance()->SoundUnload(&landSE_);
 }
 
 void Enemy::Update()
@@ -154,6 +153,9 @@ void Enemy::Update()
 	{
 		return;
 	}
+
+	// ボスHP UIを毎フレーム更新
+	hpUI_.Update(hp_, kMaxHp_);
 
 	// HPが0になった後は攻撃処理を止め、撃破演出だけを更新する。
 	if (isDying_)
@@ -174,7 +176,10 @@ void Enemy::Update()
 		return;
 	}
 
+	// 移動前の位置を保存し、UpdateAttack後の差から巡回方向を求める。
+	const Vector3 previousPosition = transform_.translate;
 	UpdateAttack();
+	UpdateFacingDirection(previousPosition);
 	UpdateLighthouseAttackWarning();
 	// 移動と、地面叩きつけ中の大きさの変化を描画へ反映する。
 	object3d_->SetTransform(transform_);
@@ -182,7 +187,6 @@ void Enemy::Update()
 	// 既に出ている弾は状態に関係なく進む。新しい弾は巡回中だけ発射する。
 	UpdateBullets();
 	UpdatePatrolShooting();
-	hpUI_.Update(hp_, kMaxHp_);
 
 #ifdef USE_IMGUI
 	ImGui::Begin("Boss");
@@ -314,7 +318,7 @@ bool Enemy::TryStartLighthouseAttack()
 	attackState_ = AttackState::Charge;
 	attackTimer_ = kChargeFrames_;
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_,false);
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_, false);
 	return true;
 }
 
@@ -357,8 +361,80 @@ void Enemy::UpdateLighthouseAttackWarning()
 
 void Enemy::UpdatePatrolMovement()
 {
-	// 角度を際限なく増やさず、1周分のフレーム数で折り返す。
 	patrolFrame_ = (patrolFrame_ + 1) % kPatrolCycleFrames_;
+
+	if (patrolType_ == PatrolType::MoveToLighthouse)
+	{
+		// 到着後は少し停止し、次の灯台を選ぶ。
+		if (patrolStopTimer_ > 0)
+		{
+			--patrolStopTimer_;
+			if (patrolStopTimer_ == 0)
+			{
+				hasPatrolTarget_ = false;
+			}
+			return;
+		}
+
+		if (!hasPatrolTarget_ && !SelectNextLighthousePatrolTarget())
+		{
+			// 有効な灯台がない場合は、その場で射撃しながら次の攻撃を待つ。
+			return;
+		}
+
+		const float dx = patrolTargetPosition_.x - transform_.translate.x;
+		const float dz = patrolTargetPosition_.z - transform_.translate.z;
+		const float distance = std::sqrt(dx * dx + dz * dz);
+		if (distance <= kPatrolMoveSpeed_)
+		{
+			transform_.translate.x = patrolTargetPosition_.x;
+			transform_.translate.z = patrolTargetPosition_.z;
+			patrolStopTimer_ = kPatrolStopFrames_;
+		}
+		else
+		{
+			transform_.translate.x += dx / distance * kPatrolMoveSpeed_;
+			transform_.translate.z += dz / distance * kPatrolMoveSpeed_;
+		}
+		return;
+	}
+
+	if (patrolType_ == PatrolType::ChasePlayer)
+	{
+		Player* targetPlayer = nullptr;
+		for (const auto& collider : CollisionManager::GetInstance()->GetColliders())
+		{
+			if (collider.objectType != "PlayerSpawn" || !collider.parent)
+			{
+				continue;
+			}
+			auto* player = dynamic_cast<Player*>(collider.parent);
+			if (player && !player->IsDead() && player->GetObject3d())
+			{
+				targetPlayer = player;
+				break;
+			}
+		}
+
+		if (targetPlayer)
+		{
+			const Vector3 playerPosition =
+				targetPlayer->GetObject3d()->GetWorldTranslate();
+			const float dx = playerPosition.x - transform_.translate.x;
+			const float dz = playerPosition.z - transform_.translate.z;
+			const float distance = std::sqrt(dx * dx + dz * dz);
+			if (distance > kPatrolPlayerStopDistance_)
+			{
+				const float moveDistance = (std::min)(
+					kPatrolMoveSpeed_, distance - kPatrolPlayerStopDistance_);
+				transform_.translate.x += dx / distance * moveDistance;
+				transform_.translate.z += dz / distance * moveDistance;
+			}
+		}
+		return;
+	}
+
+	// FigureEightでは従来の横8の字を短い1パターンとして使用する。
 	constexpr float kTwoPi = 6.28318530718f;
 	const float phase = kTwoPi * static_cast<float>(patrolFrame_)
 		/ static_cast<float>(kPatrolCycleFrames_);
@@ -369,6 +445,152 @@ void Enemy::UpdatePatrolMovement()
 		+ patrolDirection_ * kPatrolRadiusX_ * std::sin(phase);
 	transform_.translate.z = startPosition_.z
 		+ kPatrolRadiusZ_ * std::sin(phase * 2.0f);
+}
+
+bool Enemy::SelectNextLighthousePatrolTarget()
+{
+	const auto& events = EventManager::GetInstance()->GetEvents();
+	if (events.empty())
+	{
+		return false;
+	}
+
+	// 前回の次から検索し、破壊中またはHP0の灯台は飛ばす。
+	for (uint32_t offset = 0; offset < static_cast<uint32_t>(events.size()); ++offset)
+	{
+		const uint32_t index =
+			(lighthousePatrolIndex_ + offset) % static_cast<uint32_t>(events.size());
+		auto* lightHouse = dynamic_cast<LightHouse*>(events[index].get());
+		if (!lightHouse || lightHouse->IsDead() || lightHouse->IsHit() ||
+			lightHouse->GetHp() == 0 || !lightHouse->GetObject3d())
+		{
+			continue;
+		}
+
+		patrolTargetPosition_ = lightHouse->GetObject3d()->GetWorldTranslate();
+		patrolTargetPosition_.y = startPosition_.y;
+
+		// 灯台からフィールド中央側へ少し離し、巡回中の接触を防ぐ。
+		float offsetX = startPosition_.x - patrolTargetPosition_.x;
+		float offsetZ = startPosition_.z - patrolTargetPosition_.z;
+		const float offsetLength = std::sqrt(offsetX * offsetX + offsetZ * offsetZ);
+		if (offsetLength > 0.0001f)
+		{
+			offsetX /= offsetLength;
+			offsetZ /= offsetLength;
+		}
+		else
+		{
+			offsetX = 1.0f;
+			offsetZ = 0.0f;
+		}
+		patrolTargetPosition_.x += offsetX * kPatrolLighthouseOffset_;
+		patrolTargetPosition_.z += offsetZ * kPatrolLighthouseOffset_;
+
+		lighthousePatrolIndex_ =
+			(index + 1) % static_cast<uint32_t>(events.size());
+		hasPatrolTarget_ = true;
+		return true;
+	}
+
+	return false;
+}
+
+void Enemy::AdvancePatrolType()
+{
+	switch (patrolType_)
+	{
+	case PatrolType::MoveToLighthouse:
+		patrolType_ = PatrolType::ChasePlayer;
+		break;
+	case PatrolType::ChasePlayer:
+		patrolType_ = PatrolType::FigureEight;
+		break;
+	case PatrolType::FigureEight:
+		patrolType_ = PatrolType::MoveToLighthouse;
+		break;
+	}
+
+	patrolFrame_ = 0;
+	patrolStopTimer_ = 0;
+	hasPatrolTarget_ = false;
+}
+
+void Enemy::UpdateFacingDirection(const Vector3& previousPosition)
+{
+	Vector3 direction = { 0.0f, 0.0f, 0.0f };
+
+	switch (attackState_)
+	{
+	case AttackState::Patrol:
+		// 巡回中は、実際に移動した方向を向く。
+		direction = {
+			transform_.translate.x - previousPosition.x,
+			0.0f,
+			transform_.translate.z - previousPosition.z
+		};
+		break;
+
+	case AttackState::Charge:
+	case AttackState::Rush:
+	case AttackState::RushImpact:
+		// ため中は後ずさりしても、狙っている灯台を向き続ける。
+		direction = {
+			attackTargetPosition_.x - transform_.translate.x,
+			0.0f,
+			attackTargetPosition_.z - transform_.translate.z
+		};
+		break;
+
+	case AttackState::Return:
+	case AttackState::SlamReturn:
+		// 攻撃後は、初期位置へ戻る方向を向く。
+		direction = {
+			startPosition_.x - transform_.translate.x,
+			0.0f,
+			startPosition_.z - transform_.translate.z
+		};
+		break;
+
+	case AttackState::SlamCharge:
+	case AttackState::SlamApproach:
+	case AttackState::SlamHover:
+	case AttackState::SlamFall:
+	case AttackState::SlamImpact:
+		// 叩きつけ中は、攻撃開始時に記録したPlayer位置を向く。
+		direction = {
+			slamTargetPosition_.x - transform_.translate.x,
+			0.0f,
+			slamTargetPosition_.z - transform_.translate.z
+		};
+		break;
+
+	case AttackState::Recover:
+		// 停止中は最後に向いていた方向を維持する。
+		return;
+	}
+
+	FaceDirection(direction);
+}
+
+void Enemy::FaceDirection(const Vector3& direction)
+{
+	// Player::Move()と同じく、モデルの正面（+Z）をXZ方向へ向ける。
+	if (direction.x * direction.x + direction.z * direction.z <= 0.000001f)
+	{
+		return;
+	}
+
+	const float yaw = std::atan2(direction.x, direction.z);
+	const float halfYaw = yaw * 0.5f;
+	const Quaternion directionRotation = {
+		0.0f,
+		std::sin(halfYaw),
+		0.0f,
+		std::cos(halfYaw)
+	};
+	transform_.rotate = MathManager::QuaternionNormalize(
+		MathManager::QuaternionMultiply(directionRotation, baseRotation_));
 }
 
 void Enemy::UpdateAttack()
@@ -425,7 +647,7 @@ void Enemy::UpdateAttack()
 			transform_.scale = startScale_;
 			attackState_ = AttackState::Rush;
 			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_,false);
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_, false);
 		}
 		break;
 	}
@@ -510,7 +732,7 @@ void Enemy::UpdateAttack()
 			attackState_ = AttackState::SlamApproach;
 			attackTimer_ = kSlamApproachFrames_;
 			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_,false);
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_, false);
 		}
 		break;
 	}
@@ -583,7 +805,7 @@ void Enemy::UpdateAttack()
 			attackState_ = AttackState::SlamImpact;
 			attackTimer_ = kSlamImpactFrames_;
 			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_,false);
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_, false);
 		}
 		break;
 	}
@@ -641,7 +863,7 @@ void Enemy::UpdateAttack()
 		{
 			attackState_ = AttackState::Patrol;
 			attackTimer_ = kPatrolFrames_;
-			patrolFrame_ = 0;
+			AdvancePatrolType();
 			patrolDirection_ *= -1.0f;
 		}
 		break;
@@ -963,7 +1185,6 @@ void Enemy::TakeDamage(int damage)
 
 	// HPが負にならないようにする。
 	hp_ = (damage >= hp_) ? 0 : hp_ - damage;
-	hpUI_.Update(hp_, kMaxHp_);
 	if (hp_ == 0)
 	{
 		StartDeathAnimation();

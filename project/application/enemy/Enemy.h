@@ -46,7 +46,7 @@ private:
 	// 巡回射撃の後、地面叩きつけと灯台突進を交互に使う。
 	enum class AttackState
 	{
-		Patrol, // 上から見て横8の字になるように移動する
+		Patrol, // 灯台間移動・Player追跡・横8の字を切り替える
 		Charge, // 狙う位置を決めて、ためる
 		Rush,   // 決めた位置に向かって突進する
 		RushImpact, // 灯台へ到着した1フレームだけ接触判定を残す
@@ -60,8 +60,20 @@ private:
 		Recover, // 初期位置で止まり、自爆を狙える隙を作る
 	};
 
+	// 特殊攻撃から戻るたびに巡回方法を切り替え、同じ軌道の繰り返しを防ぐ。
+	enum class PatrolType
+	{
+		MoveToLighthouse, // 灯台の少し手前を順番に移動する
+		ChasePlayer,      // Playerへ近づきながら射撃する
+		FigureEight       // 従来の横8の字移動
+	};
+
 	void UpdateAttack();
 	void UpdatePatrolMovement();
+	bool SelectNextLighthousePatrolTarget();
+	void AdvancePatrolType();
+	void UpdateFacingDirection(const Vector3& previousPosition);
+	void FaceDirection(const Vector3& direction);
 	bool TryStartSpecialAttack();
 	bool TryStartLighthouseAttack();
 	void UpdateLighthouseAttackWarning();
@@ -157,16 +169,27 @@ private:
 	static constexpr float kPatrolRadiusX_ = 2.5f;   // 左右に最大2.5
 	static constexpr float kPatrolRadiusZ_ = 1.0f;   // 奥行きに最大1.0
 	static constexpr int kPatrolCycleFrames_ = 240;  // 横8の字を1周する時間：4秒
+	static constexpr float kPatrolMoveSpeed_ = 0.06f; // 灯台・Playerへ向かう巡回速度
+	static constexpr float kPatrolLighthouseOffset_ = 1.8f; // 灯台へ重ならない停止距離
+	static constexpr float kPatrolPlayerStopDistance_ = 2.5f; // Playerへ近づきすぎない距離
+	static constexpr int kPatrolStopFrames_ = 30; // 灯台付近で約0.5秒停止
 
 	AttackState attackState_ = AttackState::Patrol;
+	PatrolType patrolType_ = PatrolType::MoveToLighthouse;
 	int attackTimer_ = kPatrolFrames_;
 	bool nextAttackIsSlam_ = true; // 最初の特殊攻撃はプレイヤーへの叩きつけ
 	bool slamHitPlayer_ = false;   // 同じ叩きつけで複数回つぶさない
 	int patrolFrame_ = 0;
 	float patrolDirection_ = 1.0f; // 帰還するたびに左右を反転する
+	uint32_t lighthousePatrolIndex_ = 0;
+	Vector3 patrolTargetPosition_ = { 0.0f, 0.0f, 0.0f };
+	int patrolStopTimer_ = 0;
+	bool hasPatrolTarget_ = false;
 	// Initializeで保存する初期位置（transform_と同じローカル座標）。
 	Vector3 startPosition_ = { 0.0f, 0.0f, 0.0f };
 	Vector3 startScale_ = { 1.0f, 1.0f, 1.0f };
+	// モデル本来の向きを保存し、計算したY軸回転と合成する。
+	Quaternion baseRotation_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 	// 灯台のポインタを保持せず、攻撃開始時の位置だけを保存する。
 	Vector3 attackTargetPosition_ = { 0.0f, 0.0f, 0.0f };
 	// 叩きつけ開始時と、攻撃開始時に固定したプレイヤー位置。
