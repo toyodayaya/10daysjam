@@ -27,7 +27,7 @@ void ResultScene::Initialize()
 	noticeSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/notice.mp3");
 
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), dramrollSE_);
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), dramrollSE_,false);
 	
 }
 
@@ -52,8 +52,8 @@ void ResultScene::Update()
 	{
 		// 音声再生
 		Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), dramrollSE_);
-		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), resultBgm_);
-		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), noticeSE_);
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), resultBgm_,true);
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), noticeSE_,false);
 		isPlay_ = true;
 	}
 

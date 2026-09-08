@@ -29,19 +29,19 @@
             "transform": {
                 "translation": [
                     0.0,
-                    -12.66096019744873,
-                    5.944259166717529
+                    -39.68697738647461,
+                    20.934917449951172
                 ],
                 "rotation": [
-                    0.5345571637153625,
+                    0.48188647627830505,
                     0.0,
                     0.0,
-                    0.8451323509216309
+                    0.8762336373329163
                 ],
                 "scaling": [
                     1.0,
-                    0.9999999403953552,
-                    0.9999999403953552
+                    1.0,
+                    1.0
                 ]
             }
         },
@@ -51,7 +51,7 @@
             "transform": {
                 "translation": [
                     0.0,
-                    -4.73633337020874,
+                    1.5004143714904785,
                     0.0
                 ],
                 "rotation": [
@@ -123,8 +123,8 @@
             "name": "EventSpawn",
             "transform": {
                 "translation": [
-                    6.353806018829346,
-                    0.0,
+                    13.14736557006836,
+                    11.160775184631348,
                     0.0
                 ],
                 "rotation": [
@@ -159,8 +159,8 @@
             "name": "EventSpawn.001",
             "transform": {
                 "translation": [
-                    -7.132570743560791,
-                    0.0,
+                    -13.20953369140625,
+                    -13.983539581298828,
                     0.0
                 ],
                 "rotation": [
@@ -189,6 +189,337 @@
                     1.0
                 ]
             }
+        },
+        {
+            "type": "MESH",
+            "name": "立方体",
+            "transform": {
+                "translation": [
+                    0.0,
+                    22.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    22.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "cube.obj"
+        },
+        {
+            "type": "MESH",
+            "name": "立方体.001",
+            "transform": {
+                "translation": [
+                    0.0,
+                    -22.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    22.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "cube.obj"
+        },
+        {
+            "type": "MESH",
+            "name": "立方体.002",
+            "transform": {
+                "translation": [
+                    22.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.7071067690849304,
+                    0.7071067690849304
+                ],
+                "scaling": [
+                    23.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "cube.obj"
+        },
+        {
+            "type": "MESH",
+            "name": "立方体.003",
+            "transform": {
+                "translation": [
+                    0.0,
+                    0.0,
+                    -1.450904369354248
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.7071067690849304,
+                    0.7071067690849304
+                ],
+                "scaling": [
+                    23.0,
+                    23.0,
+                    0.10000000149011612
+                ]
+            },
+            "file_name": "cube.obj"
+        },
+        {
+            "type": "EventSpawn",
+            "name": "EventSpawn.002",
+            "transform": {
+                "translation": [
+                    9.432090759277344,
+                    -13.865034103393555,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "lighthouse.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "type": "EventSpawn",
+            "name": "EventSpawn.003",
+            "transform": {
+                "translation": [
+                    5.905865669250488,
+                    0.6265430450439453,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "lighthouse.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "type": "EventSpawn",
+            "name": "EventSpawn.004",
+            "transform": {
+                "translation": [
+                    -12.927655220031738,
+                    12.135270118713379,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "lighthouse.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "type": "EventSpawn",
+            "name": "EventSpawn.005",
+            "transform": {
+                "translation": [
+                    -2.432884693145752,
+                    -9.135071754455566,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "lighthouse.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "type": "EventSpawn",
+            "name": "EventSpawn.006",
+            "transform": {
+                "translation": [
+                    -1.3416547775268555,
+                    15.152347564697266,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "lighthouse.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "type": "EventSpawn",
+            "name": "EventSpawn.007",
+            "transform": {
+                "translation": [
+                    -19.538990020751953,
+                    -0.2626762390136719,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "lighthouse.obj",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "立方体.004",
+            "transform": {
+                "translation": [
+                    -22.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.7071067690849304,
+                    0.7071067690849304
+                ],
+                "scaling": [
+                    23.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "cube.obj"
         }
     ],
     "rails": []

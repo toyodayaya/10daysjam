@@ -314,7 +314,7 @@ bool Enemy::TryStartLighthouseAttack()
 	attackState_ = AttackState::Charge;
 	attackTimer_ = kChargeFrames_;
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_);
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_,false);
 	return true;
 }
 
@@ -425,7 +425,7 @@ void Enemy::UpdateAttack()
 			transform_.scale = startScale_;
 			attackState_ = AttackState::Rush;
 			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_);
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_,false);
 		}
 		break;
 	}
@@ -510,7 +510,7 @@ void Enemy::UpdateAttack()
 			attackState_ = AttackState::SlamApproach;
 			attackTimer_ = kSlamApproachFrames_;
 			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_);
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_,false);
 		}
 		break;
 	}
@@ -583,7 +583,7 @@ void Enemy::UpdateAttack()
 			attackState_ = AttackState::SlamImpact;
 			attackTimer_ = kSlamImpactFrames_;
 			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_);
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_,false);
 		}
 		break;
 	}

@@ -48,7 +48,7 @@ private:
 	// ゲーム上で灯台が保有しているHP
 	uint32_t hp_ = 10;
 	// 灯台の明るさ
-	float intencity = 10.0f;
+	float intencity = 1.0f;
 	// 灯台の明るさの減衰率
 	float decay = 10.0f;
 	// 灯台の明るさの限界値

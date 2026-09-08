@@ -134,7 +134,7 @@ private:
 	Vector3 deathScale_ = { 1.0f, 1.0f, 1.0f };
 
 	// 狙いを決める時、このHP（明るさ）以上の灯台だけを対象にする。
-	static constexpr uint32_t kTargetMinHp_ = 5;
+	static constexpr uint32_t kTargetMinHp_ = 20;
 
 	// Playerと同じく60FPSを前提にした調整値。
 	static constexpr int kPatrolFrames_ = 180;       // 巡回してから灯台を狙う：3秒
@@ -174,7 +174,7 @@ private:
 	Vector3 slamTargetPosition_ = { 0.0f, 0.0f, 0.0f };
 
 	// ボスの最大HP
-	const int kMaxHp_ = 30;
+	const int kMaxHp_ = 80;
 	// ボスの現在HP
 	int hp_ = kMaxHp_;
 	// 画面中央上に表示するボスHPバー
