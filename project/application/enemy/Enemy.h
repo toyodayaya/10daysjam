@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseEnemy.h"
 #include "BossHPUI.h"
+#include "Explosion.h"
 #include "Object3d.h"
 #include "Audio.h"
 #include <cstdint>
@@ -28,6 +29,7 @@ public:
 	Vector3 GetTranslate() { return transform_.translate; }
 	// HP加算関数
 	void AddHP(const float& hp) override;
+	// 最大HPを設定
 	void SetMaxHP(const float& hp) override;
 	// ダメージを受ける
 	void TakeDamage(int damage) override;
@@ -60,12 +62,16 @@ private:
 	void UpdatePatrolMovement();
 	bool TryStartSpecialAttack();
 	bool TryStartLighthouseAttack();
+	void UpdateLighthouseAttackWarning();
 	void UpdatePatrolShooting();
 	bool TryShootAtPlayer();
 	bool CreateBullet(const Vector3& direction, float spawnOffset);
 	void UpdateBullets();
 	bool TryStartSlamAttack();
 	void ResetSlamScale();
+	// 撃破演出を開始・更新する
+	void StartDeathAnimation();
+	void UpdateDeathAnimation();
 
 	// 弾はEnemyが所有し、移動・描画・Playerとの当たり判定を行う。
 	struct Bullet
@@ -86,12 +92,51 @@ private:
 	std::string bulletModelFilePath_;
 	std::vector<Bullet> bullets_;
 
+	// 灯台突進の予告。ボスが対象と反対へ引き、狙った灯台の足元で円を脈動させる。
+	static constexpr float kChargeRetreatDistance_ = 0.8f;
+	static constexpr float kChargePulseScale_ = 0.10f;
+	static constexpr float kWarningCircleBaseScale_ = 1.20f;
+	static constexpr float kWarningCirclePulseScale_ = 0.25f;
+	static constexpr float kWarningCircleHeightOffset_ = 0.05f;
+	Vector3 lighthouseChargeStartPosition_ = { 0.0f, 0.0f, 0.0f };
+	int lighthouseWarningFrame_ = 0;
+	std::unique_ptr<Object3d> lighthouseWarningCircle_;
+
+	// リリースでも見える、画像を使った時間差爆発。
+	struct DeathExplosionVisual
+	{
+		Vector3 offset = { 0.0f, 0.0f, 0.0f };
+		int startFrame = 0;
+		int displayFrames = 0;
+		float maxScale = 1.0f;
+		bool isVisible = false;
+		std::unique_ptr<Object3d> object3d;
+	};
+
+	// 撃破後すぐに消さず、小爆発を連続させて最後に中央で大爆発する。
+	static constexpr int kDeathWarningFrames_ = 52;  // 揺れながら小爆発：約0.87秒
+	static constexpr int kDeathExplosionFrames_ = 24; // 最後の大爆発：約0.4秒
+	static constexpr int kDeathAnimationFrames_ =
+		kDeathWarningFrames_ + kDeathExplosionFrames_;
+	static constexpr float kDeathMaxScaleRate_ = 1.25f;
+	static constexpr float kDeathShakeWidth_ = 0.18f;
+	static constexpr float kDeathExplosionRadius_ = 3.0f;
+	static constexpr float kDeathEffectHeightOffset_ = 1.0f;
+	// ダメージ0の演出専用爆発。IsCollisionは呼ばない。
+	Explosion deathExplosion_{ kDeathExplosionRadius_, 0 };
+	std::vector<DeathExplosionVisual> deathExplosionVisuals_;
+	bool isDying_ = false;
+	bool deathExplosionStarted_ = false;
+	int deathAnimationFrame_ = 0;
+	Vector3 deathPosition_ = { 0.0f, 0.0f, 0.0f };
+	Vector3 deathScale_ = { 1.0f, 1.0f, 1.0f };
+
 	// 狙いを決める時、このHP（明るさ）以上の灯台だけを対象にする。
 	static constexpr uint32_t kTargetMinHp_ = 5;
 
 	// Playerと同じく60FPSを前提にした調整値。
 	static constexpr int kPatrolFrames_ = 180;       // 巡回してから灯台を狙う：3秒
-	static constexpr int kChargeFrames_ = 45;        // ため：0.75秒
+	static constexpr int kChargeFrames_ = 150;       // 灯台突進の予告：2.5秒
 	static constexpr int kRecoveryFrames_ = 60;      // 帰還後の隙：1秒
 	static constexpr int kSlamChargeFrames_ = 60;    // その場での予告：1秒
 	static constexpr int kSlamApproachFrames_ = 45;  // プレイヤーの真上へ移動：0.75秒
@@ -141,4 +186,3 @@ private:
 	Audio::SoundData jumpSE_;
 	Audio::SoundData landSE_;
 };
-
