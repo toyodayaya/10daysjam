@@ -1,5 +1,7 @@
 #include "LightHouse.h"
 #include "Enemy.h"
+#include "TextureManager.h"
+#include "SpriteCommon.h"
 #ifdef _DEBUG
 #include "DebugDrawCommon.h"
 #endif // _DEBUG
@@ -20,6 +22,24 @@ void LightHouse::Initialize(const QuaternionTransform& transform, const std::str
 	transform_ = transform;
 
 	isDead_ = false;
+
+	// スプライトの読み込みと初期化
+	TextureManager::GetInstance()->LoadTexture("resources/UI/controller.png");
+	TextureManager::GetInstance()->LoadTexture("resources/UI/hp.png");
+	TextureManager::GetInstance()->LoadTexture("resources/UI/bar.png");
+
+	controller_ = std::make_unique<Sprite>();
+	controller_->Initialize(SpriteCommon::GetInstance(), "resources/UI/controller.png");
+	controller_->SetAnchorPoint(Vector2{ 0.5f,0.5f });
+
+	hpSprite_ = std::make_unique<Sprite>();
+	hpSprite_->Initialize(SpriteCommon::GetInstance(), "resources/UI/hp.png");
+	hpSprite_->SetAnchorPoint(Vector2{ 1.5f,2.0f });
+
+	bar_ = std::make_unique<Sprite>();
+	bar_->Initialize(SpriteCommon::GetInstance(), "resources/UI/bar.png");
+	bar_->SetAnchorPoint(Vector2{ 0.0f,2.0f });
+	bar_->SetSize(Vector2{ 0.0f,50.0f });
 
 #ifdef _DEBUG
 	debugDraw = std::make_unique<DebugDraw>();
@@ -81,11 +101,38 @@ void LightHouse::Update()
 	object3d_->SetTranslate(transform_.translate);
 	object3d_->SetPointLightIntencity(intencity);
 	object3d_->Update();
+
+	if (isHitPlayer_)
+	{
+		// オブジェクトの座標をスクリーン座標に変換
+		Vector3 translate = Project(object3d_->GetTranslate(), 0.0f, 0.0f, 1280.0f, 720.0f, object3d_->GetViewProjection());
+		Vector2 pos = { translate.x,translate.y };
+		// スプライトの位置を設定
+		controller_->SetPosition(pos);
+		hpSprite_->SetPosition(pos);
+		pos.x -= 40.0f;
+		bar_->SetPosition(pos);
+	}
+
+	// スプライトを更新
+	controller_->Update();
+	hpSprite_->Update();
+	bar_->Update();
+
+	isHitPlayer_ = false;
 }
 
 void LightHouse::Draw()
 {
 	object3d_->Draw();
+
+	// 操作案内を表示
+	if (isHitPlayer_)
+	{
+		controller_->Draw();
+		hpSprite_->Draw();
+		bar_->Draw();
+	}
 
 #ifdef _DEBUG
 	debugDraw->DrawBox();
@@ -109,7 +156,9 @@ void LightHouse::OnCollision(std::string hitObjectType, BaseCharacter* hitObject
 	// どのオブジェクトにぶつかったか判定
 	if (hitObjectType_ == "PlayerSpawn")
 	{
-		// プレイヤーだった場合の処理
+		// プレイヤーだった場合
+		isHitPlayer_ = true;
+
 	}
 	else if (hitObjectType_ == "EnemySpawn")
 	{
@@ -145,6 +194,11 @@ void LightHouse::AddHP(const float& hp)
 	}
 
 	hp_ = static_cast<uint32_t>(intencity);
+
+	Vector2 scale = bar_->GetSize();
+	scale.x = intencity;
+	bar_->SetSize(scale);
+	
 }
 
 void LightHouse::SetMaxHP(const float& hp)
