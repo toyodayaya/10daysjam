@@ -39,4 +39,5 @@ private:
 	std::unique_ptr<Sprite> respawn_;
 	std::unique_ptr<Sprite> defeat_;
 	std::unique_ptr<Sprite> next_;
+	std::unique_ptr<Sprite> goTitle_;
 };
