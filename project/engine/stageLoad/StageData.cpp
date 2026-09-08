@@ -161,6 +161,10 @@ void StageData::ClearStage()
 
 	object3ds.clear();
 	CollisionManager::GetInstance()->Finalize();
+	for (auto& player : players_)
+	{
+		player->Finalize();
+	}
 	players_.clear();
 	EnemyManager::GetInstance()->Finalize();
 	EventManager::GetInstance()->Finalize();
