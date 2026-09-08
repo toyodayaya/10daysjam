@@ -942,7 +942,7 @@ void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 
 		if (explosion.IsActive())
 		{
-			TakeDamage(explosion.GetDamage());
+			TakeExplosionDamage(explosion.GetDamage());
 		}
 	}
 }
@@ -1060,6 +1060,18 @@ void Enemy::UpdateDeathAnimation()
 		isDying_ = false;
 		isDead_ = true;
 	}
+}
+
+void Enemy::TakeExplosionDamage(int damage)
+{
+	if (isDead_ || damage <= 0)
+	{
+		return;
+	}
+
+	// HP更新と同じフレームからシェイクを反映できるよう、先に開始する
+	hpUI_.StartShake();
+	TakeDamage(damage);
 }
 
 AABB Enemy::GetDamageAabb() const

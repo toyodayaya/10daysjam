@@ -33,6 +33,8 @@ public:
 	void SetMaxHP(const float& hp) override;
 	// ダメージを受ける
 	void TakeDamage(int damage) override;
+	// 自爆ダメージを受け、HPバーのシェイクを開始する
+	void TakeExplosionDamage(int damage) override;
 	// 爆発との当たり判定に使用するAABBを取得
 	AABB GetDamageAabb() const override;
 	// Player側が落下・着地中だけ押し出しを止めるために使用する

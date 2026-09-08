@@ -254,7 +254,7 @@ void Player::DamageEnemiesWithExplosion()
 
 		if (explosion_.IsCollision(enemy->GetDamageAabb()))
 		{
-			enemy->TakeDamage(explosion_.GetDamage());
+			enemy->TakeExplosionDamage(explosion_.GetDamage());
 		}
 	}
 }
@@ -522,6 +522,8 @@ void Player::TakeDamage(int damage)
 
 	// 座標やスケールには触れず、現在HPだけを減らす。
 	hp_ = (damage >= hp_) ? 0 : hp_ - damage;
+	// 敵の攻撃による被弾を分かりやすくするため、HP UIを揺らす。
+	hpUI_.StartDamageEffect();
 	// 被弾直後に自動回復してダメージが見えなくならないよう、回復時間を数え直す。
 	recoveryHpTimer_ = 0.0f;
 	if (hp_ == 0)
