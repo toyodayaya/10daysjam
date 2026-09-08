@@ -720,7 +720,7 @@ void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 
 		if (explosion.IsActive())
 		{
-			TakeDamage(explosion.GetDamage());
+			TakeExplosionDamage(explosion.GetDamage());
 		}
 	}
 }
@@ -748,6 +748,18 @@ void Enemy::TakeDamage(int damage)
 		bullets_.clear(); // 撃破時に残弾も消す。
 	}
 	// クリアへの遷移はGamePlayScene側で行う。
+}
+
+void Enemy::TakeExplosionDamage(int damage)
+{
+	if (isDead_ || damage <= 0)
+	{
+		return;
+	}
+
+	// HP更新と同じフレームからシェイクを反映できるよう、先に開始する
+	hpUI_.StartShake();
+	TakeDamage(damage);
 }
 
 AABB Enemy::GetDamageAabb() const

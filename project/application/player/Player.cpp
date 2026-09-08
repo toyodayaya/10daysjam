@@ -242,7 +242,7 @@ void Player::DamageEnemiesWithExplosion()
 
 		if (explosion_.IsCollision(enemy->GetDamageAabb()))
 		{
-			enemy->TakeDamage(explosion_.GetDamage());
+			enemy->TakeExplosionDamage(explosion_.GetDamage());
 		}
 	}
 }
