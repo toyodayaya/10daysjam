@@ -97,6 +97,8 @@ void StageData::Draw()
 #endif // _DEBUG
 
 	// UIが3Dオブジェクトに隠れないよう、全ての3D描画が終わってから描画する
+	EnemyManager::GetInstance()->DrawUI();
+
 	for (const std::unique_ptr<Player>& player : players_)
 	{
 		player->DrawUI();
@@ -159,6 +161,10 @@ void StageData::ClearStage()
 
 	object3ds.clear();
 	CollisionManager::GetInstance()->Finalize();
+	for (auto& player : players_)
+	{
+		player->Finalize();
+	}
 	players_.clear();
 	EnemyManager::GetInstance()->Finalize();
 	EventManager::GetInstance()->Finalize();
