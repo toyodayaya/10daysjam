@@ -1,11 +1,10 @@
 #include "Explosion.h"
 
 #include <algorithm>
-
-#ifdef _DEBUG
-#include "DebugDraw.h"
-#include "DebugDrawCommon.h"
-#endif
+#include "Model.h"
+#include "ModelManager.h"
+#include "Object3d.h"
+#include "Object3dCommon.h"
 
 Explosion::Explosion(float radius, int damage)
 	: radius_(radius), damage_(damage)
@@ -17,26 +16,25 @@ void Explosion::Initialize()
 {
 	isActive_ = false;
 
-#ifdef _DEBUG
-	debugSphere_ = std::make_unique<DebugDraw>();
-	debugSphere_->Initialize(
-		DebugDrawCommon::GetInstance(),
-		"resources/human/white.png",
-		DebugDraw::DrawState::kSphere);
-	debugSphere_->SetScale({ radius_, radius_, radius_ });
-	debugSphere_->SetRotate({ 0.0f, 0.0f, 0.0f, 1.0f });
-	debugSphere_->SetTranslate(center_);
-	debugSphere_->SetParent(nullptr);
-	debugSphere_->SetIsRailCamera(false);
+	ModelManager::GetInstance()->LoadModel(
+		"resources/explosion", "explosion.obj", Model::AnimationType::kNone);
+
+	effectObject_ = std::make_unique<Object3d>();
+	effectObject_->Initialize(Object3dCommon::GetInstance());
+	effectObject_->SetModel("explosion.obj");
+	effectObject_->SetEnvironmentMapTextureFilePath("resources/human/white.png");
+	effectObject_->SetScale({ radius_, radius_, radius_ });
+	effectObject_->SetRotate({ 0.0f, 0.0f, 0.0f, 1.0f });
+	effectObject_->SetTranslate(center_);
+	effectObject_->SetParent(nullptr);
+	effectObject_->SetIsRailCamera(false);
 	effectElapsedFrames_ = 0;
 	isEffectActive_ = false;
-#endif
 }
 
 void Explosion::Update()
 {
-#ifdef _DEBUG
-	if (debugSphere_ && isEffectActive_)
+	if (effectObject_ && isEffectActive_)
 	{
 		// 0～1の進行度を作り、Smoothstepで自然に収縮させる
 		const float progress = static_cast<float>(effectElapsedFrames_) /
@@ -45,8 +43,8 @@ void Explosion::Update()
 		const float scaleRate = 1.0f - smoothProgress;
 		const float effectScale = radius_ * kInitialEffectScaleMultiplier_ * scaleRate;
 
-		debugSphere_->SetScale({ effectScale, effectScale, effectScale });
-		debugSphere_->Update();
+		effectObject_->SetScale({ effectScale, effectScale, effectScale });
+		effectObject_->Update();
 
 		++effectElapsedFrames_;
 		if (effectElapsedFrames_ >= kEffectDurationFrames_)
@@ -54,34 +52,28 @@ void Explosion::Update()
 			isEffectActive_ = false;
 		}
 	}
-#endif
 }
 
 void Explosion::Draw()
 {
-#ifdef _DEBUG
-	if (debugSphere_ && isEffectActive_)
+	if (effectObject_ && isEffectActive_)
 	{
-		debugSphere_->Draw();
+		effectObject_->Draw();
 	}
-#endif
 }
 
 void Explosion::Activate(const Vector3& center)
 {
 	center_ = center;
 	isActive_ = true;
-
-#ifdef _DEBUG
-	if (debugSphere_)
+	if (effectObject_)
 	{
-		debugSphere_->SetTranslate(center_);
+		effectObject_->SetTranslate(center_);
 		const float initialEffectScale = radius_ * kInitialEffectScaleMultiplier_;
-		debugSphere_->SetScale({ initialEffectScale, initialEffectScale, initialEffectScale });
+		effectObject_->SetScale({ initialEffectScale, initialEffectScale, initialEffectScale });
 		effectElapsedFrames_ = 0;
 		isEffectActive_ = true;
 	}
-#endif
 }
 
 void Explosion::Deactivate()

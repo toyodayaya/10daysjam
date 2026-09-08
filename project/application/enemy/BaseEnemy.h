@@ -11,6 +11,8 @@ public:
 	virtual void TakeDamage(int damage) = 0;
 	// 爆発との当たり判定に使用するAABBを取得
 	virtual AABB GetDamageAabb() const = 0;
+	// ボス以外のEnemyは既定では画面UIを描画しない
+	virtual void DrawUI() {}
 
 
 protected:
