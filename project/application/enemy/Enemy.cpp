@@ -22,6 +22,8 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	object3d_->SetTransform(transform);
 	transform_ = transform;
 	hp_ = kMaxHp_;
+	hpUI_.Initialize();
+	hpUI_.Update(hp_, kMaxHp_);
 	isDead_ = false;
 	attackState_ = AttackState::Patrol;
 	attackTimer_ = kPatrolFrames_;
@@ -58,6 +60,7 @@ void Enemy::Update()
 	// 既に出ている弾は状態に関係なく進む。新しい弾は巡回中だけ発射する。
 	UpdateBullets();
 	UpdatePatrolShooting();
+	hpUI_.Update(hp_, kMaxHp_);
 
 #ifdef USE_IMGUI
 	ImGui::Begin("Boss");
@@ -656,6 +659,11 @@ void Enemy::Draw()
 	}
 }
 
+void Enemy::DrawUI()
+{
+	hpUI_.Draw();
+}
+
 void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
 	// 地面叩きつけの落下中、または着地衝撃中にプレイヤーと重なった場合だけつぶす。
@@ -733,6 +741,7 @@ void Enemy::TakeDamage(int damage)
 
 	// HPが負にならないようにする。
 	hp_ = (damage >= hp_) ? 0 : hp_ - damage;
+	hpUI_.Update(hp_, kMaxHp_);
 	if (hp_ == 0)
 	{
 		isDead_ = true;

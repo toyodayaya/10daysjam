@@ -36,6 +36,8 @@ public:
 	void Update();
 	// 描画
 	void Draw();
+	// 3D描画後にEnemyの画面UIを描画
+	void DrawUI();
 	// 終了
 	void Finalize();
 

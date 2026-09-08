@@ -303,6 +303,9 @@
     <ClCompile Include="application\enemy\TutorialEnemy.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="application\enemy\BossHPUI.cpp">
+      <Filter>ソース ファイル\application\enemy</Filter>
+    </ClCompile>
     <ClCompile Include="engine\scene\TutorialScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -780,6 +783,9 @@
     </ClInclude>
     <ClInclude Include="application\enemy\TutorialEnemy.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="application\enemy\BossHPUI.h">
+      <Filter>ヘッダー ファイル\application\enemy</Filter>
     </ClInclude>
     <ClInclude Include="engine\scene\TutorialScene.h">
       <Filter>ヘッダー ファイル</Filter>

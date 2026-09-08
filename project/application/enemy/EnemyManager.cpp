@@ -57,6 +57,17 @@ void EnemyManager::Draw()
 	}
 }
 
+void EnemyManager::DrawUI()
+{
+	for (const std::unique_ptr<BaseEnemy>& enemy : enemies_)
+	{
+		if (!enemy->IsDead())
+		{
+			enemy->DrawUI();
+		}
+	}
+}
+
 void EnemyManager::Finalize()
 {
 	// 登録された敵を終了
