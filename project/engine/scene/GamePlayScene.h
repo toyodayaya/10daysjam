@@ -3,6 +3,7 @@
 #include "BaseScene.h"
 #include <memory>
 #include "StageData.h"
+#include "Sprite.h"
 
 class GamePlayScene : public BaseScene
 {
@@ -23,5 +24,8 @@ private:
 	std::unique_ptr<Skydome> skydome;
 	QuaternionTransform skydomeTransform;
 
+	// スプライト
+	std::unique_ptr<Sprite> space_;
+	std::unique_ptr<Sprite> goTitle_;
 
 };
