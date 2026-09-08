@@ -143,10 +143,6 @@ void LightHouse::AddHP(const float& hp)
 		intencity = 0.0f;
 		hp_ = 0;
 	}
-	else if (intencity >= maxIntencity)
-	{
-		intencity = maxIntencity;
-	}
 
 	hp_ = static_cast<uint32_t>(intencity);
 }

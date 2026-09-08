@@ -1,6 +1,8 @@
 #pragma once
 #include "BaseScene.h"
 #include <vector>
+#include "Sprite.h"
+#include <memory>
 
 class TitleScene : public BaseScene
 {
@@ -16,4 +18,16 @@ public:
 
 private:
 	std::vector<int> ranking_;
+	std::unique_ptr<Sprite> backGround_;
+	std::unique_ptr<Sprite> play_;
+	std::unique_ptr<Sprite> tutorial_;
+	std::unique_ptr<Sprite> cursor_;
+
+	enum NextScene
+	{
+		kTutorial,
+		kPlay
+	};
+
+	NextScene nextScene_ = kTutorial;
 };

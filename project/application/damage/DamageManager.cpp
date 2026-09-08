@@ -231,7 +231,7 @@ void DamageManager::BestDamageBitMapFont()
 	{
 		for (size_t j = 0; j < 10; j++)
 		{
-			Vector2 pos = { static_cast<float>((i * 60) + 400),300.0f };
+			Vector2 pos = { static_cast<float>((i * 60) + 200),350.0f };
 			numbers_[3][i][j]->SetPosition(pos);
 		}
 
