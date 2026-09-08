@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include <vector>
 #include "Sprite.h"
+#include "Audio.h"
 #include <memory>
 
 class TitleScene : public BaseScene
@@ -22,6 +23,11 @@ private:
 	std::unique_ptr<Sprite> play_;
 	std::unique_ptr<Sprite> tutorial_;
 	std::unique_ptr<Sprite> cursor_;
+
+	// サウンドデータ
+	Audio::SoundData titleBgm_;
+	Audio::SoundData selectSE_;
+	Audio::SoundData enterSE_;
 
 	enum NextScene
 	{

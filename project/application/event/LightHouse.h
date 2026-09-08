@@ -4,6 +4,7 @@
 #include "Object3dCommon.h"
 #include "Object3d.h"
 #include "Sprite.h"
+#include "Audio.h"
 #include <cstdint>
 #include <memory>
 #ifdef _DEBUG
@@ -68,6 +69,10 @@ private:
 
 	// プレイヤーヒットフラグ
 	bool isHitPlayer_ = false;
+
+	// サウンドデータ
+	Audio::SoundData lightingSE_;
+	Audio::SoundData lightoutSE_;
 
 #ifdef _DEBUG
 	std::unique_ptr<DebugDraw> debugDraw;

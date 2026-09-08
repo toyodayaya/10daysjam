@@ -62,12 +62,19 @@ void TutorialScene::Initialize()
 	goTitle_ = std::make_unique<Sprite>();
 	goTitle_->Initialize(SpriteCommon::GetInstance(), "resources/UI/return.png");
 	goTitle_->SetPosition(Vector2{ 0.0f,400.0f });
+
+	// 音声読み込み
+	tutorialBgm_ = Audio::GetInstance()->SoundLoadFile("resources/sound/BGM/tutorial.mp3");
+	// 音声再生
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), tutorialBgm_);
 }
 
 void TutorialScene::Finalize()
 {
 	stageData_->ClearStage();
 	stageData_ = nullptr;
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), tutorialBgm_);
+	Audio::GetInstance()->SoundUnload(&tutorialBgm_);
 }
 
 void TutorialScene::Update()

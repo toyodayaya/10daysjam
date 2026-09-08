@@ -37,11 +37,25 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	shotTimer_ = kShotIntervalFrames_;
 	bulletModelFilePath_ = filePath;
 	bullets_.clear();
+
+	// 音声読み込み
+	chargeSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/charge.mp3");
+	rushSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/rush.mp3");
+	jumpSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/jump.mp3");
+	landSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/landing.mp3");
 }
 
 void Enemy::Finalize()
 {
 	bullets_.clear();
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_);
+	Audio::GetInstance()->SoundUnload(&chargeSE_);
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_);
+	Audio::GetInstance()->SoundUnload(&rushSE_);
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_);
+	Audio::GetInstance()->SoundUnload(&jumpSE_);
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_);
+	Audio::GetInstance()->SoundUnload(&landSE_);
 }
 
 void Enemy::Update()
@@ -186,6 +200,8 @@ bool Enemy::TryStartLighthouseAttack()
 	attackTargetPosition_ = lightHouse->GetObject3d()->GetWorldTranslate();
 	attackState_ = AttackState::Charge;
 	attackTimer_ = kChargeFrames_;
+	// 音声再生
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_);
 	return true;
 }
 
@@ -231,6 +247,8 @@ void Enemy::UpdateAttack()
 		{
 			attackTimer_ = 0;
 			attackState_ = AttackState::Rush;
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_);
 		}
 		break;
 
@@ -311,6 +329,8 @@ void Enemy::UpdateAttack()
 			slamStartPosition_ = transform_.translate;
 			attackState_ = AttackState::SlamApproach;
 			attackTimer_ = kSlamApproachFrames_;
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_);
 		}
 		break;
 	}
@@ -381,6 +401,8 @@ void Enemy::UpdateAttack()
 			transform_.translate = slamTargetPosition_;
 			attackState_ = AttackState::SlamImpact;
 			attackTimer_ = kSlamImpactFrames_;
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_);
 		}
 		break;
 	}
