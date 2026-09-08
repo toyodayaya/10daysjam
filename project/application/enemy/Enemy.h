@@ -58,6 +58,7 @@ private:
 	void UpdatePatrolMovement();
 	bool TryStartSpecialAttack();
 	bool TryStartLighthouseAttack();
+	void UpdateLighthouseAttackWarning();
 	void UpdatePatrolShooting();
 	bool TryShootAtPlayer();
 	bool CreateBullet(const Vector3& direction, float spawnOffset);
@@ -87,16 +88,39 @@ private:
 	std::string bulletModelFilePath_;
 	std::vector<Bullet> bullets_;
 
-	// 撃破後すぐに消さず、揺れ・膨張の後に演出専用の爆発を表示する。
-	static constexpr int kDeathWarningFrames_ = 30;  // 揺れながら膨らむ：0.5秒
-	static constexpr int kDeathExplosionFrames_ = 12; // 爆発表示：約0.2秒
+	// 灯台突進の予告。ボスが対象と反対へ引き、狙った灯台の足元で円を脈動させる。
+	static constexpr float kChargeRetreatDistance_ = 0.8f;
+	static constexpr float kChargePulseScale_ = 0.10f;
+	static constexpr float kWarningCircleBaseScale_ = 1.20f;
+	static constexpr float kWarningCirclePulseScale_ = 0.25f;
+	static constexpr float kWarningCircleHeightOffset_ = 0.05f;
+	Vector3 lighthouseChargeStartPosition_ = { 0.0f, 0.0f, 0.0f };
+	int lighthouseWarningFrame_ = 0;
+	std::unique_ptr<Object3d> lighthouseWarningCircle_;
+
+	// リリースでも見える、画像を使った時間差爆発。
+	struct DeathExplosionVisual
+	{
+		Vector3 offset = { 0.0f, 0.0f, 0.0f };
+		int startFrame = 0;
+		int displayFrames = 0;
+		float maxScale = 1.0f;
+		bool isVisible = false;
+		std::unique_ptr<Object3d> object3d;
+	};
+
+	// 撃破後すぐに消さず、小爆発を連続させて最後に中央で大爆発する。
+	static constexpr int kDeathWarningFrames_ = 52;  // 揺れながら小爆発：約0.87秒
+	static constexpr int kDeathExplosionFrames_ = 24; // 最後の大爆発：約0.4秒
 	static constexpr int kDeathAnimationFrames_ =
 		kDeathWarningFrames_ + kDeathExplosionFrames_;
 	static constexpr float kDeathMaxScaleRate_ = 1.25f;
 	static constexpr float kDeathShakeWidth_ = 0.18f;
 	static constexpr float kDeathExplosionRadius_ = 3.0f;
+	static constexpr float kDeathEffectHeightOffset_ = 1.0f;
 	// ダメージ0の演出専用爆発。IsCollisionは呼ばない。
 	Explosion deathExplosion_{ kDeathExplosionRadius_, 0 };
+	std::vector<DeathExplosionVisual> deathExplosionVisuals_;
 	bool isDying_ = false;
 	bool deathExplosionStarted_ = false;
 	int deathAnimationFrame_ = 0;
@@ -108,7 +132,7 @@ private:
 
 	// Playerと同じく60FPSを前提にした調整値。
 	static constexpr int kPatrolFrames_ = 180;       // 巡回してから灯台を狙う：3秒
-	static constexpr int kChargeFrames_ = 45;        // ため：0.75秒
+	static constexpr int kChargeFrames_ = 150;       // 灯台突進の予告：2.5秒
 	static constexpr int kRecoveryFrames_ = 60;      // 帰還後の隙：1秒
 	static constexpr int kSlamChargeFrames_ = 60;    // その場での予告：1秒
 	static constexpr int kSlamApproachFrames_ = 45;  // プレイヤーの真上へ移動：0.75秒

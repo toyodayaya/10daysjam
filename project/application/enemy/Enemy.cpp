@@ -7,7 +7,11 @@
 #include "EventManager.h"
 #include "LightHouse.h"
 #include "CollisionManager.h"
+#include "TextureManager.h"
+#include "Model.h"
+#include "ModelManager.h"
 #include <algorithm>
+#include <cstddef>
 #include <cmath>
 #include <utility>
 
@@ -35,16 +39,97 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	startPosition_ = transform_.translate;
 	startScale_ = transform_.scale;
 	attackTargetPosition_ = transform_.translate;
+	lighthouseChargeStartPosition_ = transform_.translate;
+	lighthouseWarningFrame_ = 0;
 	slamStartPosition_ = transform_.translate;
 	slamTargetPosition_ = transform_.translate;
 	shotTimer_ = kShotIntervalFrames_;
 	bulletModelFilePath_ = filePath; // 読み込み済みのボスモデルを弾の仮表示に再利用。
 	bullets_.clear();
+
+	// 灯台突進前に狙った灯台の足元へ表示する円形予告画像を読み込む。
+	TextureManager::GetInstance()->LoadTexture(
+		"resources/effects/lighthouse_target_warning.png");
+	// 地面に円形画像を置くための板ポリゴンもEnemy側で読み込む。
+	ModelManager::GetInstance()->LoadModel(
+		"resources/effects",
+		"lighthouse_target_warning.obj",
+		Model::AnimationType::kNone);
+
+	// 読み込み後に円形予告の3Dオブジェクトを初期化する。
+	lighthouseWarningCircle_ = std::make_unique<Object3d>();
+	lighthouseWarningCircle_->Initialize(Object3dCommon::GetInstance());
+	lighthouseWarningCircle_->SetModel("lighthouse_target_warning.obj");
+	// Object3d::Draw()は環境マップ用テクスチャも参照するため、
+	// 未設定の空文字列でTextureManagerを検索しないようにする。
+	lighthouseWarningCircle_->SetEnvironmentMapTextureFilePath(
+		"resources/human/white.png");
+	QuaternionTransform warningTransform{};
+	warningTransform.scale = {
+		kWarningCircleBaseScale_, 1.0f, kWarningCircleBaseScale_
+	};
+	warningTransform.rotate = { 0.0f, 0.0f, 0.0f, 1.0f };
+	warningTransform.translate = transform_.translate;
+	lighthouseWarningCircle_->SetTransform(warningTransform);
+	lighthouseWarningCircle_->Update();
+
+	// リリースでも見える撃破用の爆発画像と板ポリゴンを読み込む。
+	TextureManager::GetInstance()->LoadTexture(
+		"resources/effects/boss_death_explosion.png");
+	ModelManager::GetInstance()->LoadModel(
+		"resources/effects",
+		"boss_death_explosion.obj",
+		Model::AnimationType::kNone);
+
+	// 小爆発5回と、中央の大爆発1回を時間差で用意する。
+	const Vector3 explosionOffsets[] = {
+		{ -0.65f, 0.0f,  0.25f },
+		{  0.55f, 0.0f,  0.45f },
+		{ -0.35f, 0.0f, -0.55f },
+		{  0.65f, 0.0f, -0.30f },
+		{  0.00f, 0.0f,  0.65f },
+		{  0.00f, 0.0f,  0.00f }
+	};
+	const int explosionStartFrames[] = { 12, 20, 28, 36, 44, 52 };
+	const int explosionDisplayFrames[] = { 18, 18, 18, 18, 18, 24 };
+	const float explosionMaxScales[] = { 0.75f, 0.85f, 0.90f, 1.00f, 1.10f, 2.80f };
+	constexpr std::size_t kExplosionVisualCount =
+		sizeof(explosionOffsets) / sizeof(explosionOffsets[0]);
+
+	deathExplosionVisuals_.clear();
+	deathExplosionVisuals_.reserve(kExplosionVisualCount);
+	for (std::size_t i = 0; i < kExplosionVisualCount; ++i)
+	{
+		DeathExplosionVisual visual{};
+		visual.offset = explosionOffsets[i];
+		visual.startFrame = explosionStartFrames[i];
+		visual.displayFrames = explosionDisplayFrames[i];
+		visual.maxScale = explosionMaxScales[i];
+		visual.object3d = std::make_unique<Object3d>();
+		visual.object3d->Initialize(Object3dCommon::GetInstance());
+		visual.object3d->SetModel("boss_death_explosion.obj");
+		visual.object3d->SetEnvironmentMapTextureFilePath(
+			"resources/human/white.png");
+
+		QuaternionTransform explosionTransform{};
+		explosionTransform.scale = { 0.0f, 1.0f, 0.0f };
+		explosionTransform.rotate = { 0.0f, 0.0f, 0.0f, 1.0f };
+		explosionTransform.translate = {
+			transform_.translate.x + visual.offset.x,
+			transform_.translate.y + kDeathEffectHeightOffset_,
+			transform_.translate.z + visual.offset.z
+		};
+		visual.object3d->SetTransform(explosionTransform);
+		visual.object3d->Update();
+		deathExplosionVisuals_.push_back(std::move(visual));
+	}
 }
 
 void Enemy::Finalize()
 {
 	bullets_.clear();
+	lighthouseWarningCircle_.reset();
+	deathExplosionVisuals_.clear();
 }
 
 void Enemy::Update()
@@ -74,6 +159,7 @@ void Enemy::Update()
 	}
 
 	UpdateAttack();
+	UpdateLighthouseAttackWarning();
 	// 移動と、地面叩きつけ中の大きさの変化を描画へ反映する。
 	object3d_->SetTransform(transform_);
 	object3d_->Update();
@@ -206,9 +292,48 @@ bool Enemy::TryStartLighthouseAttack()
 
 	// この時点で狙いを固定。後から明るさが変わっても中断・追い直しはしない。
 	attackTargetPosition_ = lightHouse->GetObject3d()->GetWorldTranslate();
+	lighthouseChargeStartPosition_ = transform_.translate;
+	lighthouseWarningFrame_ = 0;
 	attackState_ = AttackState::Charge;
 	attackTimer_ = kChargeFrames_;
 	return true;
+}
+
+void Enemy::UpdateLighthouseAttackWarning()
+{
+	const bool isWarningActive =
+		attackState_ == AttackState::Charge ||
+		attackState_ == AttackState::Rush ||
+		attackState_ == AttackState::RushImpact;
+	if (!isWarningActive)
+	{
+		return;
+	}
+
+	++lighthouseWarningFrame_;
+
+	if (lighthouseWarningCircle_)
+	{
+		// 攻撃開始時に選んだ灯台の足元へ赤い円を置く。
+		// ボスが動いても位置を変えず、どの灯台を狙っているか示す。
+		constexpr float kTwoPi = 6.28318530718f;
+		const float pulse = 0.5f + 0.5f * std::sin(
+			kTwoPi * static_cast<float>(lighthouseWarningFrame_) / 30.0f);
+		const float circleScale =
+			kWarningCircleBaseScale_ + kWarningCirclePulseScale_ * pulse;
+
+		QuaternionTransform warningTransform{};
+		warningTransform.translate = {
+			attackTargetPosition_.x,
+			attackTargetPosition_.y + kWarningCircleHeightOffset_,
+			attackTargetPosition_.z
+		};
+		warningTransform.scale = { circleScale, 1.0f, circleScale };
+		warningTransform.rotate = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+		lighthouseWarningCircle_->SetTransform(warningTransform);
+		lighthouseWarningCircle_->Update();
+	}
 }
 
 void Enemy::UpdatePatrolMovement()
@@ -248,13 +373,41 @@ void Enemy::UpdateAttack()
 		break;
 
 	case AttackState::Charge:
-		// ため中は移動しない。次のフレームから突進を開始する。
+	{
+		// 灯台と反対方向へゆっくり引くことで、突進方向を見せる。
+		const int elapsedFrames = kChargeFrames_ - attackTimer_;
+		const float progress = (std::min)(
+			1.0f,
+			static_cast<float>(elapsedFrames) /
+			static_cast<float>(kChargeFrames_));
+		const float dx = attackTargetPosition_.x - lighthouseChargeStartPosition_.x;
+		const float dz = attackTargetPosition_.z - lighthouseChargeStartPosition_.z;
+		const float distance = std::sqrt(dx * dx + dz * dz);
+		transform_.translate = lighthouseChargeStartPosition_;
+		if (distance > 0.0001f)
+		{
+			transform_.translate.x -= dx / distance * kChargeRetreatDistance_ * progress;
+			transform_.translate.z -= dz / distance * kChargeRetreatDistance_ * progress;
+		}
+
+		// ボス自身も小さく脈動させ、「ため中」であることを見せる。
+		constexpr float kTwoPi = 6.28318530718f;
+		const float scaleRate = 1.0f + kChargePulseScale_ *
+			(0.5f + 0.5f * std::sin(kTwoPi * progress * 4.0f));
+		transform_.scale = {
+			startScale_.x * scaleRate,
+			startScale_.y * scaleRate,
+			startScale_.z * scaleRate
+		};
+
 		if (--attackTimer_ <= 0)
 		{
 			attackTimer_ = 0;
+			transform_.scale = startScale_;
 			attackState_ = AttackState::Rush;
 		}
 		break;
+	}
 
 	case AttackState::Rush:
 	{
@@ -677,6 +830,20 @@ void Enemy::Draw()
 	object3d_->Draw();
 	// 撃破時の爆発は当たり判定を使わず、描画だけ行う。
 	deathExplosion_.Draw();
+	for (const DeathExplosionVisual& visual : deathExplosionVisuals_)
+	{
+		if (isDying_ && visual.isVisible && visual.object3d)
+		{
+			visual.object3d->Draw();
+		}
+	}
+	if (!isDying_ && lighthouseWarningCircle_ &&
+		(attackState_ == AttackState::Charge ||
+			attackState_ == AttackState::Rush ||
+			attackState_ == AttackState::RushImpact))
+	{
+		lighthouseWarningCircle_->Draw();
+	}
 	for (const auto& bullet : bullets_)
 	{
 		bullet.object3d->Draw();
@@ -781,6 +948,10 @@ void Enemy::StartDeathAnimation()
 	deathPosition_ = transform_.translate;
 	deathScale_ = transform_.scale;
 	bullets_.clear();
+	for (DeathExplosionVisual& visual : deathExplosionVisuals_)
+	{
+		visual.isVisible = false;
+	}
 }
 
 void Enemy::UpdateDeathAnimation()
@@ -790,7 +961,7 @@ void Enemy::UpdateDeathAnimation()
 	constexpr float kPi = 3.14159265359f;
 	if (deathAnimationFrame_ <= kDeathWarningFrames_)
 	{
-		// 最初の0.5秒は揺れを強めながら、少しずつ膨らませる。
+		// 小爆発を重ねながら揺れを強め、最後の大爆発まで膨らませる。
 		const float progress = static_cast<float>(deathAnimationFrame_) /
 			static_cast<float>(kDeathWarningFrames_);
 		const float scaleRate = 1.0f +
@@ -820,6 +991,34 @@ void Enemy::UpdateDeathAnimation()
 			// 演出専用なので攻撃判定は同じフレームで無効化する。
 			deathExplosion_.Deactivate();
 		}
+	}
+
+	// 位置をずらした爆発を時間差で表示する。
+	for (DeathExplosionVisual& visual : deathExplosionVisuals_)
+	{
+		const int localFrame = deathAnimationFrame_ - visual.startFrame;
+		visual.isVisible =
+			localFrame >= 0 && localFrame < visual.displayFrames;
+		if (!visual.isVisible || !visual.object3d)
+		{
+			continue;
+		}
+
+		const float progress = static_cast<float>(localFrame + 1) /
+			static_cast<float>(visual.displayFrames);
+		// 0→最大→0と変化させ、爆発が一瞬で膨らんで消えるようにする。
+		const float burstScale = visual.maxScale * std::sin(kPi * progress);
+
+		QuaternionTransform explosionTransform{};
+		explosionTransform.scale = { burstScale, 1.0f, burstScale };
+		explosionTransform.rotate = { 0.0f, 0.0f, 0.0f, 1.0f };
+		explosionTransform.translate = {
+			deathPosition_.x + visual.offset.x,
+			deathPosition_.y + kDeathEffectHeightOffset_,
+			deathPosition_.z + visual.offset.z
+		};
+		visual.object3d->SetTransform(explosionTransform);
+		visual.object3d->Update();
 	}
 
 	// Explosion側の表示時間が終わってから死亡扱いにして、クリアへ進む。
