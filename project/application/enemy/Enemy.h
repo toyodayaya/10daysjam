@@ -1,9 +1,7 @@
 #pragma once
 #include "BaseEnemy.h"
-#include "BossHPUI.h"
 #include "Explosion.h"
 #include "Object3d.h"
-#include "Audio.h"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -20,8 +18,6 @@ public:
 	void Update() override;
 	// 描画
 	void Draw() override;
-	// ボスHP UIの描画
-	void DrawUI() override;
 	// 衝突応答
 	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 
@@ -60,6 +56,9 @@ private:
 
 	void UpdateAttack();
 	void UpdatePatrolMovement();
+	// Playerと同じQuaternion計算で、攻撃対象または移動方向へ向ける。
+	void UpdateFacingDirection(const Vector3& previousPosition);
+	void FaceDirection(const Vector3& direction);
 	bool TryStartSpecialAttack();
 	bool TryStartLighthouseAttack();
 	void UpdateLighthouseAttackWarning();
@@ -165,6 +164,8 @@ private:
 	// Initializeで保存する初期位置（transform_と同じローカル座標）。
 	Vector3 startPosition_ = { 0.0f, 0.0f, 0.0f };
 	Vector3 startScale_ = { 1.0f, 1.0f, 1.0f };
+	// モデル本来の向きを保存し、計算したY軸回転と合成する。
+	Quaternion baseRotation_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 	// 灯台のポインタを保持せず、攻撃開始時の位置だけを保存する。
 	Vector3 attackTargetPosition_ = { 0.0f, 0.0f, 0.0f };
 	// 叩きつけ開始時と、攻撃開始時に固定したプレイヤー位置。
@@ -175,14 +176,6 @@ private:
 	const int kMaxHp_ = 30;
 	// ボスの現在HP
 	int hp_ = kMaxHp_;
-	// 画面中央上に表示するボスHPバー
-	BossHPUI hpUI_;
 	// 爆発判定用AABBの中心から各面までの距離
 	const Vector3 kDamageAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
-
-	// サウンドデータ
-	Audio::SoundData chargeSE_;
-	Audio::SoundData rushSE_;
-	Audio::SoundData jumpSE_;
-	Audio::SoundData landSE_;
 };

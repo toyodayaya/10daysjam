@@ -25,8 +25,6 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	object3d_->SetTransform(transform);
 	transform_ = transform;
 	hp_ = kMaxHp_;
-	hpUI_.Initialize();
-	hpUI_.Update(hp_, kMaxHp_);
 	isDead_ = false;
 	isDying_ = false;
 	deathExplosionStarted_ = false;
@@ -40,6 +38,7 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	patrolDirection_ = 1.0f;
 	startPosition_ = transform_.translate;
 	startScale_ = transform_.scale;
+	baseRotation_ = transform_.rotate;
 	attackTargetPosition_ = transform_.translate;
 	lighthouseChargeStartPosition_ = transform_.translate;
 	lighthouseWarningFrame_ = 0;
@@ -125,12 +124,6 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 		visual.object3d->Update();
 		deathExplosionVisuals_.push_back(std::move(visual));
 	}
-
-	// 音声読み込み
-	chargeSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/charge.mp3");
-	rushSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/rush.mp3");
-	jumpSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/jump.mp3");
-	landSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/landing.mp3");
 }
 
 void Enemy::Finalize()
@@ -138,14 +131,6 @@ void Enemy::Finalize()
 	bullets_.clear();
 	lighthouseWarningCircle_.reset();
 	deathExplosionVisuals_.clear();
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_);
-	Audio::GetInstance()->SoundUnload(&chargeSE_);
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_);
-	Audio::GetInstance()->SoundUnload(&rushSE_);
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_);
-	Audio::GetInstance()->SoundUnload(&jumpSE_);
-	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_);
-	Audio::GetInstance()->SoundUnload(&landSE_);
 }
 
 void Enemy::Update()
@@ -174,7 +159,10 @@ void Enemy::Update()
 		return;
 	}
 
+	// 移動前の位置を保存し、UpdateAttack後の差から巡回方向を求める。
+	const Vector3 previousPosition = transform_.translate;
 	UpdateAttack();
+	UpdateFacingDirection(previousPosition);
 	UpdateLighthouseAttackWarning();
 	// 移動と、地面叩きつけ中の大きさの変化を描画へ反映する。
 	object3d_->SetTransform(transform_);
@@ -182,7 +170,6 @@ void Enemy::Update()
 	// 既に出ている弾は状態に関係なく進む。新しい弾は巡回中だけ発射する。
 	UpdateBullets();
 	UpdatePatrolShooting();
-	hpUI_.Update(hp_, kMaxHp_);
 
 #ifdef USE_IMGUI
 	ImGui::Begin("Boss");
@@ -313,8 +300,6 @@ bool Enemy::TryStartLighthouseAttack()
 	lighthouseWarningFrame_ = 0;
 	attackState_ = AttackState::Charge;
 	attackTimer_ = kChargeFrames_;
-	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_);
 	return true;
 }
 
@@ -371,6 +356,83 @@ void Enemy::UpdatePatrolMovement()
 		+ kPatrolRadiusZ_ * std::sin(phase * 2.0f);
 }
 
+void Enemy::UpdateFacingDirection(const Vector3& previousPosition)
+{
+	Vector3 direction = { 0.0f, 0.0f, 0.0f };
+
+	switch (attackState_)
+	{
+	case AttackState::Patrol:
+		// 巡回中は、実際に移動した方向を向く。
+		direction = {
+			transform_.translate.x - previousPosition.x,
+			0.0f,
+			transform_.translate.z - previousPosition.z
+		};
+		break;
+
+	case AttackState::Charge:
+	case AttackState::Rush:
+	case AttackState::RushImpact:
+		// ため中は後ずさりしても、狙っている灯台を向き続ける。
+		direction = {
+			attackTargetPosition_.x - transform_.translate.x,
+			0.0f,
+			attackTargetPosition_.z - transform_.translate.z
+		};
+		break;
+
+	case AttackState::Return:
+	case AttackState::SlamReturn:
+		// 攻撃後は、初期位置へ戻る方向を向く。
+		direction = {
+			startPosition_.x - transform_.translate.x,
+			0.0f,
+			startPosition_.z - transform_.translate.z
+		};
+		break;
+
+	case AttackState::SlamCharge:
+	case AttackState::SlamApproach:
+	case AttackState::SlamHover:
+	case AttackState::SlamFall:
+	case AttackState::SlamImpact:
+		// 叩きつけ中は、攻撃開始時に記録したPlayer位置を向く。
+		direction = {
+			slamTargetPosition_.x - transform_.translate.x,
+			0.0f,
+			slamTargetPosition_.z - transform_.translate.z
+		};
+		break;
+
+	case AttackState::Recover:
+		// 停止中は最後に向いていた方向を維持する。
+		return;
+	}
+
+	FaceDirection(direction);
+}
+
+void Enemy::FaceDirection(const Vector3& direction)
+{
+	// Player::Move()と同じく、モデルの正面（+Z）をXZ方向へ向ける。
+	if (direction.x * direction.x + direction.z * direction.z <= 0.000001f)
+	{
+		return;
+	}
+
+	const float yaw = std::atan2(direction.x, direction.z);
+	const float halfYaw = yaw * 0.5f;
+	const Quaternion directionRotation = {
+		0.0f,
+		std::sin(halfYaw),
+		0.0f,
+		std::cos(halfYaw)
+	};
+	transform_.rotate = MathManager::QuaternionNormalize(
+		MathManager::QuaternionMultiply(directionRotation, baseRotation_));
+}
+
 void Enemy::UpdateAttack()
 {
 	switch (attackState_)
@@ -424,8 +486,6 @@ void Enemy::UpdateAttack()
 			attackTimer_ = 0;
 			transform_.scale = startScale_;
 			attackState_ = AttackState::Rush;
-			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_);
 		}
 		break;
 	}
@@ -509,8 +569,6 @@ void Enemy::UpdateAttack()
 			slamStartPosition_ = transform_.translate;
 			attackState_ = AttackState::SlamApproach;
 			attackTimer_ = kSlamApproachFrames_;
-			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_);
 		}
 		break;
 	}
@@ -582,8 +640,6 @@ void Enemy::UpdateAttack()
 			transform_.translate = slamTargetPosition_;
 			attackState_ = AttackState::SlamImpact;
 			attackTimer_ = kSlamImpactFrames_;
-			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_);
 		}
 		break;
 	}
@@ -875,11 +931,6 @@ void Enemy::Draw()
 	}
 }
 
-void Enemy::DrawUI()
-{
-	hpUI_.Draw();
-}
-
 void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
 	// 撃破演出中は攻撃も被弾も行わない。
@@ -963,7 +1014,6 @@ void Enemy::TakeDamage(int damage)
 
 	// HPが負にならないようにする。
 	hp_ = (damage >= hp_) ? 0 : hp_ - damage;
-	hpUI_.Update(hp_, kMaxHp_);
 	if (hp_ == 0)
 	{
 		StartDeathAnimation();
