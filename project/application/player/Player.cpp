@@ -37,6 +37,10 @@ void Player::Initialize(const QuaternionTransform& transform, const std::string&
 	squashTimer_ = 0;
 
 	isDead_ = false;
+
+	// 音声読み込み
+	collectSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/collect.mp3");
+	explosionSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/explosion.mp3");
 }
 
 void Player::Update()
@@ -109,7 +113,12 @@ void Player::DrawUI()
 }
 
 void Player::Finalize()
-{}
+{
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), explosionSE_);
+	Audio::GetInstance()->SoundUnload(&explosionSE_);
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), collectSE_);
+	Audio::GetInstance()->SoundUnload(&collectSE_);
+}
 
 void Player::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
@@ -220,6 +229,9 @@ void Player::SelfDestruct() {
 
 		// 爆発が有効な発生フレームに一度だけEnemyへダメージを与える
 		DamageEnemiesWithExplosion();
+
+		// 音声再生
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), explosionSE_);
 	}
 }
 
@@ -381,6 +393,8 @@ void Player::UpdateLightHouseInteraction()
 			const uint32_t withdrawnHp =
 				targetLightHouse->WithdrawHp(static_cast<uint32_t>(receivableHp));
 			hp_ += static_cast<int>(withdrawnHp);
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), collectSE_);
 		}
 	}
 }

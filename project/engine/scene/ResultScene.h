@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include "Sprite.h"
 #include <memory>
+#include "Audio.h"
 
 
 class ResultScene : public BaseScene
@@ -20,4 +21,10 @@ private:
 	std::unique_ptr<Sprite> backGround_;
 	std::unique_ptr<Sprite> pressSpace_;
 
+	// サウンドデータ
+	Audio::SoundData resultBgm_;
+	Audio::SoundData dramrollSE_;
+	Audio::SoundData noticeSE_;
+
+	bool isPlay_ = false;
 };

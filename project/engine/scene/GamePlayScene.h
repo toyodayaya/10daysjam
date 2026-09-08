@@ -4,6 +4,7 @@
 #include <memory>
 #include "StageData.h"
 #include "Sprite.h"
+#include "Audio.h"
 
 class GamePlayScene : public BaseScene
 {
@@ -27,5 +28,8 @@ private:
 	// スプライト
 	std::unique_ptr<Sprite> space_;
 	std::unique_ptr<Sprite> goTitle_;
+
+	// サウンドデータ
+	Audio::SoundData playBgm_;
 
 };

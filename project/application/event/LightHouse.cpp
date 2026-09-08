@@ -41,6 +41,10 @@ void LightHouse::Initialize(const QuaternionTransform& transform, const std::str
 	bar_->SetAnchorPoint(Vector2{ 0.0f,2.0f });
 	bar_->SetSize(Vector2{ 0.0f,50.0f });
 
+	// 音声読み込み
+	lightingSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/lighting.mp3");
+	lightoutSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/lightOut.mp3");
+
 #ifdef _DEBUG
 	debugDraw = std::make_unique<DebugDraw>();
 	debugDraw->Initialize(DebugDrawCommon::GetInstance(), "resources/human/white.png", DebugDraw::DrawState::kBox);
@@ -52,6 +56,10 @@ void LightHouse::Initialize(const QuaternionTransform& transform, const std::str
 
 void LightHouse::Finalize()
 {
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), lightingSE_);
+	Audio::GetInstance()->SoundUnload(&lightingSE_);
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_);
+	Audio::GetInstance()->SoundUnload(&lightoutSE_);
 #ifdef _DEBUG
 	debugDraw.reset();
 #endif // _DEBUG
@@ -198,6 +206,9 @@ void LightHouse::AddHP(const float& hp)
 	Vector2 scale = bar_->GetSize();
 	scale.x = intencity;
 	bar_->SetSize(scale);
+
+	// 音声再生
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightingSE_);
 	
 }
 
@@ -212,6 +223,8 @@ void LightHouse::SetIsHit(bool isHit)
 	{
 		hp_ = 0;
 		t = 0.0f;
+		// 音声再生
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_);
 	}
 
 	isHit_ = isHit;
@@ -222,6 +235,9 @@ uint32_t LightHouse::WithdrawHp(uint32_t maxAmount)
 	const uint32_t withdrawnHp = (std::min)(hp_, maxAmount);
 	hp_ -= withdrawnHp;
 	intencity = (std::max)(0.0f, intencity - static_cast<float>(withdrawnHp));
+
+	// 音声再生
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), lightoutSE_);
 
 	return withdrawnHp;
 }

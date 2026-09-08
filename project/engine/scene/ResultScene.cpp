@@ -8,8 +8,10 @@
 
 void ResultScene::Initialize()
 {
+	// ダメージのビットマップフォントを更新
 	DamageManager::GetInstance()->BestDamageBitMapFont();
 
+	// スプライトの読み込むと初期化
 	backGround_ = std::make_unique<Sprite>();
 	TextureManager::GetInstance()->LoadTexture("resources/UI/result.png");
 	backGround_->Initialize(SpriteCommon::GetInstance(), "resources/UI/result.png");
@@ -18,11 +20,25 @@ void ResultScene::Initialize()
 	TextureManager::GetInstance()->LoadTexture("resources/UI/pressSpace.png");
 	pressSpace_->Initialize(SpriteCommon::GetInstance(), "resources/UI/pressSpace.png");
 	pressSpace_->SetPosition(Vector2{ 150.0f,450.0f });
+
+	// 音声読み込み
+	resultBgm_ = Audio::GetInstance()->SoundLoadFile("resources/sound/BGM/result.mp3");
+	dramrollSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/dramroll.mp3");
+	noticeSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/notice.mp3");
+
+	// 音声再生
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), dramrollSE_);
+	
 }
 
 void ResultScene::Finalize()
 {
-
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), resultBgm_);
+	Audio::GetInstance()->SoundUnload(&resultBgm_);
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), dramrollSE_);
+	Audio::GetInstance()->SoundUnload(&dramrollSE_); 
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), noticeSE_);
+	Audio::GetInstance()->SoundUnload(&noticeSE_);
 }
 
 void ResultScene::Update()
@@ -31,6 +47,15 @@ void ResultScene::Update()
 	pressSpace_->Update();
 
 	DamageManager::GetInstance()->BestDamageUpdate();
+
+	if (DamageManager::GetInstance()->GetState() == DamageManager::State::kNotice && !isPlay_)
+	{
+		// 音声再生
+		Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), dramrollSE_);
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), resultBgm_);
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), noticeSE_);
+		isPlay_ = true;
+	}
 
 	if (DamageManager::GetInstance()->GetState() == DamageManager::State::kNotice)
 	{

@@ -5,6 +5,7 @@
 #include "BaseCharacter.h"
 #include "Explosion.h"
 #include "PlayerHPUI.h"
+#include "Audio.h"
 
 class Player : public BaseCharacter
 {
@@ -114,5 +115,9 @@ private:
 
 	// 灯台にうつすHPの数値
 	const int lighthouseHp_ = 5;
+
+	// サウンドデータ
+	Audio::SoundData collectSE_;
+	Audio::SoundData explosionSE_;
 };
 

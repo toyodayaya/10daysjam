@@ -8,14 +8,17 @@
 
 void TitleScene::Initialize()
 {
+	// ランキングの変数を宣言
 	ranking_ = DamageManager::GetInstance()->GetRanking();
 	DamageManager::GetInstance()->RankingBitMapFont();
 
+	// テクスチャデータを読み込む
 	TextureManager::GetInstance()->LoadTexture("resources/UI/title.png");
 	TextureManager::GetInstance()->LoadTexture("resources/UI/play.png");
 	TextureManager::GetInstance()->LoadTexture("resources/UI/tutorial.png");
 	TextureManager::GetInstance()->LoadTexture("resources/UI/cursor.png");
 
+	// スプライトの生成と初期化
 	backGround_ = std::make_unique<Sprite>();
 	backGround_->Initialize(SpriteCommon::GetInstance(), "resources/UI/title.png");
 
@@ -30,11 +33,23 @@ void TitleScene::Initialize()
 	cursor_ = std::make_unique<Sprite>();
 	cursor_->Initialize(SpriteCommon::GetInstance(), "resources/UI/cursor.png");
 	cursor_->SetPosition(Vector2{ 600.0f,500.0f });
+
+	// 音声読み込み
+	titleBgm_ = Audio::GetInstance()->SoundLoadFile("resources/sound/BGM/title.mp3");
+	selectSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/select.wav");
+	enterSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/enter.wav");
+	// 音声再生
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), titleBgm_);
 }
 
 void TitleScene::Finalize()
 {
-	
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), titleBgm_);
+	Audio::GetInstance()->SoundUnload(&titleBgm_);
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), selectSE_);
+	Audio::GetInstance()->SoundUnload(&selectSE_); 
+	Audio::GetInstance()->SoundStopWave(Audio::GetInstance()->GetXAudio2().Get(), enterSE_);
+	Audio::GetInstance()->SoundUnload(&enterSE_);
 }
 
 void TitleScene::Update()
@@ -45,6 +60,8 @@ void TitleScene::Update()
 	{
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE))
 		{
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), enterSE_);
 			// スペースキーでチュートリアルへ
 			SceneManager::GetInstance()->ChangeScene("TutorialScene");
 			break;
@@ -59,6 +76,8 @@ void TitleScene::Update()
 			pos.y = play_->GetPosition().y;
 			cursor_->SetPosition(pos);
 			nextScene_ = kPlay;
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), selectSE_);
 		}
 
 		break;
@@ -68,6 +87,8 @@ void TitleScene::Update()
 	{
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE))
 		{
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), enterSE_);
 			// スペースキーでゲームシーンへ
 			SceneManager::GetInstance()->ChangeScene("GamePlayScene");
 			break;
@@ -81,6 +102,8 @@ void TitleScene::Update()
 			pos.y = tutorial_->GetPosition().y;
 			cursor_->SetPosition(pos);
 			nextScene_ = kTutorial;
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), selectSE_);
 		}
 
 		break;

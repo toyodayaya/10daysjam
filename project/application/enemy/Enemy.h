@@ -2,6 +2,7 @@
 #include "BaseEnemy.h"
 #include "BossHPUI.h"
 #include "Object3d.h"
+#include "Audio.h"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -133,5 +134,11 @@ private:
 	BossHPUI hpUI_;
 	// 爆発判定用AABBの中心から各面までの距離
 	const Vector3 kDamageAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
+
+	// サウンドデータ
+	Audio::SoundData chargeSE_;
+	Audio::SoundData rushSE_;
+	Audio::SoundData jumpSE_;
+	Audio::SoundData landSE_;
 };
 
