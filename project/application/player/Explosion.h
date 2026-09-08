@@ -3,7 +3,7 @@
 #include "MathManager.h"
 #include <memory>
 
-class DebugDraw;
+class Object3d;
 
 // 球形爆発攻撃
 class Explosion
@@ -40,14 +40,11 @@ private:
 	float radius_ = 0.0f;
 	int damage_ = 0;
 	bool isActive_ = false;
-
-#ifdef _DEBUG
 	// 攻撃判定とは独立して、爆発の収縮演出を約0.3秒再生する
 	static constexpr int kEffectDurationFrames_ = 18;
 	// 爆発した瞬間の見た目を攻撃範囲より少し大きくする
 	static constexpr float kInitialEffectScaleMultiplier_ = 1.25f;
 	int effectElapsedFrames_ = 0;
 	bool isEffectActive_ = false;
-	std::unique_ptr<DebugDraw> debugSphere_;
-#endif
+	std::unique_ptr<Object3d> effectObject_;
 };
