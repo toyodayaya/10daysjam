@@ -173,6 +173,12 @@ void DamageManager::RankingUpdate(const int& damage)
 	// 引数で受け取ってメンバ変数として記録
 	nowDamage_ = damage;
 
+	if (nowDamage_ >= 9999)
+	{
+		// ダメージが上限値を超えたらストップ
+		nowDamage_ = 9999;
+	}
+
 	// ランキングを更新
 	for (int i = 0; i < damageRankings_.size(); i++)
 	{
@@ -193,7 +199,7 @@ void DamageManager::RankingBitMapFont()
 	{
 		int damage = damageRankings_[r];
 
-		for (int i = 5; i >= 0; i--)
+		for (int i = 3; i >= 0; i--)
 		{
 			// ランキングの数値を分割して記録
 			bitmapNumber_[r][i] = damage % 10;
@@ -219,7 +225,7 @@ void DamageManager::BestDamageBitMapFont()
 	phase_ = kRoll;
 	drumRollTimer_ = 2;
 
-	for (int j = 5; j >= 0; j--)
+	for (int j = 3; j >= 0; j--)
 	{
 		// 最高ダメージの数値を分割して記録
 		bitmapNumber_[3][j] = bestDamage_ % 10;
@@ -245,6 +251,13 @@ void DamageManager::SetOnePlayBestDamage(const int& damage)
 	{
 		// 引数のダメージの方が大きかったら記録
 		bestDamage_ = damage;
+
+		if (bestDamage_ >= 9999)
+		{
+			// ダメージが上限値を超えたらストップ
+			bestDamage_ = 9999;
+		}
+
 	}
 
 	// ランキングを更新

@@ -41,7 +41,7 @@ private:
 	int bestDamage_ = 0;
 
 	// ダメージの桁数上限
-	static const int kNumberArray = 6;
+	static const int kNumberArray = 4;
 	// 数字用のモデル
 	std::array<std::array<std::vector<std::unique_ptr<Sprite>>, kNumberArray>,4> numbers_;
 	// 数字記録用の変数

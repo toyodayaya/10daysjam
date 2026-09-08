@@ -5,6 +5,7 @@
 #include "TextureManager.h"
 
 #include <algorithm>
+#include <cmath>
 
 void BossHPUI::Initialize()
 {
@@ -41,6 +42,8 @@ void BossHPUI::Initialize()
 	damageHoldFrames_ = 0;
 	damageAnimationElapsedFrames_ = 0;
 	isDamageAnimationActive_ = false;
+	shakeElapsedFrames_ = 0;
+	isShakeActive_ = false;
 	Update(0, 1);
 }
 
@@ -103,9 +106,50 @@ void BossHPUI::Update(int currentHp, int maxHp)
 
 	hpBarSprite_->SetSize({ kBarSize_.x * currentHpRate_, kBarSize_.y });
 	damageBarSprite_->SetSize({ kBarSize_.x * damageBarRate_, kBarSize_.y });
+
+	Vector2 shakeOffset = { 0.0f, 0.0f };
+	if (isShakeActive_)
+	{
+		const float progress = std::clamp(
+			static_cast<float>(shakeElapsedFrames_) /
+			static_cast<float>(kShakeDurationFrames_ - 1),
+			0.0f, 1.0f);
+		const float amplitude = kShakeAmplitude_ * (1.0f - progress);
+		const float phase = static_cast<float>(shakeElapsedFrames_) * 2.4f;
+		shakeOffset.x = std::sin(phase) * amplitude;
+		shakeOffset.y = std::cos(phase * 1.7f) * amplitude * 0.4f;
+
+		++shakeElapsedFrames_;
+		if (shakeElapsedFrames_ >= kShakeDurationFrames_)
+		{
+			shakeElapsedFrames_ = 0;
+			isShakeActive_ = false;
+		}
+	}
+
+	// 3層を同じ量だけ動かし、バー同士の位置関係を維持する
+	frameSprite_->SetPosition({
+		kFramePosition_.x + shakeOffset.x,
+		kFramePosition_.y + shakeOffset.y
+	});
+	damageBarSprite_->SetPosition({
+		kBarPosition_.x + shakeOffset.x,
+		kBarPosition_.y + shakeOffset.y
+	});
+	hpBarSprite_->SetPosition({
+		kBarPosition_.x + shakeOffset.x,
+		kBarPosition_.y + shakeOffset.y
+	});
+
 	frameSprite_->Update();
 	damageBarSprite_->Update();
 	hpBarSprite_->Update();
+}
+
+void BossHPUI::StartShake()
+{
+	shakeElapsedFrames_ = 0;
+	isShakeActive_ = true;
 }
 
 void BossHPUI::Draw()

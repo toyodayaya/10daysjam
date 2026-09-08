@@ -77,7 +77,7 @@ public:
 	void SoundUnload(SoundData* soundData);
 
 	// 音声データの再生関数
-	void SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData);
+	void SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData,bool isLoop);
 
 	// 音声データの停止関数
 	void SoundStopWave(IXAudio2* xAudio2, const SoundData& soundData);

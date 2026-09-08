@@ -86,11 +86,6 @@ void Player::Update()
 	ImGui::End();
 
 #endif // USE_IMGUI
-
-	if (isDead_)
-	{
-		SceneManager::GetInstance()->ChangeScene("TitleScene");
-	}
 }
 
 void Player::Draw()
@@ -165,19 +160,19 @@ void Player::Move() {
 	// キー入力でプレイヤーを移動させる
 	Vector3 moveDirection = { 0.0f, 0.0f, 0.0f };
 
-	if (Input::GetInstance()->PushKey(DIK_A))
+	if (Input::GetInstance()->PushKey(DIK_A) || Input::GetInstance()->PushKey(DIK_LEFTARROW))
 	{
 		moveDirection.x -= 1.0f;
 	}
-	if (Input::GetInstance()->PushKey(DIK_D))
+	if (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_RIGHTARROW))
 	{
 		moveDirection.x += 1.0f;
 	}
-	if (Input::GetInstance()->PushKey(DIK_S))
+	if (Input::GetInstance()->PushKey(DIK_S) || Input::GetInstance()->PushKey(DIK_DOWNARROW))
 	{
 		moveDirection.z -= 1.0f;
 	}
-	if (Input::GetInstance()->PushKey(DIK_W))
+	if (Input::GetInstance()->PushKey(DIK_W) || Input::GetInstance()->PushKey(DIK_UPARROW))
 	{
 		moveDirection.z += 1.0f;
 	}
@@ -231,7 +226,7 @@ void Player::SelfDestruct() {
 		DamageEnemiesWithExplosion();
 
 		// 音声再生
-		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), explosionSE_);
+		Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), explosionSE_,false);
 	}
 }
 
@@ -254,7 +249,7 @@ void Player::DamageEnemiesWithExplosion()
 
 		if (explosion_.IsCollision(enemy->GetDamageAabb()))
 		{
-			enemy->TakeDamage(explosion_.GetDamage());
+			enemy->TakeExplosionDamage(explosion_.GetDamage());
 		}
 	}
 }
@@ -394,7 +389,7 @@ void Player::UpdateLightHouseInteraction()
 				targetLightHouse->WithdrawHp(static_cast<uint32_t>(receivableHp));
 			hp_ += static_cast<int>(withdrawnHp);
 			// 音声再生
-			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), collectSE_);
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), collectSE_,false);
 		}
 	}
 }
@@ -469,7 +464,7 @@ void Player::AutoRecoveryHp() {
 	// HPが最大値に達していない場合のみ回復する
 	if (hp_ < maxHp_) {
 		// タイマーが1秒以上経過した場合に回復する
-		if (recoveryHpTimer_ >= 1.0f) {
+		if (recoveryHpTimer_ >= 0.7f) {
 			hp_ += kRecoveryHp_;
 			// 最大HPを超えないようにする
 			hp_ = std::clamp(hp_, 0, maxHp_);
@@ -522,6 +517,8 @@ void Player::TakeDamage(int damage)
 
 	// 座標やスケールには触れず、現在HPだけを減らす。
 	hp_ = (damage >= hp_) ? 0 : hp_ - damage;
+	// 敵の攻撃による被弾を分かりやすくするため、HP UIを揺らす。
+	hpUI_.StartDamageEffect();
 	// 被弾直後に自動回復してダメージが見えなくならないよう、回復時間を数え直す。
 	recoveryHpTimer_ = 0.0f;
 	if (hp_ == 0)

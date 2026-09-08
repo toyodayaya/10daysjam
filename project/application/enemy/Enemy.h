@@ -1,7 +1,9 @@
 #pragma once
 #include "BaseEnemy.h"
+#include "BossHPUI.h"
 #include "Explosion.h"
 #include "Object3d.h"
+#include "Audio.h"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -18,6 +20,8 @@ public:
 	void Update() override;
 	// 描画
 	void Draw() override;
+	// ボスHP UIの描画
+	void DrawUI() override;
 	// 衝突応答
 	void OnCollision(std::string hitObjectType, BaseCharacter* hitObject) override;
 
@@ -29,6 +33,8 @@ public:
 	void SetMaxHP(const float& hp) override;
 	// ダメージを受ける
 	void TakeDamage(int damage) override;
+	// 自爆ダメージを受け、HPバーのシェイクを開始する
+	void TakeExplosionDamage(int damage) override;
 	// 爆発との当たり判定に使用するAABBを取得
 	AABB GetDamageAabb() const override;
 	// Player側が落下・着地中だけ押し出しを止めるために使用する
@@ -40,7 +46,7 @@ private:
 	// 巡回射撃の後、地面叩きつけと灯台突進を交互に使う。
 	enum class AttackState
 	{
-		Patrol, // 上から見て横8の字になるように移動する
+		Patrol, // 灯台間移動・Player追跡・横8の字を切り替える
 		Charge, // 狙う位置を決めて、ためる
 		Rush,   // 決めた位置に向かって突進する
 		RushImpact, // 灯台へ到着した1フレームだけ接触判定を残す
@@ -54,9 +60,18 @@ private:
 		Recover, // 初期位置で止まり、自爆を狙える隙を作る
 	};
 
+	// 特殊攻撃から戻るたびに巡回方法を切り替え、同じ軌道の繰り返しを防ぐ。
+	enum class PatrolType
+	{
+		MoveToLighthouse, // 灯台の少し手前を順番に移動する
+		ChasePlayer,      // Playerへ近づきながら射撃する
+		FigureEight       // 従来の横8の字移動
+	};
+
 	void UpdateAttack();
 	void UpdatePatrolMovement();
-	// Playerと同じQuaternion計算で、攻撃対象または移動方向へ向ける。
+	bool SelectNextLighthousePatrolTarget();
+	void AdvancePatrolType();
 	void UpdateFacingDirection(const Vector3& previousPosition);
 	void FaceDirection(const Vector3& direction);
 	bool TryStartSpecialAttack();
@@ -131,7 +146,7 @@ private:
 	Vector3 deathScale_ = { 1.0f, 1.0f, 1.0f };
 
 	// 狙いを決める時、このHP（明るさ）以上の灯台だけを対象にする。
-	static constexpr uint32_t kTargetMinHp_ = 5;
+	static constexpr uint32_t kTargetMinHp_ = 20;
 
 	// Playerと同じく60FPSを前提にした調整値。
 	static constexpr int kPatrolFrames_ = 180;       // 巡回してから灯台を狙う：3秒
@@ -154,13 +169,22 @@ private:
 	static constexpr float kPatrolRadiusX_ = 2.5f;   // 左右に最大2.5
 	static constexpr float kPatrolRadiusZ_ = 1.0f;   // 奥行きに最大1.0
 	static constexpr int kPatrolCycleFrames_ = 240;  // 横8の字を1周する時間：4秒
+	static constexpr float kPatrolMoveSpeed_ = 0.06f; // 灯台・Playerへ向かう巡回速度
+	static constexpr float kPatrolLighthouseOffset_ = 1.8f; // 灯台へ重ならない停止距離
+	static constexpr float kPatrolPlayerStopDistance_ = 2.5f; // Playerへ近づきすぎない距離
+	static constexpr int kPatrolStopFrames_ = 30; // 灯台付近で約0.5秒停止
 
 	AttackState attackState_ = AttackState::Patrol;
+	PatrolType patrolType_ = PatrolType::MoveToLighthouse;
 	int attackTimer_ = kPatrolFrames_;
 	bool nextAttackIsSlam_ = true; // 最初の特殊攻撃はプレイヤーへの叩きつけ
 	bool slamHitPlayer_ = false;   // 同じ叩きつけで複数回つぶさない
 	int patrolFrame_ = 0;
 	float patrolDirection_ = 1.0f; // 帰還するたびに左右を反転する
+	uint32_t lighthousePatrolIndex_ = 0;
+	Vector3 patrolTargetPosition_ = { 0.0f, 0.0f, 0.0f };
+	int patrolStopTimer_ = 0;
+	bool hasPatrolTarget_ = false;
 	// Initializeで保存する初期位置（transform_と同じローカル座標）。
 	Vector3 startPosition_ = { 0.0f, 0.0f, 0.0f };
 	Vector3 startScale_ = { 1.0f, 1.0f, 1.0f };
@@ -173,9 +197,17 @@ private:
 	Vector3 slamTargetPosition_ = { 0.0f, 0.0f, 0.0f };
 
 	// ボスの最大HP
-	const int kMaxHp_ = 30;
+	const int kMaxHp_ = 80;
 	// ボスの現在HP
 	int hp_ = kMaxHp_;
+	// 画面中央上に表示するボスHPバー
+	BossHPUI hpUI_;
 	// 爆発判定用AABBの中心から各面までの距離
 	const Vector3 kDamageAabbHalfSize_ = { 1.0f, 1.0f, 1.0f };
+
+	// サウンドデータ
+	Audio::SoundData chargeSE_;
+	Audio::SoundData rushSE_;
+	Audio::SoundData jumpSE_;
+	Audio::SoundData landSE_;
 };

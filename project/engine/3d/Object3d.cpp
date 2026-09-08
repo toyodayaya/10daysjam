@@ -81,7 +81,7 @@ void Object3d::CreatePointLight()
 	pointLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	pointLightData->position = { 0.0f,2.0f,0.0f };
 	pointLightData->intensity = 0.5f;
-	pointLightData->radius = 100.0f;
+	pointLightData->radius = 300.0f;
 	pointLightData->decay = 100.0f;
 }
 

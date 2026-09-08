@@ -36,6 +36,11 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 	slamHitPlayer_ = false;
 	patrolFrame_ = 0;
 	patrolDirection_ = 1.0f;
+	patrolType_ = PatrolType::MoveToLighthouse;
+	lighthousePatrolIndex_ = 0;
+	patrolTargetPosition_ = transform_.translate;
+	patrolStopTimer_ = 0;
+	hasPatrolTarget_ = false;
 	startPosition_ = transform_.translate;
 	startScale_ = transform_.scale;
 	baseRotation_ = transform_.rotate;
@@ -124,6 +129,15 @@ void Enemy::Initialize(const QuaternionTransform& transform, const std::string& 
 		visual.object3d->Update();
 		deathExplosionVisuals_.push_back(std::move(visual));
 	}
+
+	// 音声読み込み
+	chargeSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/charge.mp3");
+	rushSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/rush.mp3");
+	jumpSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/jump.mp3");
+	landSE_ = Audio::GetInstance()->SoundLoadFile("resources/sound/SE/landing.mp3");
+
+	// ボスHP UIを初期化
+	hpUI_.Initialize();
 }
 
 void Enemy::Finalize()
@@ -139,6 +153,9 @@ void Enemy::Update()
 	{
 		return;
 	}
+
+	// ボスHP UIを毎フレーム更新
+	hpUI_.Update(hp_, kMaxHp_);
 
 	// HPが0になった後は攻撃処理を止め、撃破演出だけを更新する。
 	if (isDying_)
@@ -300,6 +317,8 @@ bool Enemy::TryStartLighthouseAttack()
 	lighthouseWarningFrame_ = 0;
 	attackState_ = AttackState::Charge;
 	attackTimer_ = kChargeFrames_;
+	// 音声再生
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), chargeSE_, false);
 	return true;
 }
 
@@ -342,8 +361,80 @@ void Enemy::UpdateLighthouseAttackWarning()
 
 void Enemy::UpdatePatrolMovement()
 {
-	// 角度を際限なく増やさず、1周分のフレーム数で折り返す。
 	patrolFrame_ = (patrolFrame_ + 1) % kPatrolCycleFrames_;
+
+	if (patrolType_ == PatrolType::MoveToLighthouse)
+	{
+		// 到着後は少し停止し、次の灯台を選ぶ。
+		if (patrolStopTimer_ > 0)
+		{
+			--patrolStopTimer_;
+			if (patrolStopTimer_ == 0)
+			{
+				hasPatrolTarget_ = false;
+			}
+			return;
+		}
+
+		if (!hasPatrolTarget_ && !SelectNextLighthousePatrolTarget())
+		{
+			// 有効な灯台がない場合は、その場で射撃しながら次の攻撃を待つ。
+			return;
+		}
+
+		const float dx = patrolTargetPosition_.x - transform_.translate.x;
+		const float dz = patrolTargetPosition_.z - transform_.translate.z;
+		const float distance = std::sqrt(dx * dx + dz * dz);
+		if (distance <= kPatrolMoveSpeed_)
+		{
+			transform_.translate.x = patrolTargetPosition_.x;
+			transform_.translate.z = patrolTargetPosition_.z;
+			patrolStopTimer_ = kPatrolStopFrames_;
+		}
+		else
+		{
+			transform_.translate.x += dx / distance * kPatrolMoveSpeed_;
+			transform_.translate.z += dz / distance * kPatrolMoveSpeed_;
+		}
+		return;
+	}
+
+	if (patrolType_ == PatrolType::ChasePlayer)
+	{
+		Player* targetPlayer = nullptr;
+		for (const auto& collider : CollisionManager::GetInstance()->GetColliders())
+		{
+			if (collider.objectType != "PlayerSpawn" || !collider.parent)
+			{
+				continue;
+			}
+			auto* player = dynamic_cast<Player*>(collider.parent);
+			if (player && !player->IsDead() && player->GetObject3d())
+			{
+				targetPlayer = player;
+				break;
+			}
+		}
+
+		if (targetPlayer)
+		{
+			const Vector3 playerPosition =
+				targetPlayer->GetObject3d()->GetWorldTranslate();
+			const float dx = playerPosition.x - transform_.translate.x;
+			const float dz = playerPosition.z - transform_.translate.z;
+			const float distance = std::sqrt(dx * dx + dz * dz);
+			if (distance > kPatrolPlayerStopDistance_)
+			{
+				const float moveDistance = (std::min)(
+					kPatrolMoveSpeed_, distance - kPatrolPlayerStopDistance_);
+				transform_.translate.x += dx / distance * moveDistance;
+				transform_.translate.z += dz / distance * moveDistance;
+			}
+		}
+		return;
+	}
+
+	// FigureEightでは従来の横8の字を短い1パターンとして使用する。
 	constexpr float kTwoPi = 6.28318530718f;
 	const float phase = kTwoPi * static_cast<float>(patrolFrame_)
 		/ static_cast<float>(kPatrolCycleFrames_);
@@ -354,6 +445,75 @@ void Enemy::UpdatePatrolMovement()
 		+ patrolDirection_ * kPatrolRadiusX_ * std::sin(phase);
 	transform_.translate.z = startPosition_.z
 		+ kPatrolRadiusZ_ * std::sin(phase * 2.0f);
+}
+
+bool Enemy::SelectNextLighthousePatrolTarget()
+{
+	const auto& events = EventManager::GetInstance()->GetEvents();
+	if (events.empty())
+	{
+		return false;
+	}
+
+	// 前回の次から検索し、破壊中またはHP0の灯台は飛ばす。
+	for (uint32_t offset = 0; offset < static_cast<uint32_t>(events.size()); ++offset)
+	{
+		const uint32_t index =
+			(lighthousePatrolIndex_ + offset) % static_cast<uint32_t>(events.size());
+		auto* lightHouse = dynamic_cast<LightHouse*>(events[index].get());
+		if (!lightHouse || lightHouse->IsDead() || lightHouse->IsHit() ||
+			lightHouse->GetHp() == 0 || !lightHouse->GetObject3d())
+		{
+			continue;
+		}
+
+		patrolTargetPosition_ = lightHouse->GetObject3d()->GetWorldTranslate();
+		patrolTargetPosition_.y = startPosition_.y;
+
+		// 灯台からフィールド中央側へ少し離し、巡回中の接触を防ぐ。
+		float offsetX = startPosition_.x - patrolTargetPosition_.x;
+		float offsetZ = startPosition_.z - patrolTargetPosition_.z;
+		const float offsetLength = std::sqrt(offsetX * offsetX + offsetZ * offsetZ);
+		if (offsetLength > 0.0001f)
+		{
+			offsetX /= offsetLength;
+			offsetZ /= offsetLength;
+		}
+		else
+		{
+			offsetX = 1.0f;
+			offsetZ = 0.0f;
+		}
+		patrolTargetPosition_.x += offsetX * kPatrolLighthouseOffset_;
+		patrolTargetPosition_.z += offsetZ * kPatrolLighthouseOffset_;
+
+		lighthousePatrolIndex_ =
+			(index + 1) % static_cast<uint32_t>(events.size());
+		hasPatrolTarget_ = true;
+		return true;
+	}
+
+	return false;
+}
+
+void Enemy::AdvancePatrolType()
+{
+	switch (patrolType_)
+	{
+	case PatrolType::MoveToLighthouse:
+		patrolType_ = PatrolType::ChasePlayer;
+		break;
+	case PatrolType::ChasePlayer:
+		patrolType_ = PatrolType::FigureEight;
+		break;
+	case PatrolType::FigureEight:
+		patrolType_ = PatrolType::MoveToLighthouse;
+		break;
+	}
+
+	patrolFrame_ = 0;
+	patrolStopTimer_ = 0;
+	hasPatrolTarget_ = false;
 }
 
 void Enemy::UpdateFacingDirection(const Vector3& previousPosition)
@@ -486,6 +646,8 @@ void Enemy::UpdateAttack()
 			attackTimer_ = 0;
 			transform_.scale = startScale_;
 			attackState_ = AttackState::Rush;
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), rushSE_, false);
 		}
 		break;
 	}
@@ -569,6 +731,8 @@ void Enemy::UpdateAttack()
 			slamStartPosition_ = transform_.translate;
 			attackState_ = AttackState::SlamApproach;
 			attackTimer_ = kSlamApproachFrames_;
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), jumpSE_, false);
 		}
 		break;
 	}
@@ -640,6 +804,8 @@ void Enemy::UpdateAttack()
 			transform_.translate = slamTargetPosition_;
 			attackState_ = AttackState::SlamImpact;
 			attackTimer_ = kSlamImpactFrames_;
+			// 音声再生
+			Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), landSE_, false);
 		}
 		break;
 	}
@@ -697,7 +863,7 @@ void Enemy::UpdateAttack()
 		{
 			attackState_ = AttackState::Patrol;
 			attackTimer_ = kPatrolFrames_;
-			patrolFrame_ = 0;
+			AdvancePatrolType();
 			patrolDirection_ *= -1.0f;
 		}
 		break;
@@ -931,6 +1097,11 @@ void Enemy::Draw()
 	}
 }
 
+void Enemy::DrawUI()
+{
+	hpUI_.Draw();
+}
+
 void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 {
 	// 撃破演出中は攻撃も被弾も行わない。
@@ -993,7 +1164,7 @@ void Enemy::OnCollision(std::string hitObjectType, BaseCharacter* hitObject)
 
 		if (explosion.IsActive())
 		{
-			TakeDamage(explosion.GetDamage());
+			TakeExplosionDamage(explosion.GetDamage());
 		}
 	}
 }
@@ -1110,6 +1281,18 @@ void Enemy::UpdateDeathAnimation()
 		isDying_ = false;
 		isDead_ = true;
 	}
+}
+
+void Enemy::TakeExplosionDamage(int damage)
+{
+	if (isDead_ || damage <= 0)
+	{
+		return;
+	}
+
+	// HP更新と同じフレームからシェイクを反映できるよう、先に開始する
+	hpUI_.StartShake();
+	TakeDamage(damage);
 }
 
 AABB Enemy::GetDamageAabb() const

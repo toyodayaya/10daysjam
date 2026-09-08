@@ -14,6 +14,8 @@ public:
 	void Initialize();
 	// ボスのHPを受け取り、バーの長さを更新する
 	void Update(int currentHp, int maxHp);
+	// 自爆命中時のシェイクを開始する
+	void StartShake();
 	// 2Dスプライトを描画する
 	void Draw();
 
@@ -27,6 +29,10 @@ private:
 	static constexpr int kDamageHoldFrames_ = 12;
 	// 濃い赤のバーが実HPまで追従する時間（60FPSで約0.5秒）
 	static constexpr int kDamageAnimationFrames_ = 30;
+	// 自爆命中時のシェイク時間（60FPSで約0.2秒）
+	static constexpr int kShakeDurationFrames_ = 12;
+	// UIが大きくずれすぎないようにする最大振幅
+	static constexpr float kShakeAmplitude_ = 5.0f;
 
 	std::unique_ptr<Sprite> frameSprite_;
 	std::unique_ptr<Sprite> damageBarSprite_;
@@ -38,4 +44,6 @@ private:
 	int damageHoldFrames_ = 0;
 	int damageAnimationElapsedFrames_ = 0;
 	bool isDamageAnimationActive_ = false;
+	int shakeElapsedFrames_ = 0;
+	bool isShakeActive_ = false;
 };

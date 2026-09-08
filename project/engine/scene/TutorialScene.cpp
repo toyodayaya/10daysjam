@@ -66,7 +66,7 @@ void TutorialScene::Initialize()
 	// 音声読み込み
 	tutorialBgm_ = Audio::GetInstance()->SoundLoadFile("resources/sound/BGM/tutorial.mp3");
 	// 音声再生
-	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), tutorialBgm_);
+	Audio::GetInstance()->SoundPlayWave(Audio::GetInstance()->GetXAudio2().Get(), tutorialBgm_,true);
 }
 
 void TutorialScene::Finalize()
